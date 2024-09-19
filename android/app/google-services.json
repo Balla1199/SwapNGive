@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "290902738902",
+    "project_id": "swapngive",
+    "storage_bucket": "swapngive.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290902738902:android:a47b8b52fddc5385534677",
+        "android_client_info": {
+          "package_name": "com.example.swap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0L0B_bdCR5GQL1wdyHAEYYhfgOt9Wsnw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
