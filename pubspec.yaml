@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+
   flutter:
     sdk: flutter
   firebase_core: ^3.4.0
@@ -41,6 +42,14 @@ dependencies:
   file_picker: ^8.1.2
   uuid: ^4.5.0
   image: ^4.2.0
+  #google_maps_flutter: ^2.9.0
+  geocoding: ^3.0.0
+  google_maps_flutter_web: ^0.5.10
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  http: ^1.2.2
+  carousel_slider: ^5.0.0
+  #webview_flutter: ^4.9.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -99,3 +108,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  assets:
+    - assets/map.html

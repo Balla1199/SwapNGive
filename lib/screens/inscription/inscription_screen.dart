@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:swapngive/services/auth_service.dart';
+import 'package:swapngive/services/utilisateur_service.dart';
+import 'package:swapngive/models/utilisateur.dart';
 
 class InscriptionScreen extends StatefulWidget {
   @override
@@ -13,35 +13,46 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _adresseController = TextEditingController();
   final TextEditingController _telephoneController = TextEditingController();
-  final AuthService _authService = AuthService();
+  final UtilisateurService _utilisateurService = UtilisateurService();
   
   Future<void> _register() async {
-  final name = _nomController.text.trim();
-  final email = _emailController.text.trim();
-  final password = _passwordController.text.trim();
-  final adresse = _adresseController.text.trim();
-  final telephone = _telephoneController.text.trim();
-  
-  // Assurez-vous que l'email est correctement formaté
-  if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Adresse e-mail invalide.')),
+    final nom = _nomController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final adresse = _adresseController.text.trim();
+    final telephone = _telephoneController.text.trim();
+    
+    // Vérification du format de l'email
+    if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Adresse e-mail invalide.')),
+      );
+      return;
+    }
+
+    // Créer un objet Utilisateur
+    Utilisateur utilisateur = Utilisateur(
+      id: '', // L'ID sera défini dans le service après création
+      nom: nom,
+      email: email,
+      motDePasse: password, // Évitez de stocker le mot de passe en clair
+      adresse: adresse,
+      telephone: telephone,
+      dateInscription: DateTime.now(),
+      role: Role.client,
     );
-    return;
+
+    try {
+      // Créer l'utilisateur dans Firebase Authentication et Firestore
+      await _utilisateurService.createUtilisateur(utilisateur, email, password);
+      Navigator.pushReplacementNamed(context, '/home');
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Échec de l\'inscription. Veuillez réessayer.')),
+      );
+      print('Erreur lors de l\'inscription : $e'); // Pour le débogage
+    }
   }
-
-  User? user = await _authService.registerUser(name, email, password, adresse, telephone, 'client');
-
-  if (user != null) {
-    Navigator.pushReplacementNamed(context, '/home');
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Échec de l\'inscription. Veuillez réessayer.')),
-    );
-  }
-}
-
-
 
   @override
   Widget build(BuildContext context) {

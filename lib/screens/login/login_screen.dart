@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:swapngive/screens/home/home_screen.dart';
 import 'package:swapngive/services/auth_service.dart';
-
+import 'package:swapngive/models/utilisateur.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -28,11 +28,26 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (user != null) {
         print('Connexion réussie pour l\'utilisateur: ${user.email}');
-        // Redirigez vers HomeScreen après la connexion
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
-        );
+
+        // Récupération des détails utilisateur depuis Firestore
+        Utilisateur? utilisateur = await _authService.getUserDetails(user.uid);
+
+        print('Utilisateur récupéré : ${utilisateur?.email}');
+
+        if (utilisateur != null) {
+          // Redirigez vers HomeScreen après la connexion
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomeScreen(utilisateur: utilisateur),
+            ),
+          );
+        } else {
+          print('Échec de la connexion : Utilisateur non trouvé dans Firestore');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Utilisateur non trouvé dans Firestore')),
+          );
+        }
       } else {
         print('Échec de la connexion : Utilisateur non trouvé');
         ScaffoldMessenger.of(context).showSnackBar(

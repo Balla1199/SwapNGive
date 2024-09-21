@@ -1,101 +1,118 @@
 import 'package:flutter/material.dart';
-import 'package:swapngive/services/objet_service.dart'; // Service pour récupérer les objets
-import 'package:swapngive/models/objet.dart'; // Modèle d'objet
-import 'objet_form_screen.dart'; // Formulaire d'ajout d'objet
+import 'package:swapngive/models/objet.dart';
+import 'package:swapngive/services/objet_service.dart';
+import 'objet_form_screen.dart'; // Importer le formulaire d'objet
+import 'objet_details_screen.dart'; // Importer l'écran de détails d'objet
 
-class ObjetListScreen extends StatefulWidget {
-  @override
-  _ObjetListScreenState createState() => _ObjetListScreenState();
-}
-
-class _ObjetListScreenState extends State<ObjetListScreen> {
-  final ObjetService _objetService = ObjetService(); // Service des objets
-  List<Objet> _objets = []; // Liste des objets récupérés
-
-  @override
-  void initState() {
-    super.initState();
-    _loadObjets(); // Charger la liste des objets dès que l'écran est affiché
-  }
-
-  // Charger la liste des objets depuis Firestore
- void _loadObjets() async {
-  List<Objet> objets = await _objetService.getAllObjets(); // Remplacer ici
-  setState(() {
-    _objets = objets;
-  });
-}
+class ObjetListScreen extends StatelessWidget {
+  final ObjetService _objetService = ObjetService();
 
   @override
   Widget build(BuildContext context) {
+    print("Construction du widget ObjetListScreen...");
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Liste des Objets'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              print("Naviguer vers le formulaire d'ajout d'objet.");
+              // Navigation vers le formulaire d'ajout d'objet
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ObjetFormScreen()),
+              );
+            },
+          ),
+        ],
       ),
-      body: _objets.isEmpty
-          ? Center(child: CircularProgressIndicator()) // Indicateur de chargement
-          : ListView.builder(
-              itemCount: _objets.length,
-              itemBuilder: (context, index) {
-                final objet = _objets[index];
-                return _buildObjetCard(objet); // Créer une carte pour chaque objet
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _navigateToAjoutObjetForm(); // Navigation vers le formulaire d'ajout
+      body: StreamBuilder<List<Objet>>(
+        stream: _objetService.getAllObjetsStream(), // Remplacez cela
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            print("Erreur lors de la récupération des objets : ${snapshot.error}");
+            return Center(child: Text('Erreur : ${snapshot.error}'));
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            print("Chargement des objets en cours...");
+            return Center(child: CircularProgressIndicator());
+          }
+
+          final objets = snapshot.data ?? [];
+          print("Nombre d'objets récupérés : ${objets.length}");
+
+          return ListView.builder(
+            itemCount: objets.length,
+            itemBuilder: (context, index) {
+              final objet = objets[index];
+              print("Affichage de l'objet à l'index $index : ${objet.nom}");
+
+              return Card(
+                child: ListTile(
+                  leading: (objet.imageUrl != null && objet.imageUrl.isNotEmpty)
+                      ? Image.network(
+                          objet.imageUrl,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(Icons.image_not_supported), // Icône par défaut si pas d'image
+                  title: Text(objet.nom ?? 'Nom indisponible'),
+                  subtitle: Text(objet.description ?? 'Description indisponible'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          print("Modification de l'objet : ${objet.nom}");
+                          // Navigation vers le formulaire de modification d'objet
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ObjetFormScreen(objet: objet),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () async {
+                          print("Suppression de l'objet : ${objet.nom}");
+                          await _objetService.deleteObjet(objet.id);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Objet supprimé.')),
+                          );
+                          print("Objet supprimé : ${objet.nom}");
+                        },
+                      ),
+                    ],
+                  ),
+                  onTap: () {
+                    if (objet != null) {
+                      print("Navigation vers les détails de l'objet : ${objet.nom}");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ObjetDetailsScreen(objet: objet),
+                        ),
+                      );
+                    } else {
+                      print("Erreur : Objet non valide.");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Objet non valide.')),
+                      );
+                    }
+                  },
+                ),
+              );
+            },
+          );
         },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue, // Couleur du bouton
-        tooltip: 'Ajouter un objet',
       ),
     );
-  }
-
-  // Construire une carte pour chaque objet
-  Widget _buildObjetCard(Objet objet) {
-    return Card(
-      elevation: 5,
-      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      child: ListTile(
-        leading: _buildImage(objet.imageUrl), // Afficher l'image de l'objet
-        title: Text(objet.nom, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(objet.description),
-        onTap: () {
-          // Gérer l'événement lorsque l'utilisateur clique sur l'objet
-          print('Objet sélectionné : ${objet.nom}');
-        },
-      ),
-    );
-  }
-
-  // Méthode pour afficher l'image d'un objet
-  Widget _buildImage(String imageUrl) {
-    if (imageUrl.isNotEmpty) {
-      return Image.network(
-        imageUrl,
-        width: 60,
-        height: 60,
-        fit: BoxFit.cover,
-      );
-    } else {
-      return Icon(
-        Icons.image_not_supported,
-        size: 60,
-        color: Colors.grey,
-      );
-    }
-  }
-
-  // Méthode pour naviguer vers le formulaire d'ajout d'objet
-  void _navigateToAjoutObjetForm() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ObjetFormScreen()),
-    ).then((value) {
-      if (value == true) {
-        _loadObjets(); // Recharger la liste des objets après l'ajout
-      }
-    });
   }
 }

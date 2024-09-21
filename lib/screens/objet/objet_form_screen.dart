@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:swapngive/models/utilisateur.dart';
 import 'package:uuid/uuid.dart'; // Importation de la bibliothèque UUID
 import 'dart:html' as html; // Importez dart:html pour le web
 
@@ -32,13 +33,13 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
   final TextEditingController _nomController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  String? _selectedEtat;
+  Etat? _selectedEtat; // Utiliser l'objet Etat au lieu de l'ID
   List<Etat> _etats = [];
 
-  String? _selectedCategorie;
+  Categorie? _selectedCategorie; // Utiliser l'objet Categorie au lieu de l'ID
   List<Categorie> _categories = [];
 
-  User? _currentUser;
+  Utilisateur? _currentUser; // Changez User en Utilisateur
 
   final Uuid uuid = Uuid(); // Initialisation de la classe UUID
 
@@ -55,8 +56,15 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
     if (widget.objet != null) {
       _nomController.text = widget.objet!.nom;
       _descriptionController.text = widget.objet!.description;
-      _selectedEtat = widget.objet!.idEtat;
-      _selectedCategorie = widget.objet!.idCategorie;
+      _selectedEtat = widget.objet!.etat; // Utiliser l'objet Etat
+      _selectedCategorie = widget.objet!.categorie; // Utiliser l'objet Categorie
+      
+      // Impression des valeurs de l'objet
+      print('Objet existant chargé:');
+      print('Nom: ${widget.objet!.nom}');
+      print('Description: ${widget.objet!.description}');
+      print('État: ${_selectedEtat?.nom}');
+      print('Catégorie: ${_selectedCategorie?.nom}');
     }
   }
 
@@ -78,9 +86,10 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
   }
 
   // Récupérer l'utilisateur actuellement connecté
-  void _getCurrentUser() {
+  void _getCurrentUser() async {
+    Utilisateur? user = await _authService.getCurrentUserDetails(); // Utiliser la méthode pour récupérer les détails
     setState(() {
-      _currentUser = _authService.getCurrentUser();
+      _currentUser = user;
     });
   }
 
@@ -103,17 +112,28 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
         id: widget.objet?.id ?? uuid.v4(), // Utilisation de UUID pour générer un nouvel ID
         nom: _nomController.text,
         description: _descriptionController.text,
-        idEtat: _selectedEtat!,
-        idCategorie: _selectedCategorie!,
+        etat: _selectedEtat!, // Utiliser l'objet Etat
+        categorie: _selectedCategorie!, // Utiliser l'objet Categorie
         dateAjout: DateTime.now(),
-        idUtilisateur: _currentUser!.uid, // ID de l'utilisateur connecté
+        utilisateur: _currentUser!, // Utilisateur connecté
         imageUrl: widget.objet?.imageUrl ?? '', // URL de l'image
       );
 
+      // Impression des valeurs de l'objet avant ajout ou mise à jour
+      print('Objet à ajouter ou mettre à jour:');
+      print('ID: ${objet.id}');
+      print('Nom: ${objet.nom}');
+      print('Description: ${objet.description}');
+      print('État: ${objet.etat.nom}');
+      print('Catégorie: ${objet.categorie.nom}');
+      print('Utilisateur: ${objet.utilisateur.nom}'); // Assurez-vous que l'objet Utilisateur a une propriété 'nom'
+
       if (widget.objet == null) {
         await _objetService.addObjet(objet, _imageFile!); // Ajout d'un nouvel objet
+        print('Nouvel objet ajouté.');
       } else {
         await _objetService.updateObjet(objet, _imageFile!); // Mise à jour de l'objet existant
+        print('Objet mis à jour.');
       }
 
       Navigator.pop(context); // Retour à l'écran précédent après succès
@@ -139,12 +159,12 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
               decoration: InputDecoration(labelText: 'Description'),
             ),
             SizedBox(height: 20),
-            DropdownButton<String>(
+            DropdownButton<Etat>(
               value: _selectedEtat,
               hint: Text('Sélectionnez un état'),
               items: _etats.map((etat) {
-                return DropdownMenuItem<String>(
-                  value: etat.id,
+                return DropdownMenuItem<Etat>(
+                  value: etat,
                   child: Text(etat.nom),
                 );
               }).toList(),
@@ -155,12 +175,12 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
               },
             ),
             SizedBox(height: 20),
-            DropdownButton<String>(
+            DropdownButton<Categorie>(
               value: _selectedCategorie,
               hint: Text('Sélectionnez une catégorie'),
               items: _categories.map((categorie) {
-                return DropdownMenuItem<String>(
-                  value: categorie.id,
+                return DropdownMenuItem<Categorie>(
+                  value: categorie,
                   child: Text(categorie.nom),
                 );
               }).toList(),

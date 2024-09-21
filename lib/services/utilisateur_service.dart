@@ -1,65 +1,89 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../models/utilisateur.dart';
+import 'package:swapngive/models/utilisateur.dart';
 
 class UtilisateurService {
+  final CollectionReference _collection = FirebaseFirestore.instance.collection('utilisateurs');
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Collection de la base de données Firestore
-  final CollectionReference utilisateurCollection = FirebaseFirestore.instance.collection('utilisateurs');
-
-  // Créer un utilisateur dans Firestore
-  Future<void> creerUtilisateur(Utilisateur utilisateur) async {
+  // Créer un utilisateur dans Firebase Authentication et Firestore
+  Future<void> createUtilisateur(Utilisateur utilisateur, String email, String password) async {
     try {
-      await utilisateurCollection.doc(utilisateur.id).set(utilisateur.toMap());
+      // Créer l'utilisateur dans Firebase Authentication
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      
+      // Si l'utilisateur est créé avec succès dans Auth, on l'ajoute dans Firestore
+      utilisateur.id = userCredential.user!.uid;  // Associer l'ID de l'utilisateur à partir de Firebase Auth
+      await _collection.doc(utilisateur.id).set(utilisateur.toMap());
+      
+      print('Utilisateur créé avec succès dans Auth et Firestore');
     } catch (e) {
-      throw Exception("Erreur lors de la création de l'utilisateur : $e");
+      print('Erreur lors de la création de l\'utilisateur : $e');
+      throw e; // Pour renvoyer l'erreur à l'appelant
     }
   }
 
-  // Récupérer un utilisateur par ID
-  Future<Utilisateur?> getUtilisateur(String id) async {
+  // Connexion d'un utilisateur via Firebase Authentication
+  Future<User?> signIn(String email, String password) async {
     try {
-      DocumentSnapshot doc = await utilisateurCollection.doc(id).get();
-      if (doc.exists) {
-        return Utilisateur.fromMap(doc.data() as Map<String, dynamic>);
-      }
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return userCredential.user;
+    } catch (e) {
+      print('Erreur lors de la connexion de l\'utilisateur : $e');
       return null;
-    } catch (e) {
-      throw Exception("Erreur lors de la récupération de l'utilisateur : $e");
     }
   }
 
-  // Récupérer tous les utilisateurs
-  Future<List<Utilisateur>> getTousUtilisateurs() async {
+  // Déconnexion de l'utilisateur
+  Future<void> signOut() async {
     try {
-      QuerySnapshot snapshot = await utilisateurCollection.get();
-      return snapshot.docs
-          .map((doc) => Utilisateur.fromMap(doc.data() as Map<String, dynamic>))
-          .toList();
+      await _auth.signOut();
+      print('Déconnexion réussie');
     } catch (e) {
-      throw Exception("Erreur lors de la récupération des utilisateurs : $e");
+      print('Erreur lors de la déconnexion : $e');
     }
   }
 
-  // Modifier un utilisateur
-  Future<void> modifierUtilisateur(Utilisateur utilisateur) async {
+  // Récupérer tous les utilisateurs depuis Firestore
+  Stream<List<Utilisateur>> getUtilisateurs() {
+    return _collection.snapshots().map((snapshot) => snapshot.docs
+        .map((doc) => Utilisateur.fromFirestore(doc))
+        .toList());
+  }
+
+  // Mettre à jour un utilisateur dans Firestore
+  Future<void> updateUtilisateur(String id, Utilisateur utilisateur) async {
+    await _collection.doc(id).update(utilisateur.toMap());
+  }
+
+  // Supprimer un utilisateur dans Firestore
+  Future<void> deleteUtilisateur(String id) async {
+    // Supprimer l'utilisateur dans Firebase Auth et Firestore
     try {
-      await utilisateurCollection.doc(utilisateur.id).update(utilisateur.toMap());
+      // Supprimer de Firestore
+      await _collection.doc(id).delete();
+      print('Utilisateur supprimé de Firestore');
+
+      // Supprimer de Firebase Authentication
+      User? user = _auth.currentUser;
+      if (user != null) {
+        await user.delete();
+        print('Utilisateur supprimé de Firebase Authentication');
+      }
     } catch (e) {
-      throw Exception("Erreur lors de la modification de l'utilisateur : $e");
+      print('Erreur lors de la suppression de l\'utilisateur : $e');
+      throw e;
     }
   }
 
-  // Supprimer un utilisateur
-  Future<void> supprimerUtilisateur(String id) async {
-    try {
-      await utilisateurCollection.doc(id).delete();
-    } catch (e) {
-      throw Exception("Erreur lors de la suppression de l'utilisateur : $e");
-    }
+  // Récupérer l'utilisateur actuel
+  User? getCurrentUser() {
+    return _auth.currentUser;
   }
-
-  
 }
