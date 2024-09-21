@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:swapngive/models/objet.dart'; // Import your Objet model
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:swapngive/models/objet.dart'; // Importez votre modèle Objet
 
 class ObjetDetailsScreen extends StatelessWidget {
   final Objet objet;
@@ -17,7 +18,7 @@ class ObjetDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Display the object name and description
+            // Affichez le nom et la description de l'objet
             Text(
               objet.nom,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -26,10 +27,33 @@ class ObjetDetailsScreen extends StatelessWidget {
             Text(objet.description),
             SizedBox(height: 16),
             
-            // Display images in a carousel (use your preferred carousel widget)
-            // For example, a simple Row of images or a carousel widget from a package
+            // Affichage des images dans un carousel
+            CarouselSlider(
+              options: CarouselOptions(
+                height: 200,
+                autoPlay: true,
+                enlargeCenterPage: true,
+                aspectRatio: 16/9,
+                viewportFraction: 0.8,
+              ),
+              items: objet.imageUrl.split(',').map((imageUrl) {
+                return Container(
+                  margin: EdgeInsets.symmetric(horizontal: 5.0),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      width: 1000, // Largeur de l'image
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
 
-            // Display the state, category, and user names
+            SizedBox(height: 16),
+            
+            // Affichez l'état, la catégorie et le nom de l'utilisateur
             Text('État: ${objet.etat.nom}', style: TextStyle(fontSize: 18)),
             Text('Catégorie: ${objet.categorie.nom}', style: TextStyle(fontSize: 18)),
             Text('Utilisateur: ${objet.utilisateur.nom}', style: TextStyle(fontSize: 18)),
