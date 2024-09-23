@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/objet.dart';
+import 'package:swapngive/screens/annonce/annonce_form_screen.dart';
 import 'package:swapngive/services/objet_service.dart';
 import 'objet_form_screen.dart'; // Importer le formulaire d'objet
 import 'objet_details_screen.dart'; // Importer l'écran de détails d'objet
@@ -29,7 +30,7 @@ class ObjetListScreen extends StatelessWidget {
         ],
       ),
       body: StreamBuilder<List<Objet>>(
-        stream: _objetService.getAllObjetsStream(), // Remplacez cela
+        stream: _objetService.getAllObjetsStream(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             print("Erreur lors de la récupération des objets : ${snapshot.error}");
@@ -87,6 +88,19 @@ class ObjetListScreen extends StatelessWidget {
                             SnackBar(content: Text('Objet supprimé.')),
                           );
                           print("Objet supprimé : ${objet.nom}");
+                        },
+                      ),
+                      // Bouton pour créer une annonce
+                      IconButton(
+                        icon: Icon(Icons.post_add),
+                        onPressed: () {
+                          print("Création d'annonce pour l'objet : ${objet.nom}");
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AnnonceFormScreen(objet: objet),
+                            ),
+                          );
                         },
                       ),
                     ],

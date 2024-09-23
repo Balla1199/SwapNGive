@@ -14,9 +14,9 @@ import 'package:swapngive/services/etat_service.dart'; // Service de gestion des
 import 'package:swapngive/services/objet_service.dart'; // Service de gestion des objets
 
 class ObjetFormScreen extends StatefulWidget {
-  final Objet? objet;
+  final Objet? objet; // Changement ici pour rendre l'objet optionnel
 
-  ObjetFormScreen({this.objet});
+  ObjetFormScreen({this.objet}); // Changement ici
 
   @override
   _ObjetFormScreenState createState() => _ObjetFormScreenState();
@@ -83,27 +83,22 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
     });
   }
 
- // Méthode pour choisir plusieurs images depuis la galerie
-Future<void> _pickImages() async {
-  final pickedFiles = await _picker.pickMultiImage();
-  if (pickedFiles != null) {
-    // Créer une liste pour stocker les fichiers HTML
-    List<html.File> imageFiles = [];
+  // Méthode pour choisir plusieurs images depuis la galerie
+  Future<void> _pickImages() async {
+    final pickedFiles = await _picker.pickMultiImage();
+    if (pickedFiles != null) {
+      List<html.File> imageFiles = [];
 
-    // Utiliser une boucle pour récupérer les bytes de chaque image
-    for (var file in pickedFiles) {
-      final bytes = await file.readAsBytes(); // Lire les bytes de manière asynchrone
-      imageFiles.add(html.File([bytes], file.name));
+      for (var file in pickedFiles) {
+        final bytes = await file.readAsBytes(); // Lire les bytes de manière asynchrone
+        imageFiles.add(html.File([bytes], file.name));
+      }
+
+      setState(() {
+        _imageFiles = imageFiles;
+      });
     }
-
-    // Mettre à jour l'état avec les fichiers d'image après avoir terminé les opérations asynchrones
-    setState(() {
-      _imageFiles = imageFiles;
-    });
   }
-}
-
-
 
   Future<void> _addOrUpdateObjet() async {
     if (_selectedEtat != null && _selectedCategorie != null && _imageFiles.isNotEmpty && _currentUser != null) {

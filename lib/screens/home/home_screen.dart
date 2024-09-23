@@ -5,6 +5,7 @@ import 'package:swapngive/screens/profil/profile_screen.dart';
 import 'package:swapngive/screens/categorie/categorie_list_screen.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_list_screen.dart';
 import 'package:swapngive/screens/objet/objet_list_screen.dart'; // Import de l'écran de liste d'objets
+import 'package:swapngive/screens/annonce/annonce_list_screen.dart'; // Import de l'écran de liste des annonces
 
 class HomeScreen extends StatefulWidget {
   final Utilisateur? utilisateur;
@@ -33,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
       CategorieListScreen(),
       EtatListScreen(),
       ObjetListScreen(), // Ajout de l'écran de liste d'objets
+      AnnonceListScreen(), // Ajout de l'écran de liste des annonces
       if (widget.utilisateur != null)
         ProfileScreen(utilisateur: widget.utilisateur),
     ];
@@ -43,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onItemTapped(int index) {
     print('Item tap index : $index');
 
-    if (index == 5 && widget.utilisateur == null) {
+    if (index == 6 && widget.utilisateur == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Aucun utilisateur connecté')),
       );
@@ -87,6 +89,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.local_offer), // Icône pour les objets
             label: 'Objets',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.announcement), // Icône pour les annonces
+            label: 'Annonces',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
