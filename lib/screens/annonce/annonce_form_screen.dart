@@ -45,43 +45,44 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
   }
 
   // Méthode pour soumettre le formulaire et ajouter ou modifier une annonce
-  Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
+ Future<void> _submitForm() async {
+  if (_formKey.currentState!.validate()) {
+    _formKey.currentState!.save();
 
-      Annonce newAnnonce = Annonce(
-        id: widget.annonce != null ? widget.annonce!.id : FirebaseFirestore.instance.collection('annonces').doc().id,
-        titre: _titreController.text,
-        description: _descriptionController.text,
-        date: DateTime.now(),
-        type: _type == 'Don' ? TypeAnnonce.don : TypeAnnonce.echange,
-        utilisateur: widget.objet.utilisateur,
-        categorie: widget.objet.categorie,
-        objet: widget.objet,
+    Annonce newAnnonce = Annonce(
+      id: widget.annonce != null ? widget.annonce!.id : FirebaseFirestore.instance.collection('annonces').doc().id,
+      titre: _titreController.text,
+      description: _descriptionController.text,
+      date: DateTime.now(),
+      type: _type == 'Don' ? TypeAnnonce.don : TypeAnnonce.echange,
+      utilisateur: widget.objet.utilisateur,
+      categorie: widget.objet.categorie,
+      objet: widget.objet,
+      etat: widget.objet.etat, // Récupérez l'état ici
+    );
+
+    try {
+      if (widget.annonce == null) {
+        await _annonceService.ajouterAnnonce(newAnnonce);
+      } else {
+        await _annonceService.modifierAnnonce(newAnnonce);
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Annonce ${widget.annonce == null ? "ajoutée" : "modifiée"} avec succès !')),
       );
 
-      try {
-        if (widget.annonce == null) {
-          await _annonceService.ajouterAnnonce(newAnnonce);
-        } else {
-          await _annonceService.modifierAnnonce(newAnnonce); // Ajoutez cette méthode pour modifier l'annonce
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Annonce ${widget.annonce == null ? "ajoutée" : "modifiée"} avec succès !')),
-        );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => AnnonceListScreen()),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur : $e')),
-        );
-      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => AnnonceListScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur : $e')),
+      );
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {

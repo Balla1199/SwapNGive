@@ -71,7 +71,7 @@ class AnnonceDetailsScreen extends StatelessWidget {
 
             // Affichage de l'état de l'objet
             Text(
-              "État : ${annonce.objet.etat}",
+              "État : ${annonce.objet.etat.nom}", // Afficher le nom de l'état
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700]),
             ),
 
