@@ -63,7 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
     print('Construction du widget HomeScreen...');
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Home Screen'),
+        title: _selectedIndex == 0 ? const Text('Home Screen') : null, // Titre dynamique uniquement sur la page d'accueil
+        automaticallyImplyLeading: _selectedIndex == 0, // Bouton de retour uniquement sur la page d'accueil
       ),
       body: _screens.length > _selectedIndex
           ? _screens[_selectedIndex]
