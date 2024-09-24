@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:swapngive/models/Annonce.dart';
+import 'package:swapngive/screens/echange/objetechange_screen.dart';
 import 'package:swapngive/services/auth_service.dart'; // Importer AuthService
+
 
 class AnnonceDetailsScreen extends StatefulWidget {
   final Annonce annonce; // Paramètre pour l'annonce
@@ -86,13 +88,22 @@ class _AnnonceDetailsScreenState extends State<AnnonceDetailsScreen> {
             // Bouton visible uniquement si l'utilisateur est différent du créateur
             if (isDifferentUser)
               ElevatedButton(
-                onPressed: () {
-                  // Logique pour le bouton
-                  print('$boutonTexte action pour ${widget.annonce.titre}');
-                  // Ajoutez ici votre logique pour la proposition ou la demande
-                },
-                child: Text(boutonTexte), // Affichage du texte dynamique
-              ),
+  onPressed: () {
+    // Navigation vers ChoisirObjetEchangeScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChoisirObjetEchangeScreen(
+          annonce: widget.annonce, // Passez l'objet Annonce
+          idObjet: widget.annonce.objet.id, // Passez l'ID de l'objet
+          message: 'Proposition d\'échange pour ${widget.annonce.titre}', // Message à transmettre
+        ),
+      ),
+    );
+  },
+  child: Text(boutonTexte), // Affichage du texte dynamique
+),
+
 
             SizedBox(height: 16.0),
 
