@@ -213,4 +213,28 @@ class ObjetService {
       return snapshot.docs.map((doc) => Objet.fromMap(doc.data())).toList();
     });
   }
+
+  Stream<List<Objet>> getUserObjetsStream(String userId) async* {
+  try {
+    yield* _firestore
+        .collection('objets')
+        .where('utilisateur.id', isEqualTo: userId) // Assurez-vous que ce champ existe
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.docs.isEmpty) {
+            print('Aucun objet trouvé pour l\'utilisateur $userId');
+          }
+          return snapshot.docs.map((doc) {
+            print('Objet récupéré : ${doc.data()}'); // Affichez les données de chaque objet
+            return Objet.fromMap(doc.data() as Map<String, dynamic>);
+          }).toList();
+        });
+  } catch (e) {
+    print('Erreur lors de la récupération des objets de l\'utilisateur : $e');
+    rethrow;
+  }
+}
+
+
+
 }
