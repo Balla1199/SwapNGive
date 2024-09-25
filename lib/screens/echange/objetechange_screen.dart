@@ -48,12 +48,11 @@ class _ChoisirObjetEchangeScreenState extends State<ChoisirObjetEchangeScreen> {
       _isLoading = false;
     });
   }
-
-  void _onObjetSelected(Objet objet) {
+void _onObjetSelected(Objet objet) {
   // Vérifier si l'utilisateur est authentifié
   if (_idUtilisateur2 != null) {
     // Récupérer l'ID de l'utilisateur de l'annonce (utilisateur ayant ajouté l'objet)
-    String idUtilisateur1 = widget.annonce.utilisateur.id; 
+    String idUtilisateur1 = widget.annonce.utilisateur.id;
 
     // Naviguer vers ConfirmerEchangeScreen avec l'objet sélectionné
     Navigator.pushNamed(
@@ -63,10 +62,10 @@ class _ChoisirObjetEchangeScreenState extends State<ChoisirObjetEchangeScreen> {
         'idUtilisateur1': idUtilisateur1, // Utilisateur de l'annonce
         'idUtilisateur2': _idUtilisateur2, // Utilisateur authentifié
         'idObjet1': widget.idObjet, // ID de l'objet de l'annonce
-        'idObjet2': objet.id, // ID de l'objet proposé
+        'objet2': objet, // Passer l'objet proposé directement
         'message': widget.message, // Message à transmettre
-        // Vous pouvez également passer l'objet annonce si nécessaire
-        'annonce': widget.annonce,
+        'annonce': widget.annonce, // Passer l'objet annonce
+         'objet': objet, // Assurez-vous de passer l'objet supplémentaire
       },
     );
   } else {
@@ -74,7 +73,6 @@ class _ChoisirObjetEchangeScreenState extends State<ChoisirObjetEchangeScreen> {
     print('L\'utilisateur n\'est pas connecté.');
   }
 }
-
 
 
   @override

@@ -6,6 +6,7 @@ import 'package:swapngive/screens/categorie/categorie_list_screen.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_list_screen.dart';
 import 'package:swapngive/screens/objet/objet_list_screen.dart'; // Import de l'écran de liste d'objets
 import 'package:swapngive/screens/annonce/annonce_list_screen.dart'; // Import de l'écran de liste des annonces
+import 'package:swapngive/screens/reception/reception_screen.dart'; // Import de l'écran de réception
 
 class HomeScreen extends StatefulWidget {
   final Utilisateur? utilisateur;
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
       EtatListScreen(),
       ObjetListScreen(), // Ajout de l'écran de liste d'objets
       AnnonceListScreen(), // Ajout de l'écran de liste des annonces
+      ReceptionScreen(), // Ajout de l'écran de réception
       if (widget.utilisateur != null)
         ProfileScreen(utilisateur: widget.utilisateur),
     ];
@@ -45,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onItemTapped(int index) {
     print('Item tap index : $index');
 
-    if (index == 6 && widget.utilisateur == null) {
+    if (index == 7 && widget.utilisateur == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Aucun utilisateur connecté')),
       );
@@ -94,6 +96,10 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.announcement), // Icône pour les annonces
             label: 'Annonces',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt), // Icône pour les réceptions
+            label: 'Réceptions',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

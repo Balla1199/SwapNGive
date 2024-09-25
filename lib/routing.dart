@@ -20,6 +20,8 @@ import 'package:swapngive/screens/categorie/categorie_form_screen.dart';
 import 'package:swapngive/screens/objet/objet_details_screen.dart';
 import 'package:swapngive/screens/objet/objet_form_screen.dart';
 import 'package:swapngive/screens/objet/objet_list_screen.dart';
+import 'package:swapngive/screens/reception/details_screen.dart';
+import 'package:swapngive/screens/reception/reception_screen.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_form_screen.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_list_screen.dart';
 
@@ -55,11 +57,15 @@ class AppRoutes {
   static const String choisirObjetEchange = '/choisir_objet_echange';
   static const String confirmerEchange = '/confirmer_echange';
 
+  // Nouvelles routes pour les écrans de détails et de réception
+  static const String detailsEchange = '/details_echange';
+  static const String reception = '/reception';
+
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case home:
         return MaterialPageRoute(builder: (_) => HomeScreen());
-      
+
       case categorieList:
         return MaterialPageRoute(builder: (_) => CategorieListScreen());
       case categorieForm:
@@ -156,42 +162,60 @@ class AppRoutes {
           builder: (_) => UtilisateurFormScreen(utilisateur: utilisateur),
         );
 
-    // Routes pour choisir et confirmer l'échange
-case choisirObjetEchange:
-  final args = settings.arguments as Map<String, dynamic>?; 
-  final idObjet = args?['idObjet'] as String; // Récupérer l'idObjet des arguments
-  final message = args?['message'] as String; // Récupérer le message des arguments
-  final annonce = args?['annonce'] as Annonce; // Récupérer l'objet Annonce des arguments
+      // Routes pour choisir et confirmer l'échange
+      case choisirObjetEchange:
+        final args = settings.arguments as Map<String, dynamic>?; 
+        final idObjet = args?['idObjet'] as String; // Récupérer l'idObjet des arguments
+        final message = args?['message'] as String; // Récupérer le message des arguments
+        final annonce = args?['annonce'] as Annonce; // Récupérer l'objet Annonce des arguments
 
-  return MaterialPageRoute(
-    builder: (_) => ChoisirObjetEchangeScreen(
-      annonce: annonce, // Passer l'objet Annonce au constructeur
-      idObjet: idObjet, // Passer idObjet au constructeur
-      message: message, // Passer message au constructeur
-    ),
-  );
+        return MaterialPageRoute(
+          builder: (_) => ChoisirObjetEchangeScreen(
+            annonce: annonce, // Passer l'objet Annonce au constructeur
+            idObjet: idObjet, // Passer idObjet au constructeur
+            message: message, // Passer message au constructeur
+          ),
+        );
 
-
-    case confirmerEchange:
+   case confirmerEchange:
   final args = settings.arguments as Map<String, dynamic>?; 
   final idUtilisateur1 = args?['idUtilisateur1'] as String;
   final idUtilisateur2 = args?['idUtilisateur2'] as String;
   final idObjet1 = args?['idObjet1'] as String;
-  final idObjet2 = args?['idObjet2'] as String;
   final message = args?['message'] as String;
   final annonce = args?['annonce'] as Annonce; // Récupérez l'objet Annonce ici
+  
+  // Récupérez l'objet2 d'une manière appropriée
+  final objet2 = args?['objet2'] as Objet; // Récupérez ici l'objet2
+  
+  // Assurez-vous de récupérer l'objet supplémentaire pour le paramètre objet
+  final objet = args?['objet'] as Objet; // Récupérez ici l'objet supplémentaire
 
   return MaterialPageRoute(
     builder: (_) => ConfirmerEchangeScreen(
       idUtilisateur1: idUtilisateur1,
       idUtilisateur2: idUtilisateur2,
       idObjet1: idObjet1,
-      idObjet2: idObjet2,
+      objet2: objet2, // Passez l'objet2 ici
       message: message,
       annonce: annonce, // Passez l'objet Annonce ici
+      objet: objet, // Passez l'objet supplémentaire ici
     ),
   );
 
+
+
+
+      // Nouvelles routes pour les écrans de détails d'échange et de réception
+      case detailsEchange:
+        final args = settings.arguments as Map<String, dynamic>?; 
+        final echangeId = args?['echangeId'] as String; // Récupérer echangeId des arguments
+        return MaterialPageRoute(
+          builder: (_) => DetailsEchangeScreen(echangeId: echangeId!), // Assurez-vous que echangeId n'est pas nul
+        );
+
+      case reception:
+        return MaterialPageRoute(builder: (_) => ReceptionScreen()); // Remplacez par la logique de ReceptionScreen
 
       default:
         return MaterialPageRoute(
