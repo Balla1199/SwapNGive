@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:swapngive/models/Categorie.dart';
 import 'package:swapngive/models/etat.dart';
 import 'package:swapngive/models/objet.dart';
+import 'package:swapngive/models/proposition.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/screens/annonce/annonce_form_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_details_screen.dart';
-import 'package:swapngive/screens/echange/Confirmer_Echange_Screen.dart';
-import 'package:swapngive/screens/echange/objetechange_screen.dart';
+import 'package:swapngive/screens/proposition/Confirmer_proposititon_Screen.dart';
+
+import 'package:swapngive/screens/proposition/objetpropose_screen.dart';
 import 'package:swapngive/screens/etat/etat_form_screen.dart';
 import 'package:swapngive/screens/etat/etat_list_screen.dart';
 import 'package:swapngive/screens/home/home_screen.dart';
@@ -57,9 +59,9 @@ class AppRoutes {
   static const String choisirObjetEchange = '/choisir_objet_echange';
   static const String confirmerEchange = '/confirmer_echange';
 
-  // Nouvelles routes pour les écrans de détails et de réception
-  static const String detailsEchange = '/details_echange';
-  static const String reception = '/reception';
+  // Nouvelles routes pour Réception et Détail Proposition
+  static const String receptionScreen = '/reception_screen';
+  static const String detailPropositionScreen = '/detail_proposition_screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -177,45 +179,41 @@ class AppRoutes {
           ),
         );
 
-   case confirmerEchange:
-  final args = settings.arguments as Map<String, dynamic>?; 
-  final idUtilisateur1 = args?['idUtilisateur1'] as String;
-  final idUtilisateur2 = args?['idUtilisateur2'] as String;
-  final idObjet1 = args?['idObjet1'] as String;
-  final message = args?['message'] as String;
-  final annonce = args?['annonce'] as Annonce; // Récupérez l'objet Annonce ici
-  
-  // Récupérez l'objet2 d'une manière appropriée
-  final objet2 = args?['objet2'] as Objet; // Récupérez ici l'objet2
-  
-  // Assurez-vous de récupérer l'objet supplémentaire pour le paramètre objet
-  final objet = args?['objet'] as Objet; // Récupérez ici l'objet supplémentaire
-
-  return MaterialPageRoute(
-    builder: (_) => ConfirmerEchangeScreen(
-      idUtilisateur1: idUtilisateur1,
-      idUtilisateur2: idUtilisateur2,
-      idObjet1: idObjet1,
-      objet2: objet2, // Passez l'objet2 ici
-      message: message,
-      annonce: annonce, // Passez l'objet Annonce ici
-      objet: objet, // Passez l'objet supplémentaire ici
-    ),
-  );
-
-
-
-
-      // Nouvelles routes pour les écrans de détails d'échange et de réception
-      case detailsEchange:
+      case confirmerEchange:
         final args = settings.arguments as Map<String, dynamic>?; 
-        final echangeId = args?['echangeId'] as String; // Récupérer echangeId des arguments
+        final idUtilisateur1 = args?['idUtilisateur1'] as String;
+        final idUtilisateur2 = args?['idUtilisateur2'] as String;
+        final idObjet1 = args?['idObjet1'] as String;
+        final message = args?['message'] as String;
+        final annonce = args?['annonce'] as Annonce; // Récupérez l'objet Annonce ici
+        
+        // Récupérez l'objet2 d'une manière appropriée
+        final objet2 = args?['objet2'] as Objet; // Récupérez ici l'objet2
+        
+        // Assurez-vous de récupérer l'objet supplémentaire pour le paramètre objet
+        final objet = args?['objet'] as Objet; // Récupérez ici l'objet supplémentaire
+
         return MaterialPageRoute(
-          builder: (_) => DetailsEchangeScreen(echangeId: echangeId!), // Assurez-vous que echangeId n'est pas nul
+          builder: (_) => ConfirmerPropositionScreen(
+            idUtilisateur1: idUtilisateur1,
+            idUtilisateur2: idUtilisateur2,
+            idObjet1: idObjet1,
+            objet2: objet2, // Passez l'objet2 ici
+            message: message,
+            annonce: annonce, // Passez l'objet Annonce ici
+            objet: objet, // Passez l'objet supplémentaire ici
+          ),
         );
 
-      case reception:
-        return MaterialPageRoute(builder: (_) => ReceptionScreen()); // Remplacez par la logique de ReceptionScreen
+      // Cas pour réception
+      case receptionScreen:
+        return MaterialPageRoute(builder: (_) => ReceptionScreen());
+
+case detailPropositionScreen:
+  final args = settings.arguments as Proposition?;
+  return MaterialPageRoute(
+    builder: (_) => DetailPropositionScreen(proposition: args!),
+  );
 
       default:
         return MaterialPageRoute(

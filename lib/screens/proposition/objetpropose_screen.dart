@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/objet.dart';
 import 'package:swapngive/routing.dart';
-import 'package:swapngive/screens/echange/Confirmer_Echange_Screen.dart';
+import 'package:swapngive/screens/proposition/Confirmer_proposititon_Screen.dart';
 import 'package:swapngive/services/objet_service.dart';
 import 'package:swapngive/services/auth_service.dart'; // Importer AuthService
 import 'package:swapngive/models/utilisateur.dart'; // Importer le modèle Utilisateur

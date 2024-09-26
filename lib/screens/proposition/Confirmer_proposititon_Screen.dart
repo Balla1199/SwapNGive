@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/Annonce.dart';
-import 'package:swapngive/models/Echange.dart';
+import 'package:swapngive/models/proposition.dart';
 import 'package:swapngive/models/objet.dart';
-import 'package:swapngive/services/echange_service.dart';
+import 'package:swapngive/services/proposition_service.dart';
 import 'package:uuid/uuid.dart';
-class ConfirmerEchangeScreen extends StatelessWidget {
+
+class ConfirmerPropositionScreen extends StatelessWidget {
   final String idUtilisateur1;
   final String idUtilisateur2;
   final String idObjet1;
@@ -13,7 +14,7 @@ class ConfirmerEchangeScreen extends StatelessWidget {
   final Annonce annonce;
   final Objet objet; // L'objet supplémentaire
 
-  ConfirmerEchangeScreen({
+  ConfirmerPropositionScreen({
     required this.idUtilisateur1,
     required this.idUtilisateur2,
     required this.idObjet1,
@@ -28,7 +29,7 @@ class ConfirmerEchangeScreen extends StatelessWidget {
     var uuid = Uuid();
     return Scaffold(
       appBar: AppBar(
-        title: Text("Confirmer l'échange"),
+        title: Text("Confirmer la proposition"),
       ),
       body: Center(
         child: Column(
@@ -39,28 +40,32 @@ class ConfirmerEchangeScreen extends StatelessWidget {
             Text("Message : $message"),
             ElevatedButton(
               onPressed: () async {
-                String idEchange = uuid.v4();
-                Echange echange = Echange(
-                    id: idEchange, 
+                String idProposition = uuid.v4();
+                
+                // Création de la proposition avec le type récupéré depuis annonce.type
+                Proposition proposition = Proposition(
+                  id: idProposition, 
                   idUtilisateur1: idUtilisateur1,
                   idObjet1: idObjet1,
                   idUtilisateur2: idUtilisateur2,
                   idObjet2: objet2.id,
-                  dateEchange: DateTime.now(),
+                  dateProposition: DateTime.now(),
                   annonce: annonce,
                   statut: 'en attente',
                   objet2: objet2,
+                  type: annonce.type.toString().split('.').last, // Utilisation du type d'annonce
                 );
 
-                await EchangeService().enregistrerEchange(echange);
+                // Appel à la méthode enregistrerProposition pour sauvegarder dans Firestore
+                await PropositionService().enregistrerProposition(proposition);
 
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Échange proposé avec succès !")),
+                  SnackBar(content: Text("Proposition faite avec succès !")),
                 );
 
                 Navigator.pop(context);
               },
-              child: Text("Confirmer l'échange"),
+              child: Text("Confirmer la proposition"),
             ),
           ],
         ),

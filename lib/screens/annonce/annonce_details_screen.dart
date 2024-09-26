@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:swapngive/models/Annonce.dart';
-import 'package:swapngive/screens/echange/objetechange_screen.dart';
+import 'package:swapngive/screens/proposition/objetpropose_screen.dart';
 import 'package:swapngive/services/auth_service.dart'; // Importer AuthService
 
 
