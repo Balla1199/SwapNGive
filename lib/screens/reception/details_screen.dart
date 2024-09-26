@@ -1,6 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:swapngive/services/echange_service.dart';
+import 'package:swapngive/services/auth_service.dart'; // Importez le service d'authentification
+import 'package:swapngive/models/utilisateur.dart'; // Assurez-vous d'importer le modèle Utilisateur
 
 class DetailsEchangeScreen extends StatefulWidget {
   final String echangeId;
@@ -13,12 +15,14 @@ class DetailsEchangeScreen extends StatefulWidget {
 
 class _DetailsEchangeScreenState extends State<DetailsEchangeScreen> {
   late Future<Map<String, dynamic>?> _echangeFuture;
+  Utilisateur? _currentUser; // Variable pour stocker l'utilisateur courant
 
   @override
   void initState() {
     super.initState();
     print("Initialisation de _DetailsEchangeScreen avec l'ID: ${widget.echangeId}");
     _echangeFuture = _loadEchange();
+    _loadCurrentUser(); // Charger l'utilisateur courant
   }
 
   Future<Map<String, dynamic>?> _loadEchange() async {
@@ -32,6 +36,12 @@ class _DetailsEchangeScreenState extends State<DetailsEchangeScreen> {
       print("Erreur lors de la récupération de l'échange: $e");
       return null; // Retourner null en cas d'erreur
     }
+  }
+
+  // Fonction pour charger l'utilisateur courant
+  Future<void> _loadCurrentUser() async {
+    _currentUser = await AuthService().getCurrentUserDetails();
+    setState(() {}); // Mettre à jour l'état pour refléter les détails de l'utilisateur courant
   }
 
   @override
@@ -75,6 +85,9 @@ class _DetailsEchangeScreenState extends State<DetailsEchangeScreen> {
           final photoList = photos.isNotEmpty ? photos.split(',') : [];
           print("Photos de l'objet2: $photoList");
 
+          // Récupérer l'ID de l'utilisateur qui a proposé l'échange
+          final String? proposerId = echange['proposerId']; // Assurez-vous que cette clé est correcte
+
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,39 +108,41 @@ class _DetailsEchangeScreenState extends State<DetailsEchangeScreen> {
                   ),
                 SizedBox(height: 16.0),
 
-                // Ajouter les boutons ici
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          print("Echange refusé");
-                          // Ajouter la logique de refus
-                        },
-                        child: Text("Refuser"),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          print("Echange accepté");
-                          // Ajouter la logique d'acceptation
-                        },
-                        child: Text("Accepter"),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          print("Négociation de l'échange");
-                          // Ajouter la logique de négociation
-                        },
-                        child: Text("Négocier"),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-                      ),
-                    ],
-                  ),
-                ),
+             // Ajouter les boutons ici uniquement si l'utilisateur courant n'est pas l'utilisateur2 (idUtilisateur2)
+if (_currentUser != null && _currentUser!.id != echange['idUtilisateur2']) 
+  Padding(
+    padding: EdgeInsets.symmetric(horizontal: 16.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            print("Echange refusé");
+            // Ajouter la logique de refus
+          },
+          child: Text("Refuser"),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            print("Echange accepté");
+            // Ajouter la logique d'acceptation
+          },
+          child: Text("Accepter"),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            print("Négociation de l'échange");
+            // Ajouter la logique de négociation
+          },
+          child: Text("Négocier"),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+        ),
+      ],
+    ),
+  ),
+
                 SizedBox(height: 16.0),
 
                 Padding(
