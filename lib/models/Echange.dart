@@ -1,5 +1,3 @@
-
-
 import 'package:swapngive/models/Annonce.dart';
 
 class Echange {
@@ -8,7 +6,9 @@ class Echange {
   String idUtilisateur2;
   String idObjet2;
   DateTime dateEchange;
-  Annonce annonce; // Association to an Annonce
+  Annonce annonce; // Association avec une annonce
+  String? message; // Message optionnel
+  String statut; // Statut de l'échange ("attente", "accepté", "refusé")
 
   Echange({
     required this.idUtilisateur1,
@@ -16,7 +16,9 @@ class Echange {
     required this.idUtilisateur2,
     required this.idObjet2,
     required this.dateEchange,
-    required this.annonce, // Annonce relation
+    required this.annonce, // Association avec l'annonce
+    this.message, // Optionnel
+    this.statut = 'attente', // Par défaut à "attente"
   });
 
   // Convertir l'objet Echange en JSON
@@ -27,7 +29,9 @@ class Echange {
       'idUtilisateur2': idUtilisateur2,
       'idObjet2': idObjet2,
       'dateEchange': dateEchange.toIso8601String(),
-      'annonce': annonce.toJson(), // Serialize the Annonce object
+      'annonce': annonce.toJson(), // Sérialiser l'objet Annonce
+      'message': message, // Champ message
+      'statut': statut, // Champ statut en tant que chaîne de caractères
     };
   }
 
@@ -39,7 +43,9 @@ class Echange {
       idUtilisateur2: json['idUtilisateur2'],
       idObjet2: json['idObjet2'],
       dateEchange: DateTime.parse(json['dateEchange']),
-      annonce: Annonce.fromJson(json['annonce']), // Deserialize the Annonce
+      annonce: Annonce.fromJson(json['annonce']), // Désérialiser l'annonce
+      message: json['message'], // Message optionnel
+      statut: json['statut'] ?? 'attente', // Valeur par défaut "attente" si non définie
     );
   }
 }

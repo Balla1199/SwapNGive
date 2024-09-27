@@ -1,24 +1,29 @@
-
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/Echange.dart';
 import 'package:swapngive/services/echange_service.dart';
-class ConfirmerEchangeScreen extends StatelessWidget {
+
+class ConfirmerEchangeScreen extends StatefulWidget {
   final String idUtilisateur1; // l'utilisateur de l'annonce
   final String idUtilisateur2; // l'utilisateur actuellement connecté
   final String idObjet1;  // L'objet de l'annonce de l'utilisateur1
   final String idObjet2; // L'objet proposé par l'utilisateur2
-  final String message;
-  final Annonce annonce; // Ajoutez cette ligne
+  final Annonce annonce; // Annonce associée
 
   ConfirmerEchangeScreen({
     required this.idUtilisateur1,
     required this.idUtilisateur2,
     required this.idObjet1,
     required this.idObjet2,
-    required this.message,
-    required this.annonce, // Ajoutez cette ligne
+    required this.annonce,
   });
+
+  @override
+  _ConfirmerEchangeScreenState createState() => _ConfirmerEchangeScreenState();
+}
+
+class _ConfirmerEchangeScreenState extends State<ConfirmerEchangeScreen> {
+  final TextEditingController _messageController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -26,23 +31,37 @@ class ConfirmerEchangeScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text("Confirmer l'échange"),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Vous proposez l'objet : $idObjet1"),
-            Text("En échange de l'objet : $idObjet2"),
-            Text("Message : $message"),
+            Text("Vous proposez l'objet : ${widget.idObjet1}"),
+            Text("En échange de l'objet : ${widget.idObjet2}"),
+            SizedBox(height: 20),
+            
+            // Champ de saisie pour le message personnalisé
+            TextField(
+              controller: _messageController,
+              decoration: InputDecoration(
+                labelText: "Message personnalisé",
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3, // Limiter à 3 lignes de texte
+            ),
+            SizedBox(height: 20),
+
             ElevatedButton(
               onPressed: () async {
                 // Appel du service d'échange pour enregistrer l'échange
                 Echange echange = Echange(
-                  idUtilisateur1: idUtilisateur1,
-                  idObjet1: idObjet1,
-                  idUtilisateur2: idUtilisateur2,
-                  idObjet2: idObjet2,
+                  idUtilisateur1: widget.idUtilisateur1,
+                  idObjet1: widget.idObjet1,
+                  idUtilisateur2: widget.idUtilisateur2,
+                  idObjet2: widget.idObjet2,
                   dateEchange: DateTime.now(),
-                  annonce: annonce, // Ajoutez cette ligne
+                  annonce: widget.annonce,
+                  message: _messageController.text, // Message saisi par l'utilisateur
                 );
 
                 await EchangeService().enregistrerEchange(echange);
