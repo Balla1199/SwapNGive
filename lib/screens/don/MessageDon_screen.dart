@@ -22,21 +22,21 @@ class _MessageDonScreenState extends State<MessageDonScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _message;
   String? _idDonneur; // ID de l'utilisateur qui fait le don
-  String? _idReceveur; // ID de l'utilisateur qui reçoit le don
+  Utilisateur? _receveur; // L'utilisateur qui reçoit le don (instance de Utilisateur)
 
   @override
   void initState() {
     super.initState();
     // Récupérer l'ID de l'utilisateur à partir de l'annonce
     _idDonneur = widget.annonce.utilisateur.id; // Assurez-vous que l'annonce a la référence à l'utilisateur
-    _getCurrentUserId(); // Appel de la méthode pour obtenir l'ID de l'utilisateur actuel
+    _getCurrentUser(); // Appel de la méthode pour obtenir les détails de l'utilisateur actuel
   }
 
-  Future<void> _getCurrentUserId() async {
+  Future<void> _getCurrentUser() async {
     Utilisateur? currentUser = await AuthService().getCurrentUserDetails();
     if (currentUser != null) {
       setState(() {
-        _idReceveur = currentUser.id; // Stockez l'ID de l'utilisateur actuel dans idreceveur
+        _receveur = currentUser; // Stockez l'utilisateur actuel (instance de Utilisateur)
       });
     }
   }
@@ -45,28 +45,37 @@ class _MessageDonScreenState extends State<MessageDonScreen> {
   Future<void> _enregistrerDon() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-// Créez un nouvel objet Don
-Don don = Don(
-  id: '', // ID généré par Firestore lors de l'ajout
-  dateDon: DateTime.now(), // Utilisation du bon nom de paramètre
-  idDonneur: _idDonneur!, // Utiliser l'ID du donneur récupéré
-  idReceveur: _idReceveur!, // Utiliser l'ID de l'utilisateur actuel
-  idObjet: widget.idObjet, // Assurez-vous que widget.idObjet est défini
-  message: _message, // Champ optionnel
-  annonce: widget.annonce, // Assurez-vous que widget.annonce est défini
-  statut: 'attente', // Statut par défaut
-);
 
-      // Enregistrez le don via le service
-      await DonService().enregistrerDon(don);
+      // Vérifiez que _receveur est bien défini avant de créer l'objet Don
+      if (_receveur != null) {
+        // Créez un nouvel objet Don
+        Don don = Don(
+          id: '', // ID généré par Firestore lors de l'ajout
+          dateDon: DateTime.now(), // Utilisation du bon nom de paramètre
+          idDonneur: _idDonneur!, // Utiliser l'ID du donneur récupéré
+          receveur: _receveur!, // Utiliser l'objet Utilisateur pour le receveur
+          idObjet: widget.idObjet, // Assurez-vous que widget.idObjet est défini
+          message: _message, // Champ optionnel
+          annonce: widget.annonce, // Assurez-vous que widget.annonce est défini
+          statut: 'attente', // Statut par défaut
+        );
 
-      // Affichez un message de confirmation
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Don enregistré avec succès !")),
-      );
+        // Enregistrez le don via le service
+        await DonService().enregistrerDon(don);
 
-      // Retournez à l'écran précédent
-      Navigator.pop(context);
+        // Affichez un message de confirmation
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Don enregistré avec succès !")),
+        );
+
+        // Retournez à l'écran précédent
+        Navigator.pop(context);
+      } else {
+        // Gérer le cas où _receveur est null
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erreur: utilisateur actuel non trouvé")),
+        );
+      }
     }
   }
 
