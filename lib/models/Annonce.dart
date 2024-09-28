@@ -1,10 +1,7 @@
 import 'package:swapngive/models/Categorie.dart';
-
-
 import 'package:swapngive/models/etat.dart';
 import 'package:swapngive/models/objet.dart';
 import 'package:swapngive/models/utilisateur.dart';
-
 
 // Enum pour le type d'annonce
 enum TypeAnnonce {
@@ -65,5 +62,20 @@ class Annonce {
       objet: Objet.fromMap(json['objet']),
       etat: Etat.fromMap(json['etat']), // Récupérer l'état à partir du JSON
     );
+  }
+
+  // Convertir l'objet Annonce en Map
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'titre': titre,
+      'description': description,
+      'date': date.toIso8601String(),
+      'type': type.toString().split('.').last,
+      'utilisateur': utilisateur.toMap(),
+      'categorie': categorie.toMap(),
+      'objet': objet.toMap(),
+      'etat': etat.toMap(), // Ajouter l'état au Map
+    };
   }
 }

@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/Echange.dart';
+import 'package:swapngive/models/objet.dart';
 import 'package:swapngive/services/echange_service.dart';
 
 class ConfirmerEchangeScreen extends StatefulWidget {
-  final String idUtilisateur1; // l'utilisateur de l'annonce
-  final String idUtilisateur2; // l'utilisateur actuellement connecté
-  final String idObjet1;  // L'objet de l'annonce de l'utilisateur1
-  final String idObjet2; // L'objet proposé par l'utilisateur2
-  final Annonce annonce; // Annonce associée
+  final String idUtilisateur1; 
+  final String idUtilisateur2; 
+  final String idObjet1;  
+  final Objet objet2; // Passer l'objet ici
+  final Annonce annonce; 
 
   ConfirmerEchangeScreen({
     required this.idUtilisateur1,
     required this.idUtilisateur2,
     required this.idObjet1,
-    required this.idObjet2,
+    required this.objet2, // Prendre l'objet
     required this.annonce,
   });
 
@@ -37,41 +38,39 @@ class _ConfirmerEchangeScreenState extends State<ConfirmerEchangeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text("Vous proposez l'objet : ${widget.idObjet1}"),
-            Text("En échange de l'objet : ${widget.idObjet2}"),
+            Text("En échange de l'objet : ${widget.objet2.nom}"), // Assurez-vous que l'objet a une propriété 'nom'
             SizedBox(height: 20),
-            
-            // Champ de saisie pour le message personnalisé
+
             TextField(
               controller: _messageController,
               decoration: InputDecoration(
                 labelText: "Message personnalisé",
                 border: OutlineInputBorder(),
               ),
-              maxLines: 3, // Limiter à 3 lignes de texte
+              maxLines: 3,
             ),
             SizedBox(height: 20),
 
             ElevatedButton(
               onPressed: () async {
-                // Appel du service d'échange pour enregistrer l'échange
+                // Création de l'échange
                 Echange echange = Echange(
                   idUtilisateur1: widget.idUtilisateur1,
                   idObjet1: widget.idObjet1,
                   idUtilisateur2: widget.idUtilisateur2,
-                  idObjet2: widget.idObjet2,
+                  objet2: widget.objet2, // Passer directement l'objet
                   dateEchange: DateTime.now(),
                   annonce: widget.annonce,
-                  message: _messageController.text, // Message saisi par l'utilisateur
+                  message: _messageController.text,
                 );
 
                 await EchangeService().enregistrerEchange(echange);
 
-                // Afficher un message de confirmation
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("Échange proposé avec succès !")),
                 );
 
-                Navigator.pop(context); // Retourner à l'écran précédent
+                Navigator.pop(context);
               },
               child: Text("Confirmer l'échange"),
             ),

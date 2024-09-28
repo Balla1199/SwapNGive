@@ -6,7 +6,7 @@ class EchangeService {
 
   // Enregistrer un nouvel échange
   Future<void> enregistrerEchange(Echange echange) async {
-    await _firestore.collection('echanges').add(echange.toJson());
+    await _firestore.collection('echanges').add(echange.toMap()); // Utiliser toMap() pour l'enregistrement
   }
 
   // Méthode pour mettre à jour le statut d'un échange
@@ -26,7 +26,7 @@ class EchangeService {
     try {
       DocumentSnapshot snapshot = await _firestore.collection('echanges').doc(idEchange).get();
       if (snapshot.exists) {
-        return Echange.fromJson(snapshot.data() as Map<String, dynamic>);
+        return Echange.fromMap(snapshot.data() as Map<String, dynamic>); // Utiliser fromMap() pour la désérialisation
       } else {
         print("Aucun échange trouvé pour cet ID.");
         return null;
@@ -42,7 +42,7 @@ class EchangeService {
     try {
       QuerySnapshot querySnapshot = await _firestore.collection('echanges').get();
       return querySnapshot.docs
-          .map((doc) => Echange.fromJson(doc.data() as Map<String, dynamic>))
+          .map((doc) => Echange.fromMap(doc.data() as Map<String, dynamic>)) // Utiliser fromMap() pour la désérialisation
           .toList();
     } catch (e) {
       print("Erreur lors de la récupération des échanges: $e");
@@ -57,7 +57,7 @@ class EchangeService {
           .where('statut', isEqualTo: statut)
           .get();
       return querySnapshot.docs
-          .map((doc) => Echange.fromJson(doc.data() as Map<String, dynamic>))
+          .map((doc) => Echange.fromMap(doc.data() as Map<String, dynamic>)) // Utiliser fromMap() pour la désérialisation
           .toList();
     } catch (e) {
       print("Erreur lors de la récupération des échanges par statut: $e");

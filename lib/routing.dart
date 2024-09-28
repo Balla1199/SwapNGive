@@ -21,6 +21,9 @@ import 'package:swapngive/screens/categorie/categorie_form_screen.dart';
 import 'package:swapngive/screens/objet/objet_details_screen.dart';
 import 'package:swapngive/screens/objet/objet_form_screen.dart';
 import 'package:swapngive/screens/objet/objet_list_screen.dart';
+import 'package:swapngive/screens/reception/detaildonscreen.dart';
+import 'package:swapngive/screens/reception/detailechangescreen.dart';
+import 'package:swapngive/screens/reception/reception_screen.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_form_screen.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_list_screen.dart';
 
@@ -58,6 +61,12 @@ class AppRoutes {
 
   // Nouvelle route pour MessageDonScreen
   static const String messageDon = '/message_don';
+
+
+  // Nouvelles routes pour les écrans de réception et de détails
+  static const String receptionScreen = '/reception_screen';
+  static const String detailEchangeScreen = '/detail_echange_screen';
+  static const String detailDonScreen = '/detail_don_screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -174,34 +183,56 @@ class AppRoutes {
           message: message,
         ),
       );
+ case confirmerEchange:
+  final args = settings.arguments as Map<String, dynamic>?; 
+  final idUtilisateur1 = args?['idUtilisateur1'] as String;
+  final idUtilisateur2 = args?['idUtilisateur2'] as String;
+  final idObjet1 = args?['idObjet1'] as String;
+  final objet2 = args?['objet2'] as Objet; // Récupération de l'objet2
+  final annonce = args?['annonce'] as Annonce; 
 
-    case confirmerEchange:
-      final args = settings.arguments as Map<String, dynamic>?; 
-      final idUtilisateur1 = args?['idUtilisateur1'] as String;
-      final idUtilisateur2 = args?['idUtilisateur2'] as String;
-      final idObjet1 = args?['idObjet1'] as String;
-      final idObjet2 = args?['idObjet2'] as String;
-      final annonce = args?['annonce'] as Annonce; 
-
-      return MaterialPageRoute(
-        builder: (_) => ConfirmerEchangeScreen(
-          idUtilisateur1: idUtilisateur1,
-          idUtilisateur2: idUtilisateur2,
-          idObjet1: idObjet1,
-          idObjet2: idObjet2,
-          annonce: annonce, 
-        ),
-      );
+  return MaterialPageRoute(
+    builder: (_) => ConfirmerEchangeScreen(
+      idUtilisateur1: idUtilisateur1,
+      idUtilisateur2: idUtilisateur2,
+      idObjet1: idObjet1,
+      objet2: objet2, // Passez l'objet2 ici
+      annonce: annonce, 
+    ),
+  );
 
     // Route pour MessageDonScreen
     case messageDon:
       final args = settings.arguments as Map<String, dynamic>?; 
       final annonce = args?['annonce'] as Annonce;
-      final idObjet = args?['idObjet'] as String;
-      
+      final idObjet = args?['idObjet'] as String;      
   return MaterialPageRoute(
     builder: (_) => MessageDonScreen(idObjet: idObjet, annonce: annonce),
   );
+
+   
+      // Routes pour DetailDonScreen
+case detailDonScreen:
+  final args = settings.arguments as Map<String, dynamic>?; 
+  final don = args != null ? args['don'] : null; // Récupérer l'objet 'don'
+  return MaterialPageRoute(
+    builder: (_) => DetailDonScreen(don: don!), // Passer l'objet 'don'
+  );
+
+      
+      // Routes pour ReceptionScreen
+      case receptionScreen:
+        return MaterialPageRoute(builder: (_) => ReceptionScreen());
+
+      // Routes pour DetailEchangeScreen
+      case detailEchangeScreen:
+        final args = settings.arguments as Map<String, dynamic>?; 
+        final echange = args != null ? args['echange'] : null;
+        return MaterialPageRoute(
+          builder: (_) => DetailEchangeScreen(echange: echange!),
+        );
+
+
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

@@ -1,7 +1,6 @@
 import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/utilisateur.dart';
 
-
 class Don {
   String id;
   DateTime dateDon;
@@ -33,6 +32,20 @@ class Don {
       'idObjet': idObjet,
       'message': message, // Peut être null
       'annonce': annonce.toJson(), // Sérialiser l'objet Annonce
+      'statut': statut, // Statut sous forme de chaîne de caractères
+    };
+  }
+
+  // Convertir un objet Don en Map
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'dateDon': dateDon.toIso8601String(),
+      'idDonneur': idDonneur,
+      'receveur': receveur.toMap(), // Sérialiser l'objet Utilisateur en Map
+      'idObjet': idObjet,
+      'message': message, // Peut être null
+      'annonce': annonce.toMap(), // Utilisez la méthode toMap() sur l'objet Annonce
       'statut': statut, // Statut sous forme de chaîne de caractères
     };
   }

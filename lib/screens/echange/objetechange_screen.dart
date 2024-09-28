@@ -54,21 +54,21 @@ class _ChoisirObjetEchangeScreenState extends State<ChoisirObjetEchangeScreen> {
   if (_idUtilisateur2 != null) {
     // Récupérer l'ID de l'utilisateur de l'annonce (utilisateur ayant ajouté l'objet)
     String idUtilisateur1 = widget.annonce.utilisateur.id; 
+// Naviguer vers ConfirmerEchangeScreen avec l'objet sélectionné
+Navigator.pushNamed(
+  context,
+  AppRoutes.confirmerEchange,
+  arguments: {
+    'idUtilisateur1': idUtilisateur1, // Utilisateur de l'annonce
+    'idUtilisateur2': _idUtilisateur2, // Utilisateur authentifié
+    'idObjet1': widget.idObjet, // ID de l'objet de l'annonce
+    'objet2': objet, // Passer l'objet proposé au lieu de son ID
+    'message': widget.message, // Message à transmettre
+    // Vous pouvez également passer l'objet annonce si nécessaire
+    'annonce': widget.annonce,
+  },
+);
 
-    // Naviguer vers ConfirmerEchangeScreen avec l'objet sélectionné
-    Navigator.pushNamed(
-      context,
-      AppRoutes.confirmerEchange,
-      arguments: {
-        'idUtilisateur1': idUtilisateur1, // Utilisateur de l'annonce
-        'idUtilisateur2': _idUtilisateur2, // Utilisateur authentifié
-        'idObjet1': widget.idObjet, // ID de l'objet de l'annonce
-        'idObjet2': objet.id, // ID de l'objet proposé
-        'message': widget.message, // Message à transmettre
-        // Vous pouvez également passer l'objet annonce si nécessaire
-        'annonce': widget.annonce,
-      },
-    );
   } else {
     // Gérer le cas où l'utilisateur n'est pas connecté
     print('L\'utilisateur n\'est pas connecté.');
