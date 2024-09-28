@@ -210,14 +210,18 @@ class AppRoutes {
     builder: (_) => MessageDonScreen(idObjet: idObjet, annonce: annonce),
   );
 
-   
-      // Routes pour DetailDonScreen
+   // Routes pour DetailDonScreen
 case detailDonScreen:
   final args = settings.arguments as Map<String, dynamic>?; 
   final don = args != null ? args['don'] : null; // Récupérer l'objet 'don'
+  final currentUserId = args != null ? args['currentUserId'] : ''; // Récupérer l'ID de l'utilisateur actuel
   return MaterialPageRoute(
-    builder: (_) => DetailDonScreen(don: don!), // Passer l'objet 'don'
+    builder: (_) => DetailDonScreen(
+      don: don!,
+      currentUserId: currentUserId, // Passer l'ID de l'utilisateur actuel
+    ),
   );
+
 
       
       // Routes pour ReceptionScreen

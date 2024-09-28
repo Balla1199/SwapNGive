@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/Don.dart';
 import 'package:swapngive/models/Echange.dart';
+import 'package:swapngive/models/utilisateur.dart';
 import 'package:swapngive/screens/reception/detaildonscreen.dart';
 import 'package:swapngive/screens/reception/detailechangescreen.dart';
+import 'package:swapngive/services/auth_service.dart';
 import 'package:swapngive/services/don_service.dart';
 import 'package:swapngive/services/echange_service.dart';
 
@@ -133,34 +135,42 @@ Widget buildDonsTab() {
       final receveur = don.receveur; // Utilisez l'accesseur de l'objet Don
 
       return Card(
-  child: ListTile(
-    leading: (objet.imageUrl.isNotEmpty)
-        ? Image.network(objet.imageUrl) // Assurez-vous que c'est une chaîne ou une liste
-        : Icon(Icons.image_not_supported),
-    title: Text(objet.nom),
-    subtitle: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Receveur : ${receveur.nom}'),
-        Text('Message : ${don.message ?? 'Pas de message'}'),
-      ],
-    ),
-    trailing: ElevatedButton(
-  onPressed: () {
-    // Supposons que 'don' soit l'objet que vous souhaitez passer
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DetailDonScreen(don: don.toMap()), // Passer 'don'
-      ),
-    );
-  },
-  child: Text("Voir Détails"),
-),
+        child: ListTile(
+          leading: (objet.imageUrl.isNotEmpty)
+              ? Image.network(objet.imageUrl) // Assurez-vous que c'est une chaîne ou une liste
+              : Icon(Icons.image_not_supported),
+          title: Text(objet.nom),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Receveur : ${receveur.nom}'),
+              Text('Message : ${don.message ?? 'Pas de message'}'),
+            ],
+          ),
+          trailing: ElevatedButton(
+            onPressed: () async {
+              // Récupérer l'utilisateur actuel pour obtenir currentUserId
+              AuthService authService = AuthService();
+              Utilisateur? currentUser = await authService.getCurrentUserDetails();
 
-  ),
-);
-
+              if (currentUser != null) {
+                String currentUserId = currentUser.id; // ID de l'utilisateur actuel
+                // Naviguer vers une page détaillée pour le don
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DetailDonScreen(don: don.toMap(), currentUserId: currentUserId), // Passer 'don' et 'currentUserId'
+                  ),
+                );
+              } else {
+                // Gérer le cas où l'utilisateur n'est pas connecté
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Utilisateur non connecté.")));
+              }
+            },
+            child: Text("Voir Détails"),
+          ),
+        ),
+      );
     },
   );
 }

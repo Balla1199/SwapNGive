@@ -3,11 +3,26 @@ import 'package:swapngive/models/Don.dart';
 
 class DonService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+// Méthode pour enregistrer un nouveau don avec récupération de l'ID généré
+Future<String?> enregistrerDon(Don don) async {
+  try {
+    // Ajoute le don et récupère une référence vers le document créé
+    DocumentReference docRef = await _firestore.collection('dons').add(don.toJson());
 
-  // Méthode pour enregistrer un nouveau don
-  Future<void> enregistrerDon(Don don) async {
-    await _firestore.collection('dons').add(don.toJson());
+    // Récupère l'ID du document généré
+    String idDon = docRef.id;
+    print("Don enregistré avec succès avec l'ID: $idDon");
+
+    // Met à jour le champ 'id' du don dans Firestore (pour que l'ID soit aussi enregistré)
+    await docRef.update({'id': idDon});
+
+    return idDon; // Retourne l'ID du don enregistré
+  } catch (e) {
+    print("Erreur lors de l'enregistrement du don: $e");
+    return null; // En cas d'erreur, retourne null
   }
+}
+
 
   // Méthode pour récupérer un don par ID
   Future<Don?> recupererDonParId(String id) async {

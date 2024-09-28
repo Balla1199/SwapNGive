@@ -54,7 +54,10 @@ class _ConfirmerEchangeScreenState extends State<ConfirmerEchangeScreen> {
             ElevatedButton(
               onPressed: () async {
                 // Création de l'échange
+                String nouvelId = DateTime.now().millisecondsSinceEpoch.toString();
                 Echange echange = Echange(
+                  
+                   id: nouvelId,
                   idUtilisateur1: widget.idUtilisateur1,
                   idObjet1: widget.idObjet1,
                   idUtilisateur2: widget.idUtilisateur2,
@@ -62,6 +65,7 @@ class _ConfirmerEchangeScreenState extends State<ConfirmerEchangeScreen> {
                   dateEchange: DateTime.now(),
                   annonce: widget.annonce,
                   message: _messageController.text,
+
                 );
 
                 await EchangeService().enregistrerEchange(echange);
