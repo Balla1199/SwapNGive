@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:html' as html;
+import 'package:universal_html/html.dart' as html;
 import 'dart:typed_data';
 
 import 'package:swapngive/models/objet.dart';
@@ -60,37 +60,6 @@ class ObjetService {
       print('Objet ajouté avec succès avec plusieurs images.');
     } catch (e) {
       print('Erreur lors de l\'ajout de l\'objet: $e');
-      rethrow; // Relancer pour gérer ailleurs si nécessaire
-    }
-  }
-
-  // Modifier un objet
-  Future<void> updateObjet(Objet objet, [html.File? imageFile]) async {
-    try {
-      if (imageFile != null) {
-        // Créer une référence pour l'image dans Firebase Storage
-        final imageRef = _storage.ref().child('images/${objet.id}');
-
-        // Créer un blob à partir du fichier image
-        final reader = html.FileReader();
-        reader.readAsArrayBuffer(imageFile);
-        await reader.onLoadEnd.first;
-
-        final bytes = reader.result as Uint8List;
-
-        // Télécharger la nouvelle image dans Firebase Storage
-        await imageRef.putData(bytes);
-        final imageUrl = await imageRef.getDownloadURL();
-
-        // Mettre à jour l'URL de l'image dans l'objet
-        objet.imageUrl = imageUrl;
-      }
-
-      // Mettre à jour l'objet dans Firestore
-      await _firestore.collection('objets').doc(objet.id).update(objet.toMap());
-      print('Objet mis à jour avec succès.');
-    } catch (e) {
-      print('Erreur lors de la mise à jour de l\'objet: $e');
       rethrow; // Relancer pour gérer ailleurs si nécessaire
     }
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:swapngive/screens/home/home_screen.dart';
 import 'package:swapngive/services/auth_service.dart';
 import 'package:swapngive/models/utilisateur.dart';
@@ -14,28 +15,18 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
 
+  // Méthode pour gérer la connexion utilisateur
   Future<void> _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
-
-    // Ajouter des logs pour afficher l'email et le mot de passe saisis
-    print('Tentative de connexion avec :');
-    print('Email: $email');
-    print('Mot de passe: $password');
 
     try {
       User? user = await _authService.loginUser(email, password);
 
       if (user != null) {
-        print('Connexion réussie pour l\'utilisateur: ${user.email}');
-
-        // Récupération des détails utilisateur depuis Firestore
         Utilisateur? utilisateur = await _authService.getUserDetails(user.uid);
 
-        print('Utilisateur récupéré : ${utilisateur?.email}');
-
         if (utilisateur != null) {
-          // Redirigez vers HomeScreen après la connexion
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -43,19 +34,16 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
         } else {
-          print('Échec de la connexion : Utilisateur non trouvé dans Firestore');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Utilisateur non trouvé dans Firestore')),
           );
         }
       } else {
-        print('Échec de la connexion : Utilisateur non trouvé');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Échec de la connexion. Veuillez vérifier vos informations.')),
         );
       }
     } on FirebaseAuthException catch (e) {
-      // Gestion spécifique des erreurs Firebase Auth
       String errorMessage;
       if (e.code == 'user-not-found') {
         errorMessage = 'Aucun utilisateur trouvé pour cet e-mail.';
@@ -64,13 +52,10 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         errorMessage = 'Erreur lors de la connexion : ${e.message}';
       }
-      print('Erreur lors de la connexion : $errorMessage');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage)),
       );
     } catch (e) {
-      // Gestion des autres erreurs générales
-      print('Erreur générale lors de la connexion : $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Une erreur s\'est produite. Veuillez réessayer.')),
       );
@@ -81,35 +66,90 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Connexion'),
+        //title: Text('Connexion'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
+      body: Stack(
+        children: [
+          // Premier div : Fond coloré en D9A9A9
+          Container(
+            color: Color(0xFFD9A9A9), // Couleur de fond
+            height: double.infinity, // Prend toute la hauteur de l'écran
+            width: double.infinity,  // Prend toute la largeur de l'écran
+          ),
+          // Deuxième div : Div supérieur en blanc avec des champs et un bouton
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 80, // Laisse un espace en bas
+            child: Container(
+               height: MediaQuery.of(context).size.height * 1.0, // 80% de la hauteur de l'écran
+              padding: EdgeInsets.all(16), // Espacement intérieur
+              decoration: BoxDecoration(
+                color: Colors.white, // Couleur de fond blanc
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(60) // Bords arrondis en haut 
+                ),
+              ),
+              child: Column(
+               mainAxisAlignment:MainAxisAlignment.end,
+                children: [
+                  // Champ pour l'email
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email),
+                      ),
+                    keyboardType: TextInputType.emailAddress,
+                  ),
+                  SizedBox(height: 10), // Espacement entre les champs
+                  // Champ pour le mot de passe
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Mot de passe',
+                      prefixIcon: Icon(Icons.lock),              
+                      ),
+                    obscureText: true,
+                  ),
+                  SizedBox(height: 20), // Espacement avant le bouton
+                  // Bouton de connexion
+                  ElevatedButton(
+                    onPressed: _login,
+                    child: Text('Se connecter'),
+                    style:ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, backgroundColor: Color(0xFFD9A9A9),
+                    )
+                  ),
+                  SizedBox(height: 10), // Espacement entre le bouton et le texte
+                  // Lien pour créer un compte
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/inscription');
+                    },
+                    child: Text('Créer un compte'),
+                  ),
+                  SizedBox(height: 10), // Espacement entre "Créer un compte" et "ou Google"
+            // Lien pour Google
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('ou'), // Texte "ou" au-dessus
+                SizedBox(height: 8), // Espacement entre le texte et l'image
+                // Remplace l'icône par une image
+                Image.asset(
+                  'images/google.png', // Chemin de l'image dans ton projet
+                  height: 30, // Définit la hauteur de l'image
+                  width: 30,  // Définit la largeur de l'image
+                  fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
+                ),
+              ],
             ),
-            TextFormField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Mot de passe'),
-              obscureText: true,
+                ],
+              ),
             ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _login,
-              child: Text('Se connecter'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/inscription');
-              },
-              child: Text('Créer un compte'),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

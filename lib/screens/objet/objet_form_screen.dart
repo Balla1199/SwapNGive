@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:uuid/uuid.dart'; // Importation de la bibliothèque UUID
-import 'dart:html' as html; // Importez dart:html pour le web
+import 'package:universal_html/html.dart' as html;
 
 import 'package:firebase_auth/firebase_auth.dart'; // Pour l'utilisateur connecté
 import 'package:swapngive/models/Categorie.dart'; // Modèle Categorie
