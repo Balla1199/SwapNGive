@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Annonces',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_shipping), // Icône pour la réception
+            icon: Icon(Icons.inbox), // Icône pour la réception
             label: 'Réception',
           ),
           BottomNavigationBarItem(
