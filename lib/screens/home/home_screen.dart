@@ -4,9 +4,10 @@ import 'package:swapngive/screens/etat/etat_list_screen.dart';
 import 'package:swapngive/screens/profil/profile_screen.dart';
 import 'package:swapngive/screens/categorie/categorie_list_screen.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_list_screen.dart';
-import 'package:swapngive/screens/objet/objet_list_screen.dart'; // Import de l'écran de liste d'objets
-import 'package:swapngive/screens/annonce/annonce_list_screen.dart'; // Import de l'écran de liste des annonces
-import 'package:swapngive/screens/reception/reception_screen.dart'; // Import de l'écran de réception
+import 'package:swapngive/screens/objet/objet_list_screen.dart';
+import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
+import 'package:swapngive/screens/reception/reception_screen.dart';
+import 'package:swapngive/screens/notification/notification_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   final Utilisateur? utilisateur;
@@ -34,9 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
       UtilisateurListScreen(),
       CategorieListScreen(),
       EtatListScreen(),
-      ObjetListScreen(), // Ajout de l'écran de liste d'objets
-      AnnonceListScreen(), // Ajout de l'écran de liste des annonces
-      ReceptionScreen(), // Ajout de l'écran de réception
+      ObjetListScreen(),
+      AnnonceListScreen(),
+      ReceptionScreen(),
+      NotificationScreen(), // Ajout de l'écran de notifications
       if (widget.utilisateur != null)
         ProfileScreen(utilisateur: widget.utilisateur),
     ];
@@ -47,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onItemTapped(int index) {
     print('Item tap index : $index');
 
-    if (index == 7 && widget.utilisateur == null) {
+    if (index == 8 && widget.utilisateur == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Aucun utilisateur connecté')),
       );
@@ -65,8 +67,8 @@ class _HomeScreenState extends State<HomeScreen> {
     print('Construction du widget HomeScreen...');
     return Scaffold(
       appBar: AppBar(
-        title: _selectedIndex == 0 ? const Text('Home Screen') : null, // Titre dynamique uniquement sur la page d'accueil
-        automaticallyImplyLeading: _selectedIndex == 0, // Bouton de retour uniquement sur la page d'accueil
+        title: _selectedIndex == 0 ? const Text('Home Screen') : null,
+        automaticallyImplyLeading: _selectedIndex == 0,
       ),
       body: _screens.length > _selectedIndex
           ? _screens[_selectedIndex]
@@ -90,16 +92,20 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Etats',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_offer), // Icône pour les objets
+            icon: Icon(Icons.local_offer),
             label: 'Objets',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.announcement), // Icône pour les annonces
+            icon: Icon(Icons.announcement),
             label: 'Annonces',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.inbox), // Icône pour la réception
+            icon: Icon(Icons.inbox),
             label: 'Réception',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications), // Icône pour les notifications
+            label: 'Notifications',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

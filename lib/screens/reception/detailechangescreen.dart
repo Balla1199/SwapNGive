@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:swapngive/models/Echange.dart';
+import 'package:swapngive/models/Notification.dart';
 import 'package:swapngive/services/auth_service.dart';
 import 'package:swapngive/services/echange_service.dart';
+import 'package:swapngive/services/notification_service.dart';
 import 'package:swapngive/models/utilisateur.dart';
+import 'package:swapngive/services/utilisateur_service.dart';
 
 class DetailEchangeScreen extends StatelessWidget {
   final Echange echange;
   final EchangeService echangeService = EchangeService();
+  final NotificationService notificationService = NotificationService(); // Instance de NotificationService
 
   DetailEchangeScreen({Key? key, required this.echange}) : super(key: key);
 
@@ -51,20 +55,17 @@ class DetailEchangeScreen extends StatelessWidget {
 
             // Récupération de l'utilisateur actuel
             FutureBuilder<Utilisateur?>(
+
               future: AuthService().getCurrentUserDetails(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  print("Chargement des détails de l'utilisateur...");
                   return CircularProgressIndicator();
                 } else if (snapshot.hasError) {
-                  print("Erreur de récupération de l'utilisateur: ${snapshot.error}");
                   return Text('Erreur de récupération de l\'utilisateur');
                 } else {
                   final utilisateur = snapshot.data;
-                  print("Utilisateur récupéré: ${utilisateur?.id}");
 
                   final isCurrentUser = utilisateur != null && utilisateur.id != echange.idUtilisateur2;
-                  print("Est-ce l'utilisateur courant? $isCurrentUser");
 
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -104,19 +105,55 @@ class DetailEchangeScreen extends StatelessWidget {
   }
 
   Future<void> _mettreAJourStatut(String idEchange, String nouveauStatut, BuildContext context) async {
-    try {
-      print("Mise à jour du statut pour l'échange ID: $idEchange avec le nouveau statut: $nouveauStatut");
-      await echangeService.mettreAJourStatut(idEchange, nouveauStatut);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Statut mis à jour en: $nouveauStatut')),
+  try {
+    print("Mise à jour du statut pour l'échange ID: $idEchange avec le nouveau statut: $nouveauStatut");
+
+    // Mettre à jour le statut de l'échange
+    await echangeService.mettreAJourStatut(idEchange, nouveauStatut);
+
+    // Récupérer les informations de l'utilisateur2
+    var utilisateur2 = await UtilisateurService().getUtilisateurById(echange.idUtilisateur2);
+
+    // Création de la notification
+    NotificationModel? notification; // Type nullable
+    if (nouveauStatut == "accepté") {
+      // Message pour l'acceptation
+      notification = NotificationModel(
+        id: idEchange, // Utiliser l'ID de l'échange
+        fromUserId: echange.idUtilisateur1, // Utilisateur qui fait l'acceptation
+        toUserId: echange.idUtilisateur2, // Utilisateur qui reçoit la notification
+        titre: "Échange accepté",
+        message: "a accepté votre proposition d'échange pour l'objet : ${echange.annonce.objet.nom}",
+        date: DateTime.now(),
       );
-    } catch (e) {
-      print("Erreur lors de la mise à jour du statut: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de la mise à jour du statut: $e')),
+    } else if (nouveauStatut == "refusé") {
+      // Message pour le refus
+      notification = NotificationModel(
+        id: idEchange, // Utiliser l'ID de l'échange
+        fromUserId: echange.idUtilisateur1, // Utilisateur qui fait le refus
+        toUserId: echange.idUtilisateur2, // Utilisateur qui reçoit la notification
+        titre: "Échange refusé",
+        message: "a refusé votre proposition d'échange pour l'objet : ${echange.annonce.objet.nom}",
+        date: DateTime.now(),
       );
     }
+
+    // Vérification de la notification non nulle avant l'enregistrement
+    if (notification != null) {
+      await NotificationService().enregistrerNotification(notification);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Statut mis à jour en: $nouveauStatut')),
+    );
+  } catch (e) {
+    print("Erreur lors de la mise à jour du statut: $e");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erreur lors de la mise à jour du statut: $e')),
+    );
   }
+}
+
 
   void _discuter(BuildContext context) {
     showDialog(

@@ -181,4 +181,17 @@ class ObjetService {
       return snapshot.docs.map((doc) => Objet.fromMap(doc.data())).toList();
     });
   }
+
+  // Flux pour récupérer les objets par ID utilisateur
+Stream<List<Objet>> getObjetsByUserIdStream(String userId) {
+  return _firestore
+      .collection('objets')
+      .where('utilisateur.id', isEqualTo: userId) // Assurez-vous que l'ID utilisateur est bien enregistré dans l'objet
+      .snapshots()
+      .map((snapshot) {
+        return snapshot.docs.map((doc) => Objet.fromMap(doc.data())).toList();
+      });
+}
+
+
 }

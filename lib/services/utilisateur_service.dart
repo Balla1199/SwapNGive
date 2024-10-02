@@ -86,4 +86,19 @@ class UtilisateurService {
   User? getCurrentUser() {
     return _auth.currentUser;
   }
+
+   // Ajout de la méthode getUtilisateurById
+  Future<Utilisateur?> getUtilisateurById(String id) async {
+    try {
+      DocumentSnapshot doc = await _collection.doc(id).get();
+      if (doc.exists) {
+        return Utilisateur.fromFirestore(doc);
+      }
+      return null; // Si l'utilisateur n'existe pas
+    } catch (e) {
+      print("Erreur lors de la récupération de l'utilisateur par ID : $e");
+      return null;
+    }
+  }
+
 }

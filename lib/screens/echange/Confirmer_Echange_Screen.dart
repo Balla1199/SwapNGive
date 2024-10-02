@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/Echange.dart';
+import 'package:swapngive/models/Notification.dart';
 import 'package:swapngive/models/objet.dart';
 import 'package:swapngive/services/echange_service.dart';
+import 'package:swapngive/services/notification_service.dart';
+import 'package:swapngive/services/utilisateur_service.dart';
 
 class ConfirmerEchangeScreen extends StatefulWidget {
   final String idUtilisateur1; 
@@ -52,32 +55,48 @@ class _ConfirmerEchangeScreenState extends State<ConfirmerEchangeScreen> {
             SizedBox(height: 20),
 
             ElevatedButton(
-              onPressed: () async {
-                // Création de l'échange
-                String nouvelId = DateTime.now().millisecondsSinceEpoch.toString();
-                Echange echange = Echange(
-                  
-                   id: nouvelId,
-                  idUtilisateur1: widget.idUtilisateur1,
-                  idObjet1: widget.idObjet1,
-                  idUtilisateur2: widget.idUtilisateur2,
-                  objet2: widget.objet2, // Passer directement l'objet
-                  dateEchange: DateTime.now(),
-                  annonce: widget.annonce,
-                  message: _messageController.text,
+  onPressed: () async {
+    // Création de l'échange
+    String nouvelId = DateTime.now().millisecondsSinceEpoch.toString();
+    Echange echange = Echange(
+      id: nouvelId,
+      idUtilisateur1: widget.idUtilisateur1,
+      idObjet1: widget.idObjet1,
+      idUtilisateur2: widget.idUtilisateur2,
+      objet2: widget.objet2,
+      dateEchange: DateTime.now(),
+      annonce: widget.annonce,
+      message: _messageController.text,
+    );
 
-                );
+    await EchangeService().enregistrerEchange(echange);
 
-                await EchangeService().enregistrerEchange(echange);
+    // Récupérer les informations de l'utilisateur2
+    var utilisateur2 = await UtilisateurService().getUtilisateurById(widget.idUtilisateur2);
+    
+    // Création de la notification pour l'utilisateur1 (le destinataire)
+    NotificationModel notification = NotificationModel(
+      id: nouvelId, // Utiliser le même ID que l'échange
+      fromUserId: widget.idUtilisateur2, // Utilisateur qui fait la proposition
+      toUserId: widget.idUtilisateur1, // Utilisateur qui reçoit la proposition
+      titre: "Nouvelle proposition d'échange",
+      // Message personnalisé avec le nom de l'utilisateur2
+      message: " vous a fait une proposition d'échange pour l'objet : ${widget.idObjet1}",
+      date: DateTime.now(),
+    );
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Échange proposé avec succès !")),
-                );
+    // Enregistrer la notification dans Firebase
+    await NotificationService().enregistrerNotification(notification);
 
-                Navigator.pop(context);
-              },
-              child: Text("Confirmer l'échange"),
-            ),
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Échange proposé avec succès et notification envoyée !")),
+    );
+
+    Navigator.pop(context);
+  },
+  child: Text("Confirmer l'échange"),
+),
+
           ],
         ),
       ),

@@ -15,6 +15,7 @@ import 'package:swapngive/screens/etat/etat_list_screen.dart';
 import 'package:swapngive/screens/home/home_screen.dart';
 import 'package:swapngive/screens/inscription/inscription_screen.dart';
 import 'package:swapngive/screens/login/login_screen.dart';
+import 'package:swapngive/screens/notification/notification_screen.dart';
 import 'package:swapngive/screens/profil/profile_screen.dart';
 import 'package:swapngive/screens/categorie/categorie_list_screen.dart';
 import 'package:swapngive/screens/categorie/categorie_form_screen.dart';
@@ -67,6 +68,9 @@ class AppRoutes {
   static const String receptionScreen = '/reception_screen';
   static const String detailEchangeScreen = '/detail_echange_screen';
   static const String detailDonScreen = '/detail_don_screen';
+
+  // Nouvelle route pour NotificationScreen
+  static const String notificationScreen = '/notification_screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -235,7 +239,9 @@ case detailDonScreen:
         return MaterialPageRoute(
           builder: (_) => DetailEchangeScreen(echange: echange!),
         );
-
+    
+    case notificationScreen:
+  return MaterialPageRoute(builder: (_) => NotificationScreen());
 
       default:
         return MaterialPageRoute(
