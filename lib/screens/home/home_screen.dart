@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/utilisateur.dart';
+import 'package:swapngive/screens/client_bottom_navigation/client_bottom_navigation.dart';
+import 'package:swapngive/screens/sidebar_layout/sidebar_layout.dart';
+import 'package:swapngive/screens/utilisateur/utilisateur_list_screen.dart';
+import 'package:swapngive/screens/categorie/categorie_list_screen.dart';
 import 'package:swapngive/screens/etat/etat_list_screen.dart';
 import 'package:swapngive/screens/profil/profile_screen.dart';
-import 'package:swapngive/screens/categorie/categorie_list_screen.dart';
-import 'package:swapngive/screens/utilisateur/utilisateur_list_screen.dart';
-import 'package:swapngive/screens/objet/objet_list_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
+import 'package:swapngive/screens/objet/objet_list_screen.dart';
 import 'package:swapngive/screens/reception/reception_screen.dart';
-import 'package:swapngive/screens/notification/notification_screen.dart'; 
+import 'package:swapngive/screens/notification/notification_screen.dart';
+
 class HomeScreen extends StatefulWidget {
   final Utilisateur? utilisateur;
 
-  HomeScreen({this.utilisateur}) {
-    print('Constructeur HomeScreen : Utilisateur = ${utilisateur?.email}');
-  }
+  HomeScreen({this.utilisateur});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -22,103 +23,56 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  List<Widget> _screens = [];
+  List<Widget> _adminScreens = [];
+  List<Widget> _clientScreens = [];
 
   @override
   void initState() {
     super.initState();
-    print('Utilisateur connecté dans HomeScreen : ${widget.utilisateur?.email}');
 
-    _screens = [
-      Center(child: Text('Home Screen Content')),
+    // Admin Screens for Sidebar
+    _adminScreens = [
       UtilisateurListScreen(),
       CategorieListScreen(),
       EtatListScreen(),
-      ObjetListScreen(),
-      AnnonceListScreen(),
-      ReceptionScreen(),
-      NotificationScreen(), // Ajout de l'écran de notifications
-      if (widget.utilisateur != null)
-        ProfileScreen(utilisateur: widget.utilisateur),
-      //if (widget.utilisateur != null)
-       // ConversationScreen(userId: widget.utilisateur!.id!), // Ajout de l'écran de conversation
+      ProfileScreen(utilisateur: widget.utilisateur),
     ];
 
-    print('Liste des écrans configurés : ${_screens.map((e) => e.runtimeType).toList()}');
+    // Client Screens for BottomNavigationBar
+    _clientScreens = [
+      AnnonceListScreen(),
+      ObjetListScreen(),
+      ReceptionScreen(),
+      NotificationScreen(),
+      ProfileScreen(utilisateur: widget.utilisateur),
+    ];
   }
 
   void _onItemTapped(int index) {
-    print('Item tap index : $index');
-
-    if ((index == 8 || index == 9) && widget.utilisateur == null) { // Vérifie pour Profile et Conversation
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Aucun utilisateur connecté')),
-      );
-      print('Erreur : Aucun utilisateur connecté');
-    } else {
-      setState(() {
-        _selectedIndex = index;
-        print('Index sélectionné : $_selectedIndex');
-      });
-    }
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    print('Construction du widget HomeScreen...');
-    return Scaffold(
-      appBar: AppBar(
-        title: _selectedIndex == 0 ? const Text('Home Screen') : null,
-        automaticallyImplyLeading: _selectedIndex == 0,
-      ),
-      body: _screens.length > _selectedIndex
-          ? _screens[_selectedIndex]
-          : Center(child: Text('Aucun contenu disponible')),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Users',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.category),
-            label: 'Categories',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: 'Etats',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_offer),
-            label: 'Objets',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.announcement),
-            label: 'Annonces',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inbox),
-            label: 'Réception',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-          
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.black,
-        onTap: _onItemTapped,
-      ),
-    );
+    // Check if the user's role is admin
+    bool isAdmin = widget.utilisateur?.role == Role.admin;
+
+    if (isAdmin) {
+      // Admin view with sidebar
+      return SidebarLayout(
+        screens: _adminScreens,
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      );
+    } else {
+      // Client view with bottom navigation bar
+      return ClientBottomNavigationBar(
+        screens: _clientScreens,
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+      );
+    }
   }
 }
