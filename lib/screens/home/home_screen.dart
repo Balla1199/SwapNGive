@@ -8,7 +8,6 @@ import 'package:swapngive/screens/objet/objet_list_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
 import 'package:swapngive/screens/reception/reception_screen.dart';
 import 'package:swapngive/screens/notification/notification_screen.dart'; 
-
 class HomeScreen extends StatefulWidget {
   final Utilisateur? utilisateur;
 
@@ -41,6 +40,8 @@ class _HomeScreenState extends State<HomeScreen> {
       NotificationScreen(), // Ajout de l'écran de notifications
       if (widget.utilisateur != null)
         ProfileScreen(utilisateur: widget.utilisateur),
+      //if (widget.utilisateur != null)
+       // ConversationScreen(userId: widget.utilisateur!.id!), // Ajout de l'écran de conversation
     ];
 
     print('Liste des écrans configurés : ${_screens.map((e) => e.runtimeType).toList()}');
@@ -49,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onItemTapped(int index) {
     print('Item tap index : $index');
 
-    if (index == 8 && widget.utilisateur == null) {
+    if ((index == 8 || index == 9) && widget.utilisateur == null) { // Vérifie pour Profile et Conversation
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Aucun utilisateur connecté')),
       );
@@ -104,13 +105,14 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Réception',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications), // Icône pour les notifications
+            icon: Icon(Icons.notifications),
             label: 'Notifications',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),
+          
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.red,

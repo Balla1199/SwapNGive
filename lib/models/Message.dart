@@ -1,37 +1,50 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Message {
-  String contenu;
-  String expediteurId;
-  String destinataireId;
-  String echangeId;
-  DateTime dateEnvoi;
+  final String id;
+  final String conversationId; // ID de la conversation associée
+  final String annonceId; // ID de l'annonce associée
+  final String typeAnnonce; // Type de l'annonce (échange ou don)
+  final String senderId; // ID de l'expéditeur (apprenant ou formateur)
+  final String receiverId; // ID du destinataire
+  final String content; // Contenu du message
+  final DateTime timestamp; // Horodatage du message
 
   Message({
-    required this.contenu,
-    required this.expediteurId,
-    required this.destinataireId,
-    required this.echangeId,
-    required this.dateEnvoi,
+    required this.id,
+    required this.conversationId,
+    required this.annonceId,
+    required this.typeAnnonce, // Ajouter typeAnnonce (échange ou don)
+    required this.senderId,
+    required this.receiverId,
+    required this.content,
+    required this.timestamp,
   });
 
-  // Convertir l'objet Message en JSON
-  Map<String, dynamic> toJson() {
+  // Convertir un message en map pour Firestore
+  Map<String, dynamic> toMap() {
     return {
-      'contenu': contenu,
-      'expediteurId': expediteurId,
-      'destinataireId': destinataireId,
-      'echangeId': echangeId,
-      'dateEnvoi': dateEnvoi.toIso8601String(),
+      'conversationId': conversationId,
+      'annonceId': annonceId,
+      'typeAnnonce': typeAnnonce, // Ajouter typeAnnonce
+      'senderId': senderId,
+      'receiverId': receiverId,
+      'content': content,
+      'timestamp': timestamp,
     };
   }
 
-  // Créer un objet Message à partir de JSON
-  factory Message.fromJson(Map<String, dynamic> json) {
+  // Créer un message à partir d'une map Firestore
+  static Message fromMap(String id, Map<String, dynamic> map) {
     return Message(
-      contenu: json['contenu'],
-      expediteurId: json['expediteurId'],
-      destinataireId: json['destinataireId'],
-      echangeId: json['echangeId'],
-      dateEnvoi: DateTime.parse(json['dateEnvoi']),
+      id: id,
+      conversationId: map['conversationId'],
+      annonceId: map['annonceId'],
+      typeAnnonce: map['typeAnnonce'], // Récupérer le type d'annonce
+      senderId: map['senderId'],
+      receiverId: map['receiverId'],
+      content: map['content'],
+      timestamp: (map['timestamp'] as Timestamp).toDate(),
     );
   }
 }

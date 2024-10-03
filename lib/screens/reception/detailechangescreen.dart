@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:swapngive/models/Echange.dart';
 import 'package:swapngive/models/Notification.dart';
+import 'package:swapngive/screens/chat/chatscreen.dart';
 import 'package:swapngive/services/auth_service.dart';
 import 'package:swapngive/services/echange_service.dart';
 import 'package:swapngive/services/notification_service.dart';
@@ -154,22 +155,29 @@ class DetailEchangeScreen extends StatelessWidget {
   }
 }
 
+void _discuter(BuildContext context) async {
+  // Récupérer les détails de l'utilisateur actuel
+  var currentUser = await AuthService().getCurrentUserDetails();
 
-  void _discuter(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Discussion'),
-          content: Text('Ici, vous pouvez discuter concernant l\'échange.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Fermer'),
-            ),
-          ],
-        );
-      },
+  if (currentUser != null) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(
+          annonceId: echange.annonce.id, // Supposons que 'echange.annonce.id' contient l'ID de l'annonce
+          typeAnnonce: echange.annonce.type.toString().split('.').last, // Convertir TypeAnnonce en String
+          conversationId: echange.id, // Utiliser l'ID d'échange comme ID de conversation
+          senderId: currentUser.id, // Utilisateur actuel connecté
+          receiverId: echange.idUtilisateur2, // L'autre utilisateur dans l'échange
+        ),
+      ),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erreur : Impossible de récupérer les détails de l\'utilisateur actuel.')),
     );
   }
+}
+
+
 }

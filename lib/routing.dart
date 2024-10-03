@@ -7,6 +7,7 @@ import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/screens/annonce/annonce_form_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_details_screen.dart';
+import 'package:swapngive/screens/chat/chatscreen.dart';
 import 'package:swapngive/screens/don/MessageDon_screen.dart';
 import 'package:swapngive/screens/echange/Confirmer_Echange_Screen.dart';
 import 'package:swapngive/screens/echange/objetechange_screen.dart';
@@ -63,7 +64,6 @@ class AppRoutes {
   // Nouvelle route pour MessageDonScreen
   static const String messageDon = '/message_don';
 
-
   // Nouvelles routes pour les écrans de réception et de détails
   static const String receptionScreen = '/reception_screen';
   static const String detailEchangeScreen = '/detail_echange_screen';
@@ -71,6 +71,10 @@ class AppRoutes {
 
   // Nouvelle route pour NotificationScreen
   static const String notificationScreen = '/notification_screen';
+
+  // Nouvelles routes pour ChatScreen et ConversationScreen
+  static const String chatScreen = '/chat_screen';
+  static const String conversationScreen = '/conversation_screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -116,7 +120,6 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?; 
         final annonce = args != null ? args['annonce'] as Annonce? : null;
 
-        // Ensure the objet is passed or create a default one
         final objet = args != null && args['objet'] != null 
             ? args['objet'] as Objet 
             : Objet(
@@ -192,7 +195,7 @@ class AppRoutes {
   final idUtilisateur1 = args?['idUtilisateur1'] as String;
   final idUtilisateur2 = args?['idUtilisateur2'] as String;
   final idObjet1 = args?['idObjet1'] as String;
-  final objet2 = args?['objet2'] as Objet; // Récupération de l'objet2
+  final objet2 = args?['objet2'] as Objet; 
   final annonce = args?['annonce'] as Annonce; 
 
   return MaterialPageRoute(
@@ -200,7 +203,7 @@ class AppRoutes {
       idUtilisateur1: idUtilisateur1,
       idUtilisateur2: idUtilisateur2,
       idObjet1: idObjet1,
-      objet2: objet2, // Passez l'objet2 ici
+      objet2: objet2, 
       annonce: annonce, 
     ),
   );
@@ -217,16 +220,14 @@ class AppRoutes {
    // Routes pour DetailDonScreen
 case detailDonScreen:
   final args = settings.arguments as Map<String, dynamic>?; 
-  final don = args != null ? args['don'] : null; // Récupérer l'objet 'don'
-  final currentUserId = args != null ? args['currentUserId'] : ''; // Récupérer l'ID de l'utilisateur actuel
+  final don = args != null ? args['don'] : null; 
+  final currentUserId = args != null ? args['currentUserId'] : ''; 
   return MaterialPageRoute(
     builder: (_) => DetailDonScreen(
       don: don!,
-      currentUserId: currentUserId, // Passer l'ID de l'utilisateur actuel
+      currentUserId: currentUserId, 
     ),
   );
-
-
       
       // Routes pour ReceptionScreen
       case receptionScreen:
@@ -239,14 +240,38 @@ case detailDonScreen:
         return MaterialPageRoute(
           builder: (_) => DetailEchangeScreen(echange: echange!),
         );
-    
+
+    // Route pour NotificationScreen
     case notificationScreen:
-  return MaterialPageRoute(builder: (_) => NotificationScreen());
+      return MaterialPageRoute(builder: (_) => NotificationScreen());
+
+    // Nouvelle route pour ChatScreen
+    case chatScreen:
+      final args = settings.arguments as Map<String, dynamic>?; 
+      final annonceId = args?['annonceId'] as String;
+      final typeAnnonce = args?['typeAnnonce'] as String;
+      final conversationId = args?['conversationId'] as String;
+      final senderId = args?['senderId'] as String;
+      final receiverId = args?['receiverId'] as String;
+  
+
+      return MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          annonceId: annonceId,
+          typeAnnonce: typeAnnonce,
+          conversationId: conversationId,
+          senderId: senderId,
+          receiverId: receiverId,
+    
+        ),
+      );
 
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
-            body: Center(child: Text('Erreur: Route non définie')),
+            body: Center(
+              child: Text('No route defined for ${settings.name}'),
+            ),
           ),
         );
     }
