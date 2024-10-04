@@ -1,7 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:swapngive/models/Echange.dart';
 import 'package:swapngive/models/Notification.dart';
+import 'package:swapngive/screens/avis/Avis_Form_Screen.dart';
 import 'package:swapngive/screens/chat/chatscreen.dart';
 import 'package:swapngive/services/auth_service.dart';
 import 'package:swapngive/services/echange_service.dart';
@@ -124,8 +127,43 @@ class DetailEchangeScreen extends StatelessWidget {
         fromUserId: echange.idUtilisateur1, // Utilisateur qui fait l'acceptation
         toUserId: echange.idUtilisateur2, // Utilisateur qui reçoit la notification
         titre: "Échange accepté",
-        message: "a accepté votre proposition d'échange pour l'objet : ${echange.annonce.objet.nom}",
+        message: "a accepté votre proposition d'échange pour l'objet : ${echange.annonce.objet.nom}. Merci d'avoir finalisé votre échange ! Nous vous invitons à évaluer votre expérience.",
         date: DateTime.now(),
+      );
+
+      // Envoi de l'invitation à évaluer avec un bouton
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Expanded(
+                child: Text("Échange finalisé ! Laissez une évaluation."),
+              ),
+             ElevatedButton(
+  onPressed: () {
+    // Assurez-vous d'avoir les valeurs nécessaires
+    String utilisateurEvalueId = echange.idUtilisateur2; // Remplacez par l'ID approprié
+    String typeAnnonce = echange.annonce.type.toString().split('.').last; // Remplacez par le type d'annonce approprié
+    String annonceId = echange.annonce.id; // Remplacez par l'ID de l'annonce approprié
+
+    // Redirection vers l'écran d'évaluation
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AvisFormScreen(
+          utilisateurEvalueId: utilisateurEvalueId,
+          typeAnnonce: typeAnnonce,
+          annonceId: annonceId,
+        ),
+      ),
+    );
+  },
+  child: Text('Évaluer'),
+),
+
+            ],
+          ),
+        ),
       );
     } else if (nouveauStatut == "refusé") {
       // Message pour le refus
@@ -154,6 +192,7 @@ class DetailEchangeScreen extends StatelessWidget {
     );
   }
 }
+
 
 void _discuter(BuildContext context) async {
   // Récupérer les détails de l'utilisateur actuel

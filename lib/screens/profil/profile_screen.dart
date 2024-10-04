@@ -114,36 +114,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
     print('Erreur lors de la mise à jour du profil : $e');
   }
 }
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Profil de ${widget.utilisateur?.nom ?? ''}'),
+    ),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          CircleAvatar(
+            backgroundImage: _profilePhotoUrl != null
+                ? NetworkImage(_profilePhotoUrl!) // Charger l'image si elle est disponible
+                : AssetImage('images/user.png') as ImageProvider, // Image par défaut si null
+            radius: 50.0,
+          ),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: _selectImage, // Appeler la méthode pour sélectionner une image
+            child: Text('Modifier la photo de profil'),
+          ),
+          SizedBox(height: 20),
+          Text('Nom: ${widget.utilisateur?.nom ?? ''}'),
+          Text('Adresse: ${widget.utilisateur?.adresse ?? ''}'),
+          Text('Email: ${widget.utilisateur?.email ?? ''}'),
+          Text('Téléphone: ${widget.utilisateur?.telephone ?? ''}'),
+          SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () async {
+              await _authService.logout(); // Appeler la méthode de déconnexion
+              // Rediriger l'utilisateur vers l'écran de connexion ou autre écran après déconnexion
+              Navigator.of(context).pushReplacementNamed('/login'); // Changez '/login' par la route de votre écran de connexion
+            },
+            child: Text('Déconnexion'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Profil de ${widget.utilisateur?.nom ?? ''}'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            CircleAvatar(
-              backgroundImage: _profilePhotoUrl != null
-                  ? NetworkImage(_profilePhotoUrl!) // Charger l'image si elle est disponible
-                  : AssetImage('images/user.png') as ImageProvider, // Image par défaut si null
-              radius: 50.0,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _selectImage, // Appeler la méthode pour sélectionner une image
-              child: Text('Modifier la photo de profil'),
-            ),
-            SizedBox(height: 20),
-            Text('Nom: ${widget.utilisateur?.nom ?? ''}'),
-            Text('Adresse: ${widget.utilisateur?.adresse ?? ''}'),
-            Text('Email: ${widget.utilisateur?.email ?? ''}'),
-            Text('Téléphone: ${widget.utilisateur?.telephone ?? ''}'),
-          ],
-        ),
-      ),
-    );
-  }
 }

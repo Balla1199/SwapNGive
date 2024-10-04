@@ -7,6 +7,7 @@ import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/screens/annonce/annonce_form_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_details_screen.dart';
+import 'package:swapngive/screens/avis/Avis_Form_Screen.dart';
 import 'package:swapngive/screens/chat/chatscreen.dart';
 import 'package:swapngive/screens/don/MessageDon_screen.dart';
 import 'package:swapngive/screens/echange/Confirmer_Echange_Screen.dart';
@@ -75,6 +76,9 @@ class AppRoutes {
   // Nouvelles routes pour ChatScreen et ConversationScreen
   static const String chatScreen = '/chat_screen';
   static const String conversationScreen = '/conversation_screen';
+
+  // Nouvelle route pour AvisFormScreen
+  static const String avisFormScreen = '/avis_form_screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -265,6 +269,34 @@ case detailDonScreen:
     
         ),
       );
+    
+    case avisFormScreen:
+  final args = settings.arguments as Map<String, dynamic>?; 
+  final avis = args != null ? args['avis'] : null; 
+  final utilisateurEvalueId = args != null ? args['utilisateurEvalueId'] : null; 
+  final typeAnnonce = args != null ? args['typeAnnonce'] : null; // Ajoutez cette ligne pour récupérer typeAnnonce
+  final annonceId = args != null ? args['annonceId'] : null; // Ajoutez cette ligne pour récupérer annonceId
+
+  // Vérifiez si les ID nécessaires sont disponibles
+  if (utilisateurEvalueId == null) {
+    throw Exception("utilisateurEvalueId est requis");
+  }
+  if (typeAnnonce == null) {
+    throw Exception("typeAnnonce est requis"); // Vérifiez si typeAnnonce est requis
+  }
+  if (annonceId == null) {
+    throw Exception("annonceId est requis"); // Vérifiez si annonceId est requis
+  }
+
+  return MaterialPageRoute(
+    builder: (_) => AvisFormScreen(
+      avis: avis, 
+      utilisateurEvalueId: utilisateurEvalueId,
+      typeAnnonce: typeAnnonce, // Passez typeAnnonce ici
+      annonceId: annonceId, // Passez annonceId ici
+    ),
+  );
+
 
       default:
         return MaterialPageRoute(
