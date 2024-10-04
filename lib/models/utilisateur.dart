@@ -16,6 +16,7 @@ class Utilisateur {
   String telephone;
   DateTime dateInscription;
   Role role;
+  String? photoProfil; // URL de la photo de profil, nullable
 
   // Constructeur de la classe Utilisateur
   Utilisateur({
@@ -27,6 +28,7 @@ class Utilisateur {
     required this.telephone,
     required this.dateInscription,
     required this.role,
+    this.photoProfil, // Champ facultatif pour la photo de profil
   });
 
   // Convertir un utilisateur en Map pour Firestore ou autre base de données
@@ -41,6 +43,7 @@ class Utilisateur {
       'dateInscription': dateInscription.toIso8601String(),
       // Convertir l'énumération en chaîne de caractères pour Firestore
       'role': role.toString().split('.').last,
+      'photoProfil': photoProfil, // Inclure la photo de profil dans la Map
     };
   }
 
@@ -55,6 +58,7 @@ class Utilisateur {
       telephone: map['telephone'] ?? '',
       dateInscription: DateTime.parse(map['dateInscription'] ?? DateTime.now().toIso8601String()),
       role: _stringToRole(map['role'] ?? 'client'), // Gestion de la chaîne "role"
+      photoProfil: map['photoProfil'], // Récupérer la photo de profil (nullable)
     );
   }
 
@@ -82,6 +86,7 @@ class Utilisateur {
       telephone: data['telephone'] ?? '',
       dateInscription: parsedDate,
       role: _stringToRole(data['role'] ?? 'client'), // Conversion de la chaîne "role"
+      photoProfil: data['photoProfil'], // Récupérer l'URL de la photo de profil
     );
   }
 

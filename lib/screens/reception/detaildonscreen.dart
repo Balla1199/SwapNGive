@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:swapngive/models/utilisateur.dart';
+import 'package:swapngive/screens/chat/chatscreen.dart';
 import 'package:swapngive/services/don_service.dart'; // Assurez-vous d'importer votre service
 import 'package:swapngive/services/auth_service.dart'; // Importer le AuthService
 
@@ -128,13 +129,25 @@ class DetailDonScreen extends StatelessWidget {
                     },
                     child: Text("Refuser"),
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Logique pour discuter du don
-                      // Ouvrir une fenêtre de discussion ou un autre écran
-                    },
-                    child: Text("Discuter"),
-                  ),
+                 ElevatedButton(
+  onPressed: () {
+    // Logique pour discuter du don
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ChatScreen(
+          annonceId: don['annonce']['id'],      // ID de l'annonce
+          typeAnnonce: 'don',                  // Type de l'annonce, ici c'est un don
+          senderId: currentUserId,             // ID de l'utilisateur actuel (expéditeur)
+          receiverId: receveurId,              // ID du receveur (destinataire)
+          conversationId: '',                  // ID de la conversation, peut être vide ici
+        ),
+      ),
+    );
+  },
+  child: Text("Discuter"),
+),
+
                 ],
               ),
             ],
