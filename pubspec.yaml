@@ -82,6 +82,18 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+
+
+  fonts:
+    - family: MR SKAE
+      fonts:
+        - asset: fonts/MR SKAE.ttf
+
+    - family: MrBedfort-Regular
+      fonts:
+        - asset: fonts/MrBedfort-Regular.ttf
+
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
@@ -117,3 +129,7 @@ flutter:
     - assets/map.html
     - assets/images/google.png
     - assets/images/user.png
+    - assets/images/logosansnom.jpg
+
+  
+    

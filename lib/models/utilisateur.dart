@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // Enum pour le rôle
 enum Role {
   admin,
-  client, user,
+  client,
+  user,
   // Ajoutez d'autres rôles ici si nécessaire
 }
 
@@ -41,7 +42,6 @@ class Utilisateur {
       'adresse': adresse,
       'telephone': telephone,
       'dateInscription': dateInscription.toIso8601String(),
-      // Convertir l'énumération en chaîne de caractères pour Firestore
       'role': role.toString().split('.').last,
       'photoProfil': photoProfil, // Inclure la photo de profil dans la Map
     };
@@ -66,7 +66,6 @@ class Utilisateur {
   factory Utilisateur.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
 
-    // Gestion de la conversion pour la date d'inscription
     final dateInscription = data['dateInscription'];
     DateTime parsedDate;
     if (dateInscription is Timestamp) {
@@ -100,5 +99,10 @@ class Utilisateur {
       default:
         return Role.client; // Rôle par défaut si le rôle est inconnu
     }
+  }
+
+  // Convertir le rôle en chaîne de caractères
+  String getRoleString() {
+    return role.toString().split('.').last; // 'admin', 'client', etc.
   }
 }

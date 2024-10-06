@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:swapngive/screens/client_bottom_navigation/client_bottom_navigation.dart';
+import 'package:swapngive/screens/dashbord/Dashboard_Screen.dart';
 import 'package:swapngive/screens/sidebar_layout/sidebar_layout.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_list_screen.dart';
 import 'package:swapngive/screens/categorie/categorie_list_screen.dart';
@@ -10,6 +11,7 @@ import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
 import 'package:swapngive/screens/objet/objet_list_screen.dart';
 import 'package:swapngive/screens/reception/reception_screen.dart';
 import 'package:swapngive/screens/notification/notification_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   final Utilisateur? utilisateur;
@@ -32,6 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // Admin Screens for Sidebar
     _adminScreens = [
+      DashboardScreen(), // Ajouter DashboardScreen pour l'administrateur
       UtilisateurListScreen(),
       CategorieListScreen(),
       EtatListScreen(),

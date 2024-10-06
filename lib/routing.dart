@@ -9,6 +9,7 @@ import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_details_screen.dart';
 import 'package:swapngive/screens/avis/Avis_Form_Screen.dart';
 import 'package:swapngive/screens/chat/chatscreen.dart';
+import 'package:swapngive/screens/dashbord/Dashboard_Screen.dart';
 import 'package:swapngive/screens/don/MessageDon_screen.dart';
 import 'package:swapngive/screens/echange/Confirmer_Echange_Screen.dart';
 import 'package:swapngive/screens/echange/objetechange_screen.dart';
@@ -79,6 +80,8 @@ class AppRoutes {
 
   // Nouvelle route pour AvisFormScreen
   static const String avisFormScreen = '/avis_form_screen';
+
+  static const String dashboardScreen = '/dashboard_screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -257,7 +260,6 @@ case detailDonScreen:
       final conversationId = args?['conversationId'] as String;
       final senderId = args?['senderId'] as String;
       final receiverId = args?['receiverId'] as String;
-  
 
       return MaterialPageRoute(
         builder: (_) => ChatScreen(
@@ -297,6 +299,9 @@ case detailDonScreen:
     ),
   );
 
+  // Ajout du cas pour DashboardScreen
+      case dashboardScreen:
+        return MaterialPageRoute(builder: (_) => DashboardScreen());
 
       default:
         return MaterialPageRoute(

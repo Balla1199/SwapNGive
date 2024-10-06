@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart'; // Ajouté pour gérer Firebase Storage
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:io'; // Pour gérer le fichier image localement
+import 'dart:io';
 import 'package:swapngive/models/utilisateur.dart';
 import 'dart:convert';
 import 'package:universal_html/html.dart' as html;
@@ -11,25 +11,23 @@ import 'package:universal_html/html.dart' as html;
 class UtilisateurService {
   final CollectionReference _collection = FirebaseFirestore.instance.collection('utilisateurs');
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance; // Instance de Firebase Storage
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
   // Créer un utilisateur dans Firebase Authentication et Firestore
   Future<void> createUtilisateur(Utilisateur utilisateur, String email, String password) async {
     try {
-      // Créer l'utilisateur dans Firebase Authentication
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Si l'utilisateur est créé avec succès dans Auth, on l'ajoute dans Firestore
-      utilisateur.id = userCredential.user!.uid; // Associer l'ID de l'utilisateur à partir de Firebase Auth
+      utilisateur.id = userCredential.user!.uid;
       await _collection.doc(utilisateur.id).set(utilisateur.toMap());
 
       print('Utilisateur créé avec succès dans Auth et Firestore');
     } catch (e) {
       print('Erreur lors de la création de l\'utilisateur : $e');
-      throw e; // Pour renvoyer l'erreur à l'appelant
+      throw e;
     }
   }
 
@@ -71,13 +69,10 @@ class UtilisateurService {
 
   // Supprimer un utilisateur dans Firestore
   Future<void> deleteUtilisateur(String id) async {
-    // Supprimer l'utilisateur dans Firebase Auth et Firestore
     try {
-      // Supprimer de Firestore
       await _collection.doc(id).delete();
       print('Utilisateur supprimé de Firestore');
 
-      // Supprimer de Firebase Authentication
       User? user = _auth.currentUser;
       if (user != null) {
         await user.delete();
@@ -101,7 +96,7 @@ class UtilisateurService {
       if (doc.exists) {
         return Utilisateur.fromFirestore(doc);
       }
-      return null; // Si l'utilisateur n'existe pas
+      return null;
     } catch (e) {
       print("Erreur lors de la récupération de l'utilisateur par ID : $e");
       return null;
@@ -114,11 +109,11 @@ class UtilisateurService {
       DocumentSnapshot doc = await _collection.doc(userId).get();
       if (doc.exists) {
         final utilisateur = Utilisateur.fromFirestore(doc);
-        print('URL de la photo de profil récupérée : ${utilisateur.photoProfil}'); // Log de l'URL de la photo
-        return utilisateur.photoProfil; // Retourne l'URL de la photo de profil
+        print('URL de la photo de profil récupérée : ${utilisateur.photoProfil}');
+        return utilisateur.photoProfil;
       }
       print('Utilisateur non trouvé pour l\'ID : $userId');
-      return null; // Si l'utilisateur n'existe pas
+      return null;
     } catch (e) {
       print("Erreur lors de la récupération de la photo de profil : $e");
       return null;
@@ -130,56 +125,36 @@ class UtilisateurService {
       String downloadUrl;
 
       if (kIsWeb) {
-        // Cas pour le web
         if (webPhotoFile != null) {
-          // Lire le fichier web et convertir en base64
           final reader = html.FileReader();
           reader.readAsDataUrl(webPhotoFile);
           
-          // Attendre que la lecture soit terminée
           await reader.onLoad.first;
 
-          // Récupérer l'image en base64
           final String base64Image = reader.result as String;
-          print('Image en base64 lue : $base64Image'); // Log de l'image en base64
-
-          // Supprimer le préfixe de base64 (e.g., "data:image/png;base64,")
           List<int> imageBytes = base64Decode(base64Image.split(',')[1]);
-          print('Image convertie en bytes, longueur : ${imageBytes.length}'); // Log de la longueur des bytes
 
           String filePath = 'profilePhotos/$userId/${DateTime.now().millisecondsSinceEpoch}.png';
           final metadata = SettableMetadata(contentType: 'image/png');
 
-          // Upload l'image dans Firebase Storage
           UploadTask uploadTask = _storage.ref().child(filePath).putData(Uint8List.fromList(imageBytes), metadata);
-          print('Upload en cours vers $filePath'); // Log de l'upload
-
-          // Attendre que l'upload soit terminé et récupérer l'URL de téléchargement
           TaskSnapshot snapshot = await uploadTask;
           downloadUrl = await snapshot.ref.getDownloadURL();
-          print('URL de téléchargement obtenue : $downloadUrl'); // Log de l'URL de téléchargement
         } else {
           throw Exception("Aucune image fournie pour la mise à jour du profil.");
         }
       } else {
-        // Cas pour mobile
         if (newPhotoFile != null) {
           String filePath = 'profilePhotos/$userId/${DateTime.now().millisecondsSinceEpoch}.png';
           UploadTask uploadTask = _storage.ref().child(filePath).putFile(newPhotoFile);
-
-          // Attendre que l'upload se termine
           TaskSnapshot snapshot = await uploadTask;
-
-          // Récupérer l'URL de l'image uploadée
           downloadUrl = await snapshot.ref.getDownloadURL();
-          print('URL de téléchargement obtenue : $downloadUrl'); // Log de l'URL de téléchargement
         } else {
           throw Exception("Aucune image fournie pour la mise à jour du profil.");
         }
       }
 
-      // 4. Mettre à jour l'utilisateur avec la nouvelle URL de photo
-      utilisateur.photoProfil = downloadUrl; // Mettre à jour l'URL de la photo de profil
+      utilisateur.photoProfil = downloadUrl;
       await _collection.doc(userId).update(utilisateur.toMap());
 
       print('Profil mis à jour avec succès avec la nouvelle photo de profil');
@@ -188,4 +163,45 @@ class UtilisateurService {
       throw e;
     }
   }
+
+  // Méthode pour obtenir le nombre d'utilisateurs actifs pendant une année
+  Future<int> getNombreUtilisateursActifs() async {
+    // Calculer la date de début (un an en arrière)
+    DateTime dateUnAn = DateTime.now().subtract(Duration(days: 365));
+    
+    // Requête pour récupérer les utilisateurs dont la date d'inscription est supérieure ou égale à la date d'un an
+    QuerySnapshot snapshot = await _collection
+        .where('dateInscription', isGreaterThanOrEqualTo: dateUnAn)
+        .get();
+
+    // Le nombre d'utilisateurs actifs est simplement le nombre de documents récupérés
+    return snapshot.docs.length;
+  }
+  
+   
+  // Méthode pour obtenir le nombre d'utilisateurs actifs pour un mois spécifique
+  Future<int> getNombreUtilisateursActifsSurMois(DateTime mois) async {
+    DateTime finMois = mois.add(Duration(days: 30));
+    
+    QuerySnapshot snapshot = await _collection
+        .where('dateInscription', isGreaterThanOrEqualTo: mois)
+        .where('dateInscription', isLessThanOrEqualTo: finMois)
+        .get();
+
+    return snapshot.docs.length;
+  }
+
+  Future<int> getNombreNouveauxUtilisateurs() async {
+  // Calculer la date de début (un mois en arrière)
+  DateTime dateUnMois = DateTime.now().subtract(Duration(days: 30));
+  
+  // Requête pour récupérer les utilisateurs dont la date d'inscription est supérieure ou égale à la date d'un mois
+  QuerySnapshot snapshot = await _collection
+      .where('dateInscription', isGreaterThanOrEqualTo: dateUnMois.toIso8601String())
+      .get();
+
+  // Le nombre de nouveaux utilisateurs est simplement le nombre de documents récupérés
+  return snapshot.docs.length;
+}
+
 }
