@@ -98,15 +98,24 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
                           Positioned(
                             top: 10,
                             right: 10,
-                            child: IconButton(
-                              icon: Icon(
-                                _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
-                                color: _likedStatus[index] ? Colors.red : Colors.grey,
-                              ),
-                              onPressed: () {
-                                int nouveauNombreLikes = annonce.likes + (_likedStatus[index] ? -1 : 1); // Met à jour le nombre de likes
-                                _updateLikes(annonce.id, nouveauNombreLikes, index);
-                              },
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
+                                    color: _likedStatus[index] ? Colors.red : Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    int nouveauNombreLikes = annonce.likes + (_likedStatus[index] ? -1 : 1); // Met à jour le nombre de likes
+                                    _updateLikes(annonce.id, nouveauNombreLikes, index);
+                                  },
+                                ),
+                                // Afficher le nombre total de likes à côté du cœur
+                                Text(
+                                  '${annonce.likes}', // Assurez-vous que l'objet annonce a un champ likes
+                                  style: TextStyle(fontSize: 16), // Style pour le nombre de likes
+                                ),
+                              ],
                             ),
                           ),
                         ],
