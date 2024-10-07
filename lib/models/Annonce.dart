@@ -62,21 +62,28 @@ class Annonce {
   }
 
   // Méthode pour créer un objet Annonce à partir de JSON
-  factory Annonce.fromJson(Map<String, dynamic> json) {
-    return Annonce(
-      id: json['id'],
-      titre: json['titre'],
-      description: json['description'],
-      date: DateTime.parse(json['date']),
-      type: TypeAnnonce.values.firstWhere((e) => e.toString() == 'TypeAnnonce.' + json['type']),
-      utilisateur: Utilisateur.fromMap(json['utilisateur']),
-      categorie: Categorie.fromMap(json['categorie']),
-      objet: Objet.fromMap(json['objet']),
-      etat: Etat.fromMap(json['etat']), // Récupérer l'état à partir du JSON
-      likes: json['likes'] ?? 0, // Récupérer les likes ou initialiser à 0
-      statut: StatutAnnonce.values.firstWhere((e) => e.toString() == 'StatutAnnonce.' + json['statut']),
-    );
-  }
+factory Annonce.fromJson(Map<String, dynamic> json) {
+  return Annonce(
+    id: json['id'] ?? '', // Utilisez une chaîne vide comme valeur par défaut
+    titre: json['titre'] ?? 'Titre non défini',
+    description: json['description'] ?? 'Description non définie',
+    date: json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(), // Si la date est manquante, utilisez la date actuelle
+    type: TypeAnnonce.values.firstWhere(
+      (e) => e.toString() == 'TypeAnnonce.' + (json['type'] ?? 'don'), // Valeur par défaut si le type est manquant
+      orElse: () => TypeAnnonce.don,
+    ),
+    utilisateur: Utilisateur.fromMap(json['utilisateur'] ?? {}), // Fournissez un objet vide si l'utilisateur est nul
+    categorie: Categorie.fromMap(json['categorie'] ?? {}), // Idem pour la catégorie
+    objet: Objet.fromMap(json['objet'] ?? {}), // Vérifiez que l'objet est présent
+    etat: Etat.fromMap(json['etat'] ?? {}), // Vérifiez que l'état est présent
+    likes: json['likes'] ?? 0, // Par défaut, 0 likes
+    statut: StatutAnnonce.values.firstWhere(
+      (e) => e.toString() == 'StatutAnnonce.' + (json['statut'] ?? 'disponible'), // Valeur par défaut si le statut est manquant
+      orElse: () => StatutAnnonce.disponible,
+    ),
+  );
+}
+
 
   // Convertir l'objet Annonce en Map
   Map<String, dynamic> toMap() {

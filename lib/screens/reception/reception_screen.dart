@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:swapngive/models/Don.dart';
 import 'package:swapngive/models/Echange.dart';
 import 'package:swapngive/models/utilisateur.dart';
-
 import 'package:swapngive/screens/reception/detaildonscreen.dart';
 import 'package:swapngive/screens/reception/detailechangescreen.dart';
 import 'package:swapngive/services/auth_service.dart';
 import 'package:swapngive/services/don_service.dart';
 import 'package:swapngive/services/echange_service.dart';
-import 'package:swapngive/widgets/conversation_list_widget.dart'; // Importer le widget ConversationListWidget
+import 'package:swapngive/widgets/conversation_list_widget.dart';
 
 class ReceptionScreen extends StatefulWidget {
   @override
@@ -17,55 +16,62 @@ class ReceptionScreen extends StatefulWidget {
 
 class _ReceptionScreenState extends State<ReceptionScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  // Services pour récupérer les données
   final DonService _donService = DonService();
   final EchangeService _echangeService = EchangeService();
-
-  // Listes pour stocker les échanges et dons
   List<Echange> _echanges = [];
   List<Don> _dons = [];
-
-  // ID de l'utilisateur connecté
   String? currentUserId;
+  String selectedFilter = 'reçu'; // Filtre par défaut pour les dons
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this); // 3 onglets
-
-    // Charger l'utilisateur actuel pour obtenir l'ID
+    _tabController = TabController(length: 3, vsync: this);
     _loadCurrentUser();
-    // Charger les données à l'initialisation
-    _loadEchanges();
-    _loadDons();
   }
 
-  // Charger l'utilisateur actuel
   Future<void> _loadCurrentUser() async {
     AuthService authService = AuthService();
     Utilisateur? currentUser = await authService.getCurrentUserDetails();
     if (currentUser != null) {
       setState(() {
-        currentUserId = currentUser.id; // Stocker l'ID de l'utilisateur actuel
+        currentUserId = currentUser.id;
       });
+      await _loadEchanges();
+      await _loadDons();
+    } else {
+      print("Aucun utilisateur trouvé.");
     }
   }
 
-  // Charger les échanges depuis Firestore
   Future<void> _loadEchanges() async {
-    List<Echange> echanges = await _echangeService.recupererTousLesEchanges();
-    setState(() {
-      _echanges = echanges;
-    });
+    print("Chargement des échanges...");
+    if (currentUserId != null) {
+      List<Echange> echanges = await _echangeService.recupererEchangesParStatut('attente');
+      setState(() {
+        _echanges = echanges.where((echange) => echange.idUtilisateur1 == currentUserId || echange.idUtilisateur2 == currentUserId).toList();
+      });
+      print("Nombre d'échanges affichés: ${_echanges.length}");
+    } else {
+      print("L'utilisateur actuel n'est pas défini.");
+    }
   }
 
-  // Charger les dons depuis Firestore
   Future<void> _loadDons() async {
-    List<Don> dons = await _donService.recupererTousLesDons();
-    setState(() {
-      _dons = dons;
-    });
+    if (currentUserId != null) {
+      List<Don> dons = await _donService.recupererDonsParStatut('attente');
+      setState(() {
+        // Filtrer les dons en fonction du filtre sélectionné
+        if (selectedFilter == 'reçu') {
+          _dons = dons.where((don) => don.idDonneur == currentUserId).toList(); // Dons reçus
+        } else {
+          _dons = dons.where((don) => don.receveur.id == currentUserId).toList(); // Dons envoyés
+        }
+      });
+      print("Nombre de dons affichés : ${_dons.length}");
+    } else {
+      print("L'utilisateur actuel n'est pas défini pour charger les dons.");
+    }
   }
 
   @override
@@ -91,115 +97,184 @@ class _ReceptionScreenState extends State<ReceptionScreen> with SingleTickerProv
       body: TabBarView(
         controller: _tabController,
         children: [
-          buildEchangesTab(),  // Tab des Échanges
-          buildDonsTab(),      // Tab des Dons
-          buildConversationsTab(), // Tab des Conversations
+          buildEchangesTab(),
+          buildDonsTab(),
+          buildConversationsTab(),
         ],
       ),
     );
   }
 
-  // Widget pour l'onglet des Échanges
-  Widget buildEchangesTab() {
-    return ListView.builder(
-      itemCount: _echanges.length,
-      itemBuilder: (context, index) {
-        final echange = _echanges[index];
+ Widget buildEchangesTab() {
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            itemCount: _echanges.length,
+            itemBuilder: (context, index) {
+              final echange = _echanges[index];
 
-        // Récupération de l'objet via l'annonce de l'échange
-        final objet = echange.annonce.objet;
+              // Appliquer le filtre
+              if ((selectedFilter == 'reçu' && echange.idUtilisateur1 != currentUserId) || 
+                  (selectedFilter == 'envoyé' && echange.idUtilisateur1 == currentUserId)) {
+                return SizedBox.shrink(); // Ne rien afficher pour les échanges non filtrés
+              }
 
-        // Accès aux propriétés de l'objet directement
-        final nomObjet = objet.nom; // Au lieu de objet?['nom']
-        final description = objet.description; // Au lieu de objet?['description']
+              final objet = echange.annonce.objet;
+              final nomObjet = objet.nom;
+              final description = objet.description;
 
-        return Card(
-          child: ListTile(
-            title: Text(nomObjet),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Date: ${echange.dateEchange ?? 'Date non spécifiée'}'),
-                Text('Description: $description'),
-                Text('Statut: ${echange.statut ?? 'Statut non spécifié'}'),
-              ],
-            ),
-            trailing: ElevatedButton(
-              onPressed: () {
-                // Naviguer vers les détails de l'échange
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DetailEchangeScreen(echange: echange)),
-                );
-              },
-              child: Text("Voir Détails"),
-            ),
+              return Card(
+                child: ListTile(
+                  title: Text(nomObjet),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Date: ${echange.dateEchange ?? 'Date non spécifiée'}'),
+                      Text('Description: $description'),
+                      Text('Statut: ${echange.statut ?? 'Statut non spécifié'}'),
+                    ],
+                  ),
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => DetailEchangeScreen(echange: echange)),
+                      );
+                    },
+                    child: Text("Voir Détails"),
+                  ),
+                ),
+              );
+            },
           ),
-        );
-      },
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    selectedFilter = 'envoyé'; // Met à jour le filtre sélectionné
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: selectedFilter == 'envoyé' ? Colors.blue : Colors.grey, // Change la couleur selon le filtre sélectionné
+                ),
+                child: Text("Envoyé"),
+              ),
+              SizedBox(width: 10), // Espacement entre les boutons
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    selectedFilter = 'reçu'; // Met à jour le filtre sélectionné
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: selectedFilter == 'reçu' ? Colors.blue : Colors.grey, // Change la couleur selon le filtre sélectionné
+                ),
+                child: Text("Reçu"),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  // Widget pour l'onglet des Dons
   Widget buildDonsTab() {
-    return ListView.builder(
-      itemCount: _dons.length,
-      itemBuilder: (context, index) {
-        final don = _dons[index];
-
-        // Accéder à l'objet du don
-        final objet = don.annonce.objet; // Assurez-vous que c'est un Map<String, dynamic>
-
-        // Détails du receveur
-        final receveur = don.receveur; // Utilisez l'accesseur de l'objet Don
-
-        return Card(
-          child: ListTile(
-            leading: (objet.imageUrl.isNotEmpty)
-                ? Image.network(objet.imageUrl) // Assurez-vous que c'est une chaîne ou une liste
-                : Icon(Icons.image_not_supported),
-            title: Text(objet.nom),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Receveur : ${receveur.nom}'),
-                Text('Message : ${don.message ?? 'Pas de message'}'),
-              ],
-            ),
-            trailing: ElevatedButton(
-              onPressed: () async {
-                // Récupérer l'utilisateur actuel pour obtenir currentUserId
-                AuthService authService = AuthService();
-                Utilisateur? currentUser = await authService.getCurrentUserDetails();
-
-                if (currentUser != null) {
-                  String currentUserId = currentUser.id; // ID de l'utilisateur actuel
-                  // Naviguer vers une page détaillée pour le don
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DetailDonScreen(don: don.toMap(), currentUserId: currentUserId), // Passer 'don' et 'currentUserId'
-                    ),
-                  );
-                } else {
-                  // Gérer le cas où l'utilisateur n'est pas connecté
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Utilisateur non connecté.")));
-                }
-              },
-              child: Text("Voir Détails"),
-            ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    selectedFilter = 'reçu'; // Filtre pour les dons reçus
+                    _loadDons(); // Recharge les dons après changement de filtre
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: selectedFilter == 'reçu' ? Colors.blue : Colors.grey,
+                ),
+                child: Text("Reçu"),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    selectedFilter = 'envoyé'; // Filtre pour les dons envoyés
+                    _loadDons(); // Recharge les dons après changement de filtre
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: selectedFilter == 'envoyé' ? Colors.blue : Colors.grey,
+                ),
+                child: Text("Envoyé"),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _dons.length,
+            itemBuilder: (context, index) {
+              final don = _dons[index];
+              final objet = don.annonce.objet;
+
+              final receveur = don.receveur;
+
+              return Card(
+                child: ListTile(
+                  leading: (objet.imageUrl.isNotEmpty)
+                      ? Image.network(objet.imageUrl)
+                      : Icon(Icons.image_not_supported),
+                  title: Text(objet.nom),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Receveur : ${receveur.nom}'),
+                      Text('Message : ${don.message ?? 'Pas de message'}'),
+                    ],
+                  ),
+                  trailing: ElevatedButton(
+                    onPressed: () async {
+                      AuthService authService = AuthService();
+                      Utilisateur? currentUser = await authService.getCurrentUserDetails();
+
+                      if (currentUser != null) {
+                        String currentUserId = currentUser.id;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DetailDonScreen(don: don.toMap(), currentUserId: currentUserId),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Utilisateur non connecté.")));
+                      }
+                    },
+                    child: Text("Voir Détails"),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
-  // Widget pour l'onglet de conversation
   Widget buildConversationsTab() {
     if (currentUserId == null) {
-      return Center(child: CircularProgressIndicator()); // Afficher un indicateur de chargement pendant que l'utilisateur est récupéré
+      return Center(child: CircularProgressIndicator());
     }
-    
-    return ConversationListWidget(userId: currentUserId!); // Passer l'ID de l'utilisateur actuel
+
+    return ConversationListWidget(userId: currentUserId!);
   }
 }
