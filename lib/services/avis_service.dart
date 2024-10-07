@@ -14,14 +14,44 @@ class AvisService {
     }
   }
 
-  // Méthode pour récupérer les avis d'un utilisateur
   Future<List<Avis>> getAvisUtilisateur(String utilisateurEvalueId) async {
     try {
-      QuerySnapshot snapshot = await _collection.where('utilisateurEvaluéId', isEqualTo: utilisateurEvalueId).get();
-      return snapshot.docs.map((doc) => Avis.fromFirestore(doc)).toList();
+      print('Chargement des avis pour l\'utilisateur évalué avec ID : $utilisateurEvalueId');
+      
+      QuerySnapshot snapshot = await _collection
+          .where('utilisateurEvalueId', isEqualTo: utilisateurEvalueId)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        print('Aucun avis trouvé pour cet utilisateur');
+        return [];
+      }
+
+      List<Avis> avisList = snapshot.docs.map((doc) {
+        print('Document trouvé : ${doc.data()}'); // Affiche les données du document
+        return Avis.fromFirestore(doc);
+      }).toList();
+
+      print('Avis récupérés avec succès : ${avisList.length} avis trouvés');
+      return avisList;
     } catch (e) {
       print('Erreur lors de la récupération des avis : $e');
       throw e;
     }
   }
+
+  // Nouvelle méthode pour obtenir la somme totale des notes
+Future<double> getSommeTotalNotes(String utilisateurEvalueId) async {
+  try {
+    List<Avis> avisList = await getAvisUtilisateur(utilisateurEvalueId);
+    // Calcul de la somme des notes
+    double sommeTotal = avisList.fold(0.0, (sum, avis) => sum + avis.note);
+    print('Somme totale des notes : $sommeTotal');
+    return sommeTotal; // Retourne un double
+  } catch (e) {
+    print('Erreur lors du calcul de la somme des notes : $e');
+    throw e;
+  }
+}
+
 }

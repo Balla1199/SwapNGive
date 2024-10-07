@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
             right: 0,
             bottom: 80, // Laisse un espace en bas
             child: Container(
-               height: MediaQuery.of(context).size.height * 1.0, // 80% de la hauteur de l'écran
+              height: MediaQuery.of(context).size.height * 1.0, // 80% de la hauteur de l'écran
               padding: EdgeInsets.all(16), // Espacement intérieur
               decoration: BoxDecoration(
                 color: Colors.white, // Couleur de fond blanc
@@ -91,15 +91,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               child: Column(
-               mainAxisAlignment:MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
+                // Ajoutez ici le logo
+      Image.asset(
+  'assets/images/logo.jpg', // Chemin de votre logo
+  height: 300, // Hauteur du logo
+  width: 300,  // Largeur du logo
+  fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
+),
+
+                  SizedBox(height: 20), // Espacement entre le logo et les champs
                   // Champ pour l'email
                   TextFormField(
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: 'Email',
                       prefixIcon: Icon(Icons.email),
-                      ),
+                    ),
                     keyboardType: TextInputType.emailAddress,
                   ),
                   SizedBox(height: 10), // Espacement entre les champs
@@ -109,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     decoration: InputDecoration(
                       labelText: 'Mot de passe',
                       prefixIcon: Icon(Icons.lock),              
-                      ),
+                    ),
                     obscureText: true,
                   ),
                   SizedBox(height: 20), // Espacement avant le bouton
@@ -117,9 +126,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   ElevatedButton(
                     onPressed: _login,
                     child: Text('Se connecter'),
-                    style:ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Color(0xFFD9A9A9),
-                    )
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white, 
+                      backgroundColor: Color(0xFFD9A9A9),
+                    ),
                   ),
                   SizedBox(height: 10), // Espacement entre le bouton et le texte
                   // Lien pour créer un compte
@@ -130,21 +140,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text('Créer un compte'),
                   ),
                   SizedBox(height: 10), // Espacement entre "Créer un compte" et "ou Google"
-            // Lien pour Google
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('ou'), // Texte "ou" au-dessus
-                SizedBox(height: 8), // Espacement entre le texte et l'image
-                // Remplace l'icône par une image
-                Image.asset(
-                  'images/google.png', // Chemin de l'image dans ton projet
-                  height: 30, // Définit la hauteur de l'image
-                  width: 30,  // Définit la largeur de l'image
-                  fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
-                ),
-              ],
-            ),
+                  // Lien pour Google
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('ou'), // Texte "ou" au-dessus
+                      SizedBox(height: 8), // Espacement entre le texte et l'image
+                      // Remplace l'icône par une image
+                      Image.asset(
+                        'assets/images/google.png', // Chemin de l'image dans ton projet
+                        height: 30, // Définit la hauteur de l'image
+                        width: 30,  // Définit la largeur de l'image
+                        fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),

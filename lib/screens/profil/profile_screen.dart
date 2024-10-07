@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:io'; // Pour le mobile
+import 'package:swapngive/models/utilisateur.dart';
 import 'package:universal_html/html.dart' as html;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart'; // Ajouter ce package pour sélectionner des images
-import 'package:swapngive/models/utilisateur.dart';
+import 'package:image_picker/image_picker.dart'; 
 import 'package:swapngive/services/auth_service.dart';
-import 'package:swapngive/services/utilisateur_service.dart'; // Importer le service utilisateur
+import 'package:swapngive/services/utilisateur_service.dart'; 
+import 'package:swapngive/services/avis_service.dart'; 
+import 'package:swapngive/models/Avis.dart'; 
 
 class ProfileScreen extends StatefulWidget {
   final Utilisateur? utilisateur;
@@ -17,142 +19,235 @@ class ProfileScreen extends StatefulWidget {
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProviderStateMixin {
   final AuthService _authService = AuthService();
-  final UtilisateurService _utilisateurService = UtilisateurService(); // Instance du service utilisateur
-  final ImagePicker _picker = ImagePicker(); // Instance pour le sélecteur d'image
-  File? _imageFile; // Pour stocker l'image sélectionnée
-  String? _profilePhotoUrl; // Pour stocker l'URL de la photo de profil
+  final UtilisateurService _utilisateurService = UtilisateurService();
+  final AvisService _avisService = AvisService();
+  final ImagePicker _picker = ImagePicker();
+  File? _imageFile;
+  String? _profilePhotoUrl;
+  List<Avis> _avis = [];
+  Map<String, Utilisateur> _utilisateursMap = {}; 
+  late TabController _tabController;
+  double _sommeTotalNotes = 0.0; // Pour stocker la somme totale des notes
 
   @override
   void initState() {
     super.initState();
-    print('Page de profil initialisée');
-    if (widget.utilisateur != null) {
-      print('Utilisateur trouvé : ${widget.utilisateur!.nom}');
-      print('Adresse de l\'utilisateur : ${widget.utilisateur!.adresse}');
-      _loadProfilePhoto(); // Charger l'URL de la photo de profil
-    } else {
-      print('Aucun utilisateur fourni');
-    }
+    _tabController = TabController(length: 2, vsync: this);
+    _loadProfilePhoto();
+    _fetchAvis();
+    _fetchSommeTotalNotes(); // Appel pour récupérer la somme des notes
   }
 
-  // Méthode pour charger l'URL de la photo de profil
   Future<void> _loadProfilePhoto() async {
     String? photoUrl = await _utilisateurService.getProfilePhotoUrl(widget.utilisateur!.id);
     setState(() {
-      _profilePhotoUrl = photoUrl; // Mettre à jour l'URL de la photo de profil
+      _profilePhotoUrl = photoUrl;
     });
   }
 
-  // Méthode pour sélectionner une nouvelle photo
-  Future<void> _selectImage() async {
-    // Vérifier si l'application tourne sur le web ou non
-    if (kIsWeb) {
-      // Pour le web
-      html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
-      uploadInput.accept = 'image/*'; // Accepter uniquement les images
-      uploadInput.click(); // Ouvrir la boîte de dialogue pour sélectionner le fichier
-
-      uploadInput.onChange.listen((e) async {
-        final reader = html.FileReader();
-        reader.readAsDataUrl(uploadInput.files![0]); // Lire le fichier sélectionné en base64
-
-        reader.onLoadEnd.listen((e) async {
-          // Récupérer l'image en base64
-          String base64Image = reader.result as String;
-          await _updateProfile(base64Photo: base64Image); // Mettre à jour le profil avec l'image base64
-        });
-      });
-    } else {
-      // Pour mobile
-      final pickedFile = await _picker.pickImage(source: ImageSource.gallery); // Utilise pickImage pour sélectionner l'image
-      if (pickedFile != null) {
+  Future<void> _fetchAvis() async {
+    if (widget.utilisateur != null) {
+      try {
+        List<Avis> avis = await _avisService.getAvisUtilisateur(widget.utilisateur!.id);
         setState(() {
-          _imageFile = File(pickedFile.path); // Stocker le fichier localement pour mobile
+          _avis = avis;
         });
-        await _updateProfile(newPhotoFile: _imageFile); // Mettre à jour le profil avec l'image fichier
+
+        for (var avisItem in avis) {
+          if (!_utilisateursMap.containsKey(avisItem.utilisateurId)) {
+            Utilisateur? utilisateur = await _utilisateurService.getUtilisateurById(avisItem.utilisateurId);
+            setState(() {
+              _utilisateursMap[avisItem.utilisateurId] = utilisateur!;
+            });
+          }
+        }
+      } catch (e) {
+        print('Erreur lors du chargement des avis : $e');
       }
     }
   }
 
-  // Méthode pour mettre à jour le profil
-  Future<void> _updateProfile({File? newPhotoFile, String? base64Photo}) async {
-  try {
-    if (newPhotoFile != null) {
-      // Pour mobile
-      await _utilisateurService.updateProfileWithPhoto(widget.utilisateur!.id, widget.utilisateur!, newPhotoFile: newPhotoFile);
-    } else if (base64Photo != null) {
-      // Pour le web
-      // Convertir base64 en Uint8List
-      List<int> imageBytes = base64Decode(base64Photo.split(',')[1]);
-      // Créer un Blob à partir des octets
-      final blob = html.Blob([Uint8List.fromList(imageBytes)], 'image/png');
-      // Créer un html.File à partir du Blob
-      final webPhotoFile = html.File([blob], 'profilePhoto.png', {'type': 'image/png'});
-
-      // Appel à la méthode de mise à jour
-      await _utilisateurService.updateProfileWithPhoto(widget.utilisateur!.id, widget.utilisateur!, webPhotoFile: webPhotoFile);
-    } else {
-      print('Aucune image à mettre à jour.');
+  Future<void> _fetchSommeTotalNotes() async {
+  if (widget.utilisateur != null) {
+    try {
+      // Attendez la valeur de getSommeTotalNotes sans appel à toDouble()
+      _sommeTotalNotes = await _avisService.getSommeTotalNotes(widget.utilisateur!.id);
+      setState(() {}); // Mettre à jour l'interface
+    } catch (e) {
+      print('Erreur lors de la récupération de la somme totale des notes : $e');
     }
-
-    // Mettre à jour l'interface utilisateur avec la nouvelle photo
-    setState(() {
-      if (newPhotoFile != null) {
-        widget.utilisateur!.photoProfil = newPhotoFile.path; // Mettez à jour le chemin ou l'URL de la photo
-      } else if (base64Photo != null) {
-        widget.utilisateur!.photoProfil = base64Photo; // Mettez à jour la photo en base64
-      }
-    });
-
-    // Vérifier l'URL de la photo mise à jour
-    String? updatedPhotoUrl = await _utilisateurService.getProfilePhotoUrl(widget.utilisateur!.id);
-    print('URL de la photo de profil mise à jour : $updatedPhotoUrl'); // Log de l'URL mise à jour
-
-  } catch (e) {
-    print('Erreur lors de la mise à jour du profil : $e');
   }
 }
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('Profil de ${widget.utilisateur?.nom ?? ''}'),
-    ),
-    body: Center(
+
+
+  Future<void> _deconnecter() async {
+    await _authService.logout();
+    Navigator.of(context).pushReplacementNamed('/login'); 
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text('Profil de ${widget.utilisateur?.nom ?? ''}'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: _deconnecter, 
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(150), 
+          child: Column(
+            children: [
+              CircleAvatar(
+                backgroundImage: _profilePhotoUrl != null
+                    ? NetworkImage(_profilePhotoUrl!)
+                    : AssetImage('images/user.png') as ImageProvider,
+                radius: 50.0,
+              ),
+              SizedBox(height: 10),
+              // Affichage des étoiles
+              _buildStarRating(_sommeTotalNotes),
+              SizedBox(height: 10),
+              TabBar(
+                controller: _tabController,
+                tabs: [
+                  Tab(text: 'À propos'),
+                  Tab(text: 'Évaluation'),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildAboutSection(),
+          _buildEvaluationSection(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStarRating(double totalNotes) {
+    int noteCount = _avis.length; // Compte le nombre d'avis
+    double average = noteCount > 0 ? totalNotes / noteCount : 0.0; // Calcul de la note moyenne
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (index) {
+        return Icon(
+          index < average.ceil() ? Icons.star : Icons.star_border,
+          color: Colors.amber,
+          size: 24.0,
+        );
+      }),
+    );
+  }
+
+  Widget _buildAboutSection() {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          CircleAvatar(
-            backgroundImage: _profilePhotoUrl != null
-                ? NetworkImage(_profilePhotoUrl!) // Charger l'image si elle est disponible
-                : AssetImage('images/user.png') as ImageProvider, // Image par défaut si null
-            radius: 50.0,
+          SizedBox(height: 20),
+          Row(
+            children: [
+              Icon(Icons.person, color: Colors.blue),
+              SizedBox(width: 10),
+              Text(
+                'Nom:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(width: 10),
+              Text('${widget.utilisateur?.nom ?? 'Non renseigné'}'),
+            ],
           ),
           SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _selectImage, // Appeler la méthode pour sélectionner une image
-            child: Text('Modifier la photo de profil'),
+          Row(
+            children: [
+              Icon(Icons.location_on, color: Colors.blue),
+              SizedBox(width: 10),
+              Text(
+                'Adresse:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(width: 10),
+              Flexible(
+                child: Text('${widget.utilisateur?.adresse ?? 'Non renseigné'}'),
+              ),
+            ],
           ),
           SizedBox(height: 20),
-          Text('Nom: ${widget.utilisateur?.nom ?? ''}'),
-          Text('Adresse: ${widget.utilisateur?.adresse ?? ''}'),
-          Text('Email: ${widget.utilisateur?.email ?? ''}'),
-          Text('Téléphone: ${widget.utilisateur?.telephone ?? ''}'),
+          Row(
+            children: [
+              Icon(Icons.email, color: Colors.blue),
+              SizedBox(width: 10),
+              Text(
+                'Email:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(width: 10),
+              Flexible(
+                child: Text('${widget.utilisateur?.email ?? 'Non renseigné'}'),
+              ),
+            ],
+          ),
           SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () async {
-              await _authService.logout(); // Appeler la méthode de déconnexion
-              // Rediriger l'utilisateur vers l'écran de connexion ou autre écran après déconnexion
-              Navigator.of(context).pushReplacementNamed('/login'); // Changez '/login' par la route de votre écran de connexion
-            },
-            child: Text('Déconnexion'),
+          Row(
+            children: [
+              Icon(Icons.phone, color: Colors.blue),
+              SizedBox(width: 10),
+              Text(
+                'Téléphone:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(width: 10),
+              Text('${widget.utilisateur?.telephone ?? 'Non renseigné'}'),
+            ],
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
+  Widget _buildEvaluationSection() {
+    return _avis.isEmpty
+        ? Center(child: Text('Aucun avis disponible.'))
+        : ListView.builder(
+            itemCount: _avis.length,
+            itemBuilder: (context, index) {
+              Avis avis = _avis[index];
+              Utilisateur? utilisateur = _utilisateursMap[avis.utilisateurId];
+
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: utilisateur != null && utilisateur.photoProfil != null
+                      ? NetworkImage(utilisateur.photoProfil!)
+                      : AssetImage('images/user.png') as ImageProvider,
+                ),
+                title: Text(utilisateur?.nom ?? 'Utilisateur inconnu'),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Note: ${avis.note}/5'),
+                    Text('Commentaire: ${avis.contenu}'),
+                  ],
+                ),
+              );
+            },
+          );
+  }
 }
