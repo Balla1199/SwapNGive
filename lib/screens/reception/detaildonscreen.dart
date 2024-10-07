@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:swapngive/screens/chat/chatscreen.dart';
+import 'package:swapngive/services/annonceservice.dart';
 import 'package:swapngive/services/don_service.dart'; // Assurez-vous d'importer votre service
 import 'package:swapngive/services/auth_service.dart'; // Importer le AuthService
 
@@ -109,26 +111,30 @@ class DetailDonScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      // Logique pour accepter le don
-                      await DonService().mettreAJourStatut(donId, 'accepté');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Don accepté !")),
-                      );
-                    },
-                    child: Text("Accepter"),
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      // Logique pour refuser le don
-                      await DonService().mettreAJourStatut(donId, 'refusé');
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Don refusé !")),
-                      );
-                    },
-                    child: Text("Refuser"),
-                  ),
+                          ElevatedButton(
+  onPressed: () async {
+    // Si le don est accepté :
+    await DonService().mettreAJourStatut(donId, 'accepté');  // Mettre à jour le statut du don
+    await AnnonceService().mettreAJourStatut(don['annonce']['id'], StatutAnnonce.indisponible);  // Mettre à jour l'annonce à indisponible
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Don accepté, annonce indisponible !")),
+    );
+  },
+  child: Text("Accepter"),
+),
+
+ElevatedButton(
+  onPressed: () async {
+    // Si le don est refusé :
+    await DonService().mettreAJourStatut(donId, 'refusé');  // Mettre à jour le statut du don
+    await AnnonceService().mettreAJourStatut(don['annonce']['id'], StatutAnnonce.disponible);  // Maintenir l'annonce à disponible
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Don refusé, annonce toujours disponible !")),
+    );
+  },
+  child: Text("Refuser"),
+),
+
                  ElevatedButton(
   onPressed: () {
     // Logique pour discuter du don

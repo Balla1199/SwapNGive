@@ -76,4 +76,46 @@ class AnnonceService {
       }).toList();
     });
   }
+
+  // Mettre à jour les likes d'une annonce
+Future<void> mettreAJourLikes(String annonceId, int nouveauNombreLikes) async {
+  try {
+    await _annoncesCollection.doc(annonceId).update({'likes': nouveauNombreLikes});
+    print("Likes mis à jour avec succès !");
+  } catch (e) {
+    print("Erreur lors de la mise à jour des likes : $e");
+  }
+}
+
+     // Mettre à jour le statut d'une annonce
+Future<void> mettreAJourStatut(String annonceId, StatutAnnonce nouveauStatut) async {
+  try {
+    await _annoncesCollection.doc(annonceId).update({'statut': nouveauStatut.toString().split('.').last});
+    print("Statut mis à jour avec succès !");
+  } catch (e) {
+    print("Erreur lors de la mise à jour du statut : $e");
+  }
+}
+
+      // Récupérer les annonces par statut
+Future<List<Annonce>> recupererAnnoncesParStatut(StatutAnnonce statut) async {
+  try {
+    // Exécuter la requête Firestore en filtrant par le statut
+    QuerySnapshot snapshot = await _annoncesCollection
+        .where('statut', isEqualTo: statut.toString().split('.').last)
+        .get();
+
+    // Mapper les résultats dans une liste d'objets Annonce
+    List<Annonce> annonces = snapshot.docs.map((doc) {
+      return Annonce.fromJson(doc.data() as Map<String, dynamic>);
+    }).toList();
+
+    return annonces;
+  } catch (e) {
+    print("Erreur lors de la récupération des annonces par statut : $e");
+    return [];
+  }
+}
+
+
 }

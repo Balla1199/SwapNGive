@@ -9,6 +9,12 @@ enum TypeAnnonce {
   echange,
 }
 
+// Enum pour le statut de l'annonce
+enum StatutAnnonce {
+  disponible,
+  indisponible,
+}
+
 // Modèle Annonce mis à jour avec des objets complets
 class Annonce {
   String id;
@@ -20,6 +26,8 @@ class Annonce {
   Categorie categorie;
   Objet objet;
   Etat etat; // Utilisation de l'objet Etat
+  int likes; // Nouveau champ pour les likes
+  StatutAnnonce statut; // Nouveau champ pour le statut de l'annonce
 
   // Constructeur
   Annonce({
@@ -31,7 +39,9 @@ class Annonce {
     required this.utilisateur,
     required this.categorie,
     required this.objet,
-    required this.etat, // Inclure l'état dans le constructeur
+    required this.etat,
+    this.likes = 0, // Initialiser à 0 likes par défaut
+    this.statut = StatutAnnonce.disponible, // Initialiser à 'disponible' par défaut
   });
 
   // Méthode pour convertir l'objet Annonce en JSON
@@ -46,6 +56,8 @@ class Annonce {
       'categorie': categorie.toMap(),
       'objet': objet.toMap(),
       'etat': etat.toMap(), // Ajouter l'état au JSON
+      'likes': likes, // Ajouter les likes au JSON
+      'statut': statut.toString().split('.').last, // Ajouter le statut au JSON
     };
   }
 
@@ -61,6 +73,8 @@ class Annonce {
       categorie: Categorie.fromMap(json['categorie']),
       objet: Objet.fromMap(json['objet']),
       etat: Etat.fromMap(json['etat']), // Récupérer l'état à partir du JSON
+      likes: json['likes'] ?? 0, // Récupérer les likes ou initialiser à 0
+      statut: StatutAnnonce.values.firstWhere((e) => e.toString() == 'StatutAnnonce.' + json['statut']),
     );
   }
 
@@ -76,6 +90,8 @@ class Annonce {
       'categorie': categorie.toMap(),
       'objet': objet.toMap(),
       'etat': etat.toMap(), // Ajouter l'état au Map
+      'likes': likes, // Ajouter les likes au Map
+      'statut': statut.toString().split('.').last, // Ajouter le statut au Map
     };
   }
 }

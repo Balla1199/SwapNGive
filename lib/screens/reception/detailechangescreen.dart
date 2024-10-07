@@ -2,10 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/Echange.dart';
 import 'package:swapngive/models/Notification.dart';
 import 'package:swapngive/screens/avis/Avis_Form_Screen.dart';
 import 'package:swapngive/screens/chat/chatscreen.dart';
+import 'package:swapngive/services/annonceservice.dart';
 import 'package:swapngive/services/auth_service.dart';
 import 'package:swapngive/services/echange_service.dart';
 import 'package:swapngive/services/notification_service.dart';
@@ -115,6 +117,13 @@ class DetailEchangeScreen extends StatelessWidget {
     // Mettre à jour le statut de l'échange
     await echangeService.mettreAJourStatut(idEchange, nouveauStatut);
 
+    // Mettre à jour le statut de l'annonce liée à cet échange
+    if (nouveauStatut == "accepté") {
+      await AnnonceService().mettreAJourStatut(echange.annonce.id, StatutAnnonce.indisponible);
+    } else if (nouveauStatut == "refusé") {
+      await AnnonceService().mettreAJourStatut(echange.annonce.id, StatutAnnonce.disponible);
+    }
+
     // Récupérer les informations de l'utilisateur2
     var utilisateur2 = await UtilisateurService().getUtilisateurById(echange.idUtilisateur2);
 
@@ -139,28 +148,22 @@ class DetailEchangeScreen extends StatelessWidget {
               Expanded(
                 child: Text("Échange finalisé ! Laissez une évaluation."),
               ),
-             ElevatedButton(
-  onPressed: () {
-    // Assurez-vous d'avoir les valeurs nécessaires
-    String utilisateurEvalueId = echange.idUtilisateur2; // Remplacez par l'ID approprié
-    String typeAnnonce = echange.annonce.type.toString().split('.').last; // Remplacez par le type d'annonce approprié
-    String annonceId = echange.annonce.id; // Remplacez par l'ID de l'annonce approprié
-
-    // Redirection vers l'écran d'évaluation
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AvisFormScreen(
-          utilisateurEvalueId: utilisateurEvalueId,
-          typeAnnonce: typeAnnonce,
-          annonceId: annonceId,
-        ),
-      ),
-    );
-  },
-  child: Text('Évaluer'),
-),
-
+              ElevatedButton(
+                onPressed: () {
+                  // Redirection vers l'écran d'évaluation
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AvisFormScreen(
+                        utilisateurEvalueId: echange.idUtilisateur2,
+                        typeAnnonce: echange.annonce.type.toString().split('.').last,
+                        annonceId: echange.annonce.id,
+                      ),
+                    ),
+                  );
+                },
+                child: Text('Évaluer'),
+              ),
             ],
           ),
         ),
@@ -168,9 +171,9 @@ class DetailEchangeScreen extends StatelessWidget {
     } else if (nouveauStatut == "refusé") {
       // Message pour le refus
       notification = NotificationModel(
-        id: idEchange, // Utiliser l'ID de l'échange
-        fromUserId: echange.idUtilisateur1, // Utilisateur qui fait le refus
-        toUserId: echange.idUtilisateur2, // Utilisateur qui reçoit la notification
+        id: idEchange,
+        fromUserId: echange.idUtilisateur1,
+        toUserId: echange.idUtilisateur2,
         titre: "Échange refusé",
         message: "a refusé votre proposition d'échange pour l'objet : ${echange.annonce.objet.nom}",
         date: DateTime.now(),
