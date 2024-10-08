@@ -1,14 +1,14 @@
 import 'dart:convert';
-import 'dart:io'; // Pour le mobile
+import 'dart:io'; // For mobile
 import 'package:swapngive/models/utilisateur.dart';
-import 'package:universal_html/html.dart' as html;
+import 'package:universal_html/html.dart' as html; // For web
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart'; 
+import 'package:image_picker/image_picker.dart';
 import 'package:swapngive/services/auth_service.dart';
-import 'package:swapngive/services/utilisateur_service.dart'; 
-import 'package:swapngive/services/avis_service.dart'; 
-import 'package:swapngive/models/Avis.dart'; 
+import 'package:swapngive/services/utilisateur_service.dart';
+import 'package:swapngive/services/avis_service.dart';
+import 'package:swapngive/models/Avis.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Utilisateur? utilisateur;
@@ -27,9 +27,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   File? _imageFile;
   String? _profilePhotoUrl;
   List<Avis> _avis = [];
-  Map<String, Utilisateur> _utilisateursMap = {}; 
+  Map<String, Utilisateur> _utilisateursMap = {};
   late TabController _tabController;
-  double _sommeTotalNotes = 0.0; // Pour stocker la somme totale des notes
+  double _sommeTotalNotes = 0.0;
 
   @override
   void initState() {
@@ -37,9 +37,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     _tabController = TabController(length: 2, vsync: this);
     _loadProfilePhoto();
     _fetchAvis();
-    _fetchSommeTotalNotes(); // Appel pour récupérer la somme des notes
+    _fetchSommeTotalNotes();
   }
 
+  // Load profile photo
   Future<void> _loadProfilePhoto() async {
     String? photoUrl = await _utilisateurService.getProfilePhotoUrl(widget.utilisateur!.id);
     setState(() {
@@ -47,6 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     });
   }
 
+  // Fetch reviews for the user
   Future<void> _fetchAvis() async {
     if (widget.utilisateur != null) {
       try {
@@ -69,22 +71,66 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
+  // Fetch the total sum of the ratings
   Future<void> _fetchSommeTotalNotes() async {
-  if (widget.utilisateur != null) {
-    try {
-      // Attendez la valeur de getSommeTotalNotes sans appel à toDouble()
-      _sommeTotalNotes = await _avisService.getSommeTotalNotes(widget.utilisateur!.id);
-      setState(() {}); // Mettre à jour l'interface
-    } catch (e) {
-      print('Erreur lors de la récupération de la somme totale des notes : $e');
+    if (widget.utilisateur != null) {
+      try {
+        _sommeTotalNotes = await _avisService.getSommeTotalNotes(widget.utilisateur!.id);
+        setState(() {});
+      } catch (e) {
+        print('Erreur lors de la récupération de la somme totale des notes : $e');
+      }
     }
   }
-}
 
+  // Pick a new profile image (mobile and web)
+  Future<void> _pickImage() async {
+    try {
+      if (kIsWeb) {
+        html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+        uploadInput.accept = 'image/*';
+        uploadInput.click();
 
+        uploadInput.onChange.listen((e) {
+          final files = uploadInput.files;
+          if (files!.isEmpty) return;
+          final reader = html.FileReader();
+          reader.readAsDataUrl(files[0]);
+          reader.onLoadEnd.listen((e) async {
+            await _updateProfilePhoto(webPhotoFile: files[0]);
+          });
+        });
+      } else {
+        final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+        if (pickedFile != null) {
+          File imageFile = File(pickedFile.path);
+          await _updateProfilePhoto(newPhotoFile: imageFile);
+        }
+      }
+    } catch (e) {
+      print('Erreur lors de la sélection de l\'image: $e');
+    }
+  }
+
+  // Update the profile photo (mobile or web)
+  Future<void> _updateProfilePhoto({File? newPhotoFile, html.File? webPhotoFile}) async {
+    try {
+      await _utilisateurService.updateProfileWithPhoto(
+        widget.utilisateur!.id,
+        widget.utilisateur!,
+        newPhotoFile: newPhotoFile,
+        webPhotoFile: webPhotoFile,
+      );
+      await _loadProfilePhoto(); // Reload profile photo after update
+    } catch (e) {
+      print('Erreur lors de la mise à jour de la photo de profil : $e');
+    }
+  }
+
+  // Disconnect the user
   Future<void> _deconnecter() async {
     await _authService.logout();
-    Navigator.of(context).pushReplacementNamed('/login'); 
+    Navigator.of(context).pushReplacementNamed('/login');
   }
 
   @override
@@ -102,21 +148,29 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
-            onPressed: _deconnecter, 
+            onPressed: _deconnecter,
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(150), 
+          preferredSize: Size.fromHeight(150),
           child: Column(
             children: [
-              CircleAvatar(
-                backgroundImage: _profilePhotoUrl != null
-                    ? NetworkImage(_profilePhotoUrl!)
-                    : AssetImage('images/user.png') as ImageProvider,
-                radius: 50.0,
+              Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    backgroundImage: _profilePhotoUrl != null
+                        ? NetworkImage(_profilePhotoUrl!)
+                        : AssetImage('images/user.png') as ImageProvider,
+                    radius: 50.0,
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.camera_alt, color: Colors.blue),
+                    onPressed: _pickImage,
+                  ),
+                ],
               ),
               SizedBox(height: 10),
-              // Affichage des étoiles
               _buildStarRating(_sommeTotalNotes),
               SizedBox(height: 10),
               TabBar(
@@ -141,8 +195,8 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   }
 
   Widget _buildStarRating(double totalNotes) {
-    int noteCount = _avis.length; // Compte le nombre d'avis
-    double average = noteCount > 0 ? totalNotes / noteCount : 0.0; // Calcul de la note moyenne
+    int noteCount = _avis.length;
+    double average = noteCount > 0 ? totalNotes / noteCount : 0.0;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -231,21 +285,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
             itemBuilder: (context, index) {
               Avis avis = _avis[index];
               Utilisateur? utilisateur = _utilisateursMap[avis.utilisateurId];
-
               return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: utilisateur != null && utilisateur.photoProfil != null
-                      ? NetworkImage(utilisateur.photoProfil!)
-                      : AssetImage('images/user.png') as ImageProvider,
-                ),
                 title: Text(utilisateur?.nom ?? 'Utilisateur inconnu'),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Note: ${avis.note}/5'),
-                    Text('Commentaire: ${avis.contenu}'),
-                  ],
-                ),
+                subtitle: Text(avis.contenu),
+                trailing: Text('Note: ${avis.note.toStringAsFixed(1)}'),
               );
             },
           );
