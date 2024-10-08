@@ -40,6 +40,7 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Liste des Annonces'),
       ),
       body: FutureBuilder<List<Annonce>>(

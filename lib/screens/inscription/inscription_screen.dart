@@ -55,6 +55,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Inscription'),
       ),
       body: Stack(

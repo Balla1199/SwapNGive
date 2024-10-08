@@ -22,93 +22,105 @@ class DetailEchangeScreen extends StatelessWidget {
   DetailEchangeScreen({Key? key, required this.echange}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    var objet2 = echange.annonce.objet; 
-    var images = objet2.imageUrl.split(',');
-    var nomObjet2 = objet2.nom;
-    var descriptionObjet2 = objet2.description;
-    var etatObjet2 = objet2.etat.nom; 
-    var categorieObjet2 = objet2.categorie.nom;
+ Widget build(BuildContext context) {
+  var objet2 = echange.objet2; // Accéder à objet2 depuis l'échange
+  var images = objet2.imageUrl.split(','); // Gestion des images multiples séparées par des virgules
+  var nomObjet2 = objet2.nom;
+  var descriptionObjet2 = objet2.description;
+  var etatObjet2 = objet2.etat.nom; // Récupérer l'état de l'objet
+  var categorieObjet2 = objet2.categorie.nom; // Récupérer la catégorie de l'objet
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Détails de l\'Échange'),
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Détails de l\'Échange'),
+    ),
+    body: SingleChildScrollView(
+      child: Column(
+        children: [
+          // Slider d'images
+          CarouselSlider(
+            options: CarouselOptions(autoPlay: true),
+            items: images.map((image) {
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 5),
+                child: Image.network(image, fit: BoxFit.cover),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+
+          // Nom de l'objet2
+          Text(nomObjet2, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+
+          // Description de l'objet2
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(descriptionObjet2, style: TextStyle(fontSize: 16), textAlign: TextAlign.center),
+          ),
+          const SizedBox(height: 16),
+
+          // État de l'objet2
+          Text('État : $etatObjet2', style: TextStyle(fontSize: 18)),
+          const SizedBox(height: 8),
+
+          // Catégorie de l'objet2
+          Text('Catégorie : $categorieObjet2', style: TextStyle(fontSize: 18)),
+          const SizedBox(height: 16),
+
+          // Gestion de l'échange : Boutons Accepter, Refuser et Discuter
+          FutureBuilder<Utilisateur?>(
+            future: AuthService().getCurrentUserDetails(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator(); // Indicateur de chargement
+              } else if (snapshot.hasError) {
+                return Text('Erreur de récupération de l\'utilisateur'); // Gestion des erreurs
+              } else {
+                final utilisateur = snapshot.data;
+
+                // Vérifier si l'utilisateur actuel est celui impliqué dans l'échange
+                final isCurrentUser = utilisateur != null && utilisateur.id != echange.idUtilisateur2;
+
+                // Afficher les boutons d'action uniquement si c'est l'utilisateur courant
+                return isCurrentUser
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              print("Accepter l'échange: ${echange.id}");
+                              _mettreAJourStatut(echange.id, "accepté", context); // Mise à jour du statut de l'échange
+                            },
+                            child: Text('Accepter'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              print("Refuser l'échange: ${echange.id}");
+                              _mettreAJourStatut(echange.id, "refusé", context); // Refuser l'échange
+                            },
+                            child: Text('Refuser'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              print("Discussion sur l'échange: ${echange.id}");
+                              _discuter(context); // Lancer une discussion
+                            },
+                            child: Text('Discuter'),
+                          ),
+                        ],
+                      )
+                    : SizedBox.shrink(); // Ne rien afficher si ce n'est pas l'utilisateur courant
+              }
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            CarouselSlider(
-              options: CarouselOptions(autoPlay: true),
-              items: images.map((image) {
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 5),
-                  child: Image.network(image, fit: BoxFit.cover),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 16),
-            Text(nomObjet2, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(descriptionObjet2, style: TextStyle(fontSize: 16), textAlign: TextAlign.center),
-            ),
-            const SizedBox(height: 16),
-            Text('État : $etatObjet2', style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Text('Catégorie : $categorieObjet2', style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 16),
+    ),
+  );
+}
 
-            // Récupération de l'utilisateur actuel
-            FutureBuilder<Utilisateur?>(
-
-              future: AuthService().getCurrentUserDetails(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Erreur de récupération de l\'utilisateur');
-                } else {
-                  final utilisateur = snapshot.data;
-
-                  final isCurrentUser = utilisateur != null && utilisateur.id != echange.idUtilisateur2;
-
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: isCurrentUser ? [
-                      ElevatedButton(
-                        onPressed: () {
-                          print("Accepter l'échange: ${echange.id}");
-                          _mettreAJourStatut(echange.id, "accepté", context);
-                        },
-                        child: Text('Accepter'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          print("Refuser l'échange: ${echange.id}");
-                          _mettreAJourStatut(echange.id, "refusé", context);
-                        },
-                        child: Text('Refuser'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          print("Discussion sur l'échange: ${echange.id}");
-                          _discuter(context);
-                        },
-                        child: Text('Discuter'),
-                      ),
-                    ] : [],
-                  );
-                }
-              },
-            ),
-
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
 
   Future<void> _mettreAJourStatut(String idEchange, String nouveauStatut, BuildContext context) async {
   try {

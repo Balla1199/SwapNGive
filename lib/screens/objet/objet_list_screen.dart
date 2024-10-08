@@ -34,6 +34,7 @@ class _ObjetListScreenState extends State<ObjetListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Liste des Objets'),
         actions: [
           IconButton(

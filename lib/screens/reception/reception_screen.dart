@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/Don.dart';
 import 'package:swapngive/models/Echange.dart';
+import 'package:swapngive/models/objet.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:swapngive/screens/reception/detaildonscreen.dart';
 import 'package:swapngive/screens/reception/detailechangescreen.dart';
@@ -84,6 +85,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> with SingleTickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text("Réception"),
         bottom: TabBar(
           controller: _tabController,
@@ -105,84 +107,89 @@ class _ReceptionScreenState extends State<ReceptionScreen> with SingleTickerProv
     );
   }
 
- Widget buildEchangesTab() {
-    return Column(
-      children: [
-        Expanded(
-          child: ListView.builder(
-            itemCount: _echanges.length,
-            itemBuilder: (context, index) {
-              final echange = _echanges[index];
+Widget buildEchangesTab() {
+  return Column(
+    children: [
+      Expanded(
+        child: ListView.builder(
+          itemCount: _echanges.length,
+          itemBuilder: (context, index) {
+            final echange = _echanges[index];
 
-              // Appliquer le filtre
-              if ((selectedFilter == 'reçu' && echange.idUtilisateur1 != currentUserId) || 
-                  (selectedFilter == 'envoyé' && echange.idUtilisateur1 == currentUserId)) {
-                return SizedBox.shrink(); // Ne rien afficher pour les échanges non filtrés
-              }
+            // Appliquer le filtre
+            if ((selectedFilter == 'reçu' && echange.idUtilisateur1 != currentUserId) || 
+                (selectedFilter == 'envoyé' && echange.idUtilisateur1 == currentUserId)) {
+              return SizedBox.shrink(); // Ne rien afficher pour les échanges non filtrés
+            }
+            
+            final objet2 = echange.objet2;
+            final nomUtilisateur = objet2.utilisateur.nom;
+            final message = echange.message ?? 'Pas de message';
+            final Objet1 = echange.annonce.objet;
+            final imageUrl = Objet1.imageUrl;
 
-              final objet = echange.annonce.objet;
-              final nomObjet = objet.nom;
-              final description = objet.description;
-
-              return Card(
-                child: ListTile(
-                  title: Text(nomObjet),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Date: ${echange.dateEchange ?? 'Date non spécifiée'}'),
-                      Text('Description: $description'),
-                      Text('Statut: ${echange.statut ?? 'Statut non spécifié'}'),
-                    ],
-                  ),
-                  trailing: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => DetailEchangeScreen(echange: echange)),
-                      );
-                    },
-                    child: Text("Voir Détails"),
-                  ),
+            return Card(
+              child: ListTile(
+                leading: imageUrl.isNotEmpty
+                    ? Image.network(imageUrl) // Afficher l'image de objet2
+                    : Icon(Icons.image_not_supported), // Icône si aucune image disponible
+                title: Text(nomUtilisateur), // Nom du propriétaire de l'objet2
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Message: $message'), // Message associé à l'échange
+                    Text('Statut: ${echange.statut ?? 'Statut non spécifié'}'),
+                  ],
                 ),
-              );
-            },
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    selectedFilter = 'envoyé'; // Met à jour le filtre sélectionné
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedFilter == 'envoyé' ? Colors.blue : Colors.grey, // Change la couleur selon le filtre sélectionné
+                trailing: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DetailEchangeScreen(echange: echange)),
+                    );
+                  },
+                  child: Text("Voir Détails"),
                 ),
-                child: Text("Envoyé"),
               ),
-              SizedBox(width: 10), // Espacement entre les boutons
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    selectedFilter = 'reçu'; // Met à jour le filtre sélectionné
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedFilter == 'reçu' ? Colors.blue : Colors.grey, // Change la couleur selon le filtre sélectionné
-                ),
-                child: Text("Reçu"),
-              ),
-            ],
-          ),
+            );
+          },
         ),
-      ],
-    );
-  }
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  selectedFilter = 'envoyé'; // Met à jour le filtre sélectionné
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: selectedFilter == 'envoyé' ? Colors.blue : Colors.grey, // Change la couleur selon le filtre sélectionné
+              ),
+              child: Text("Envoyé"),
+            ),
+            SizedBox(width: 10), // Espacement entre les boutons
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  selectedFilter = 'reçu'; // Met à jour le filtre sélectionné
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: selectedFilter == 'reçu' ? Colors.blue : Colors.grey, // Change la couleur selon le filtre sélectionné
+              ),
+              child: Text("Reçu"),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
 
   Widget buildDonsTab() {
     return Column(
