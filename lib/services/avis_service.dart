@@ -53,5 +53,24 @@ Future<double> getSommeTotalNotes(String utilisateurEvalueId) async {
     throw e;
   }
 }
+ 
+ Future<double> getMoyenneNotes(String utilisateurEvalueId) async {
+  try {
+    List<Avis> avisList = await getAvisUtilisateur(utilisateurEvalueId);
+    if (avisList.isEmpty) {
+      return 0.0; // Aucun avis, donc moyenne à 0
+    }
+    
+    double sommeTotal = avisList.fold(0.0, (sum, avis) => sum + avis.note);
+    double moyenne = sommeTotal / avisList.length;
+    
+    print('Moyenne des notes : $moyenne');
+    return moyenne;
+  } catch (e) {
+    print('Erreur lors du calcul de la moyenne des notes : $e');
+    throw e;
+  }
+}
+
 
 }

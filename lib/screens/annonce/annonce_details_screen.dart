@@ -3,8 +3,9 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/screens/don/MessageDon_screen.dart';
 import 'package:swapngive/screens/echange/objetechange_screen.dart';
-import 'package:swapngive/services/auth_service.dart'; 
-
+import 'package:swapngive/services/auth_service.dart';
+import 'package:swapngive/services/utilisateur_service.dart';
+import 'package:swapngive/services/avis_service.dart'; // Importation du service AvisService
 
 class AnnonceDetailsScreen extends StatefulWidget {
   final Annonce annonce;
@@ -16,22 +17,72 @@ class AnnonceDetailsScreen extends StatefulWidget {
 }
 
 class _AnnonceDetailsScreenState extends State<AnnonceDetailsScreen> {
-  final AuthService _authService = AuthService(); 
-  bool isDifferentUser = false; 
+  final AuthService _authService = AuthService();
+  final UtilisateurService _utilisateurService = UtilisateurService();
+  final AvisService _avisService = AvisService(); // Ajout du service d'avis
+
+  bool isDifferentUser = false;
+  String? profilePhotoUrl;
+  String? utilisateurNom;
+  double moyenneNotes = 0.0; // Variable pour stocker la moyenne des notes
 
   @override
   void initState() {
     super.initState();
     _checkUser();
+    _loadUtilisateurData();
+    _loadMoyenneNotes(); // Appel pour charger la moyenne des notes
   }
 
+  // Méthode pour vérifier si l'utilisateur courant est le même que celui de l'annonce
   void _checkUser() async {
-    var currentUser = await _authService.getCurrentUserDetails(); 
+    var currentUser = await _authService.getCurrentUserDetails();
     if (currentUser != null && currentUser.id != widget.annonce.utilisateur.id) {
       setState(() {
         isDifferentUser = true;
       });
     }
+  }
+
+  // Méthode pour charger la photo de profil et le nom de l'utilisateur
+  void _loadUtilisateurData() async {
+    String userId = widget.annonce.utilisateur.id;
+    String? photoUrl = await _utilisateurService.getProfilePhotoUrl(userId);
+    setState(() {
+      profilePhotoUrl = photoUrl;
+      utilisateurNom = widget.annonce.utilisateur.nom;
+    });
+  }
+
+  // Méthode pour charger la moyenne des notes
+  void _loadMoyenneNotes() async {
+    String userId = widget.annonce.utilisateur.id;
+    try {
+      double moyenne = await _avisService.getMoyenneNotes(userId); // Utiliser la nouvelle méthode
+      setState(() {
+        moyenneNotes = moyenne; // Mettre à jour la variable moyenneNotes
+      });
+    } catch (e) {
+      print('Erreur lors du chargement des notes : $e');
+    }
+  }
+
+  // Méthode pour afficher les étoiles
+  Widget _buildStarRating(double rating) {
+    int fullStars = rating.floor();
+    bool hasHalfStar = (rating - fullStars) >= 0.5;
+
+    return Row(
+      children: List.generate(5, (index) {
+        if (index < fullStars) {
+          return Icon(Icons.star, color: Colors.amber);
+        } else if (index == fullStars && hasHalfStar) {
+          return Icon(Icons.star_half, color: Colors.amber);
+        } else {
+          return Icon(Icons.star_border, color: Colors.amber);
+        }
+      }),
+    );
   }
 
   @override
@@ -85,19 +136,17 @@ class _AnnonceDetailsScreenState extends State<AnnonceDetailsScreen> {
             if (isDifferentUser)
               ElevatedButton(
                 onPressed: () {
-                  // Si l'annonce est de type "don", on redirige vers la page DemandeMessageScreen
                   if (widget.annonce.type == TypeAnnonce.don) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => MessageDonScreen(
-                          annonce: widget.annonce, // Passez l'annonce
-                          idObjet: widget.annonce.objet.id, // Passez l'ID de l'objet
+                          annonce: widget.annonce,
+                          idObjet: widget.annonce.objet.id,
                         ),
                       ),
                     );
                   } else {
-                    // Sinon, on conserve la logique pour les échanges
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -133,6 +182,34 @@ class _AnnonceDetailsScreenState extends State<AnnonceDetailsScreen> {
             ),
 
             Spacer(),
+
+            // Affichage de la photo de profil et du nom de l'utilisateur avec les étoiles
+            Row(
+              children: [
+                if (profilePhotoUrl != null)
+                  CircleAvatar(
+                    backgroundImage: NetworkImage(profilePhotoUrl!),
+                    radius: 25,
+                  )
+                else
+                  CircleAvatar(
+                    backgroundImage: AssetImage('assets/images/user.png'),
+                    radius: 25,
+                  ),
+                SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      utilisateurNom ?? 'Utilisateur',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 4.0),
+                    _buildStarRating(moyenneNotes), // Affichage des étoiles avec la moyenne
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       ),

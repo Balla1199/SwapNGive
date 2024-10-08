@@ -29,7 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   List<Avis> _avis = [];
   Map<String, Utilisateur> _utilisateursMap = {};
   late TabController _tabController;
-  double _sommeTotalNotes = 0.0;
+  double _moyenneNotes = 0.0; // Renamed variable for average rating
 
   @override
   void initState() {
@@ -37,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     _tabController = TabController(length: 2, vsync: this);
     _loadProfilePhoto();
     _fetchAvis();
-    _fetchSommeTotalNotes();
+    _fetchMoyenneNotes(); // Changed method name here
   }
 
   // Load profile photo
@@ -71,14 +71,14 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
-  // Fetch the total sum of the ratings
-  Future<void> _fetchSommeTotalNotes() async {
+  // Fetch the average rating of the reviews
+  Future<void> _fetchMoyenneNotes() async { // Renamed method
     if (widget.utilisateur != null) {
       try {
-        _sommeTotalNotes = await _avisService.getSommeTotalNotes(widget.utilisateur!.id);
+        _moyenneNotes = await _avisService.getMoyenneNotes(widget.utilisateur!.id); // Changed method call here
         setState(() {});
       } catch (e) {
-        print('Erreur lors de la récupération de la somme totale des notes : $e');
+        print('Erreur lors de la récupération de la moyenne des notes : $e');
       }
     }
   }
@@ -171,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                 ],
               ),
               SizedBox(height: 10),
-              _buildStarRating(_sommeTotalNotes),
+              _buildStarRating(_moyenneNotes), // Updated variable name here
               SizedBox(height: 10),
               TabBar(
                 controller: _tabController,
@@ -194,9 +194,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildStarRating(double totalNotes) {
+  Widget _buildStarRating(double moyenneNotes) { // Updated parameter name here
     int noteCount = _avis.length;
-    double average = noteCount > 0 ? totalNotes / noteCount : 0.0;
+    double average = noteCount > 0 ? moyenneNotes : 0.0; // Updated variable name here
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -283,12 +283,13 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         : ListView.builder(
             itemCount: _avis.length,
             itemBuilder: (context, index) {
-              Avis avis = _avis[index];
-              Utilisateur? utilisateur = _utilisateursMap[avis.utilisateurId];
+              final avisItem = _avis[index];
+              final utilisateur = _utilisateursMap[avisItem.utilisateurId];
+
               return ListTile(
                 title: Text(utilisateur?.nom ?? 'Utilisateur inconnu'),
-                subtitle: Text(avis.contenu),
-                trailing: Text('Note: ${avis.note.toStringAsFixed(1)}'),
+                subtitle: Text(avisItem.contenu),
+                trailing: Text(avisItem.note.toString()),
               );
             },
           );

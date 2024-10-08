@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/Annonce.dart';
+import 'package:swapngive/models/Avis.dart';
 import 'package:swapngive/services/annonceservice.dart';
+import 'package:swapngive/services/utilisateur_service.dart';
+import 'package:swapngive/services/avis_service.dart'; // Importer le service d'avis
 import 'annonce_details_screen.dart'; // Importer l'écran de détails de l'annonce
 
 class AnnonceListScreen extends StatefulWidget {
@@ -10,10 +13,13 @@ class AnnonceListScreen extends StatefulWidget {
 
 class _AnnonceListScreenState extends State<AnnonceListScreen> {
   final AnnonceService _annonceService = AnnonceService();
+  final UtilisateurService _utilisateurService = UtilisateurService();
+  final AvisService _avisService = AvisService(); // Créer une instance de AvisService
   late Future<List<Annonce>> _annoncesFuture;
 
-  // Liste pour suivre l'état des likes
   List<bool> _likedStatus = [];
+  List<String?> _profilePhotos = [];
+  List<double> _moyennesNotes = []; // Liste pour stocker les moyennes des notes
 
   @override
   void initState() {
@@ -21,12 +27,34 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
     _annoncesFuture = _annonceService.recupererAnnoncesParStatut(StatutAnnonce.disponible);
   }
 
-  // Méthode pour mettre à jour les likes
+  // Méthode pour récupérer les moyennes des notes
+  Future<void> _loadMoyennesNotes(List<Annonce> annonces) async {
+    List<double> moyennesNotes = [];
+    for (var annonce in annonces) {
+      double moyenne = await _avisService.getMoyenneNotes(annonce.utilisateur.id); // Récupérer la moyenne des notes
+      moyennesNotes.add(moyenne);
+    }
+    setState(() {
+      _moyennesNotes = moyennesNotes; // Mettre à jour la liste des moyennes des notes
+    });
+  }
+
+  Future<void> _loadProfilePhotos(List<Annonce> annonces) async {
+    List<String?> profilePhotos = [];
+    for (var annonce in annonces) {
+      String? photoUrl = await _utilisateurService.getProfilePhotoUrl(annonce.utilisateur.id);
+      profilePhotos.add(photoUrl);
+    }
+    setState(() {
+      _profilePhotos = profilePhotos;
+    });
+  }
+
   Future<void> _updateLikes(String annonceId, int nouveauNombreLikes, int index) async {
     try {
       await _annonceService.mettreAJourLikes(annonceId, nouveauNombreLikes);
       setState(() {
-        _likedStatus[index] = !_likedStatus[index]; // Changer l'état du like
+        _likedStatus[index] = !_likedStatus[index];
       });
       print("Likes mis à jour avec succès !");
     } catch (e) {
@@ -34,10 +62,23 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
     }
   }
 
+  // Méthode pour afficher les étoiles
+  Widget _buildStarRating(double moyenne) {
+    int fullStars = moyenne.floor(); // Nombre d'étoiles pleines
+    int halfStars = (moyenne % 1 >= 0.5) ? 1 : 0; // Nombre d'étoiles à moitié pleines
+    int emptyStars = 5 - fullStars - halfStars; // Nombre d'étoiles vides
+
+    return Row(
+      children: [
+        ...List.generate(fullStars, (index) => Icon(Icons.star, color: Colors.amber)),
+        ...List.generate(halfStars, (index) => Icon(Icons.star_half, color: Colors.amber)),
+        ...List.generate(emptyStars, (index) => Icon(Icons.star_border, color: Colors.amber)),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    print("Construction du widget AnnonceListScreen...");
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -47,30 +88,62 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
         future: _annoncesFuture,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            print("Erreur lors de la récupération des annonces : ${snapshot.error}");
             return Center(child: Text('Erreur : ${snapshot.error}'));
           }
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            print("Chargement des annonces en cours...");
             return Center(child: CircularProgressIndicator());
           }
 
           final annonces = snapshot.data ?? [];
-          _likedStatus = List.generate(annonces.length, (index) => false); // Initialiser l'état des likes
+          _likedStatus = List.generate(annonces.length, (index) => false);
 
-          print("Nombre d'annonces récupérées : ${annonces.length}");
+          // Charger les photos de profil et les moyennes des notes des utilisateurs
+          if (_profilePhotos.isEmpty) {
+            _loadProfilePhotos(annonces);
+            _loadMoyennesNotes(annonces); // Charger les moyennes des notes
+          }
 
           return ListView.builder(
             itemCount: annonces.length,
             itemBuilder: (context, index) {
               final annonce = annonces[index];
-              print("Affichage de l'annonce à l'index $index : ${annonce.titre}");
+
+              // Récupérer la photo de profil et la moyenne des notes
+              final profilePhoto = _profilePhotos.length > index ? _profilePhotos[index] : null;
+              final moyenneNote = _moyennesNotes.length > index ? _moyennesNotes[index] : null;
 
               return Card(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Afficher la photo de profil, le nom de l'utilisateur et la moyenne des notes
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 25,
+                          backgroundImage: (profilePhoto != null && profilePhoto.isNotEmpty)
+                              ? NetworkImage(profilePhoto)
+                              : AssetImage('assets/images/user.png') as ImageProvider,
+                        ),
+                        SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              annonce.utilisateur.nom,
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            // Afficher la moyenne des notes sous forme d'étoiles
+                            moyenneNote != null
+                                ? _buildStarRating(moyenneNote) // Appel à la méthode pour afficher les étoiles
+                                : Container(), // Si pas encore chargée, afficher rien
+                          ],
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+
                     // Afficher l'image en haut et rediriger vers les détails
                     GestureDetector(
                       onTap: () {
@@ -84,7 +157,7 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
                       child: Stack(
                         children: [
                           Container(
-                            height: 150, // Hauteur de l'image
+                            height: 150,
                             child: (annonce.objet.imageUrl != null && annonce.objet.imageUrl.isNotEmpty)
                                 ? Image.network(
                                     annonce.objet.imageUrl,
@@ -107,14 +180,14 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
                                     color: _likedStatus[index] ? Colors.red : Colors.grey,
                                   ),
                                   onPressed: () {
-                                    int nouveauNombreLikes = annonce.likes + (_likedStatus[index] ? -1 : 1); // Met à jour le nombre de likes
+                                    int nouveauNombreLikes = annonce.likes + (_likedStatus[index] ? -1 : 1);
                                     _updateLikes(annonce.id, nouveauNombreLikes, index);
                                   },
                                 ),
                                 // Afficher le nombre total de likes à côté du cœur
                                 Text(
-                                  '${annonce.likes}', // Assurez-vous que l'objet annonce a un champ likes
-                                  style: TextStyle(fontSize: 16), // Style pour le nombre de likes
+                                  '${annonce.likes}', 
+                                  style: TextStyle(fontSize: 16),
                                 ),
                               ],
                             ),
