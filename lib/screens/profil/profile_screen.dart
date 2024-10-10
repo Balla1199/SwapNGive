@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:io'; // For mobile
+import 'dart:io'; // Pour mobile
 import 'package:swapngive/models/utilisateur.dart';
-import 'package:universal_html/html.dart' as html; // For web
+import 'package:universal_html/html.dart' as html; // Pour web
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,9 +11,16 @@ import 'package:swapngive/services/avis_service.dart';
 import 'package:swapngive/models/Avis.dart';
 
 class ProfileScreen extends StatefulWidget {
+  final String utilisateurId;
+  final bool isDifferentUser; // Ajout de isDifferentUser pour la gestion de l'utilisateur
   final Utilisateur? utilisateur;
 
-  const ProfileScreen({this.utilisateur});
+  const ProfileScreen({
+    Key? key,
+    required this.utilisateurId,
+    required this.isDifferentUser, // Passez cette variable ici
+    this.utilisateur,
+  }) : super(key: key);
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
@@ -29,7 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
   List<Avis> _avis = [];
   Map<String, Utilisateur> _utilisateursMap = {};
   late TabController _tabController;
-  double _moyenneNotes = 0.0; // Renamed variable for average rating
+  double _moyenneNotes = 0.0; // Variable pour la moyenne des notes
 
   @override
   void initState() {
@@ -37,18 +44,24 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     _tabController = TabController(length: 2, vsync: this);
     _loadProfilePhoto();
     _fetchAvis();
-    _fetchMoyenneNotes(); // Changed method name here
+    _fetchMoyenneNotes();
   }
 
-  // Load profile photo
   Future<void> _loadProfilePhoto() async {
-    String? photoUrl = await _utilisateurService.getProfilePhotoUrl(widget.utilisateur!.id);
-    setState(() {
-      _profilePhotoUrl = photoUrl;
-    });
+    if (widget.utilisateur != null) {
+      try {
+        String? photoUrl = await _utilisateurService.getProfilePhotoUrl(widget.utilisateur!.id);
+        setState(() {
+          _profilePhotoUrl = photoUrl;
+        });
+      } catch (e) {
+        print('Erreur lors du chargement de la photo de profil : $e');
+      }
+    } else {
+      print("Utilisateur is null");
+    }
   }
 
-  // Fetch reviews for the user
   Future<void> _fetchAvis() async {
     if (widget.utilisateur != null) {
       try {
@@ -71,11 +84,10 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
-  // Fetch the average rating of the reviews
-  Future<void> _fetchMoyenneNotes() async { // Renamed method
+  Future<void> _fetchMoyenneNotes() async {
     if (widget.utilisateur != null) {
       try {
-        _moyenneNotes = await _avisService.getMoyenneNotes(widget.utilisateur!.id); // Changed method call here
+        _moyenneNotes = await _avisService.getMoyenneNotes(widget.utilisateur!.id);
         setState(() {});
       } catch (e) {
         print('Erreur lors de la récupération de la moyenne des notes : $e');
@@ -83,7 +95,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
-  // Pick a new profile image (mobile and web)
   Future<void> _pickImage() async {
     try {
       if (kIsWeb) {
@@ -112,7 +123,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
-  // Update the profile photo (mobile or web)
   Future<void> _updateProfilePhoto({File? newPhotoFile, html.File? webPhotoFile}) async {
     try {
       await _utilisateurService.updateProfileWithPhoto(
@@ -127,7 +137,6 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     }
   }
 
-  // Disconnect the user
   Future<void> _deconnecter() async {
     await _authService.logout();
     Navigator.of(context).pushReplacementNamed('/login');
@@ -146,10 +155,11 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         automaticallyImplyLeading: false,
         title: Text('Profil de ${widget.utilisateur?.nom ?? ''}'),
         actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: _deconnecter,
-          ),
+          if (!widget.isDifferentUser) // Afficher le bouton déconnexion uniquement pour l'utilisateur connecté
+            IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: _deconnecter,
+            ),
         ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(150),
@@ -164,14 +174,15 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
                         : AssetImage('images/user.png') as ImageProvider,
                     radius: 50.0,
                   ),
-                  IconButton(
-                    icon: Icon(Icons.camera_alt, color: Colors.blue),
-                    onPressed: _pickImage,
-                  ),
+                  if (!widget.isDifferentUser) // Afficher l'icône de modification uniquement pour l'utilisateur connecté
+                    IconButton(
+                      icon: Icon(Icons.camera_alt, color: Colors.blue),
+                      onPressed: _pickImage,
+                    ),
                 ],
               ),
               SizedBox(height: 10),
-              _buildStarRating(_moyenneNotes), // Updated variable name here
+              _buildStarRating(_moyenneNotes),
               SizedBox(height: 10),
               TabBar(
                 controller: _tabController,
@@ -194,9 +205,9 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     );
   }
 
-  Widget _buildStarRating(double moyenneNotes) { // Updated parameter name here
+  Widget _buildStarRating(double moyenneNotes) {
     int noteCount = _avis.length;
-    double average = noteCount > 0 ? moyenneNotes : 0.0; // Updated variable name here
+    double average = noteCount > 0 ? moyenneNotes : 0.0;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -217,81 +228,82 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           SizedBox(height: 20),
-          Row(
-            children: [
-              Icon(Icons.person, color: Colors.blue),
-              SizedBox(width: 10),
-              Text(
-                'Nom:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(width: 10),
-              Text('${widget.utilisateur?.nom ?? 'Non renseigné'}'),
-            ],
-          ),
+          _buildProfileInfoRow(Icons.person, 'Nom:', widget.utilisateur?.nom ?? 'Non renseigné'),
           SizedBox(height: 20),
-          Row(
-            children: [
-              Icon(Icons.location_on, color: Colors.blue),
-              SizedBox(width: 10),
-              Text(
-                'Adresse:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(width: 10),
-              Flexible(
-                child: Text('${widget.utilisateur?.adresse ?? 'Non renseigné'}'),
-              ),
-            ],
-          ),
+          _buildProfileInfoRow(Icons.location_on, 'Adresse:', widget.utilisateur?.adresse ?? 'Non renseigné'),
           SizedBox(height: 20),
-          Row(
-            children: [
-              Icon(Icons.email, color: Colors.blue),
-              SizedBox(width: 10),
-              Text(
-                'Email:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(width: 10),
-              Flexible(
-                child: Text('${widget.utilisateur?.email ?? 'Non renseigné'}'),
-              ),
-            ],
-          ),
+          _buildProfileInfoRow(Icons.email, 'Email:', widget.utilisateur?.email ?? 'Non renseigné'),
           SizedBox(height: 20),
-          Row(
-            children: [
-              Icon(Icons.phone, color: Colors.blue),
-              SizedBox(width: 10),
-              Text(
-                'Téléphone:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(width: 10),
-              Text('${widget.utilisateur?.telephone ?? 'Non renseigné'}'),
-            ],
-          ),
+          _buildProfileInfoRow(Icons.phone, 'Téléphone:', widget.utilisateur?.telephone ?? 'Non renseigné'),
         ],
       ),
     );
   }
 
-  Widget _buildEvaluationSection() {
-    return _avis.isEmpty
-        ? Center(child: Text('Aucun avis disponible.'))
-        : ListView.builder(
-            itemCount: _avis.length,
-            itemBuilder: (context, index) {
-              final avisItem = _avis[index];
-              final utilisateur = _utilisateursMap[avisItem.utilisateurId];
-
-              return ListTile(
-                title: Text(utilisateur?.nom ?? 'Utilisateur inconnu'),
-                subtitle: Text(avisItem.contenu),
-                trailing: Text(avisItem.note.toString()),
-              );
-            },
-          );
+  Widget _buildProfileInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.blue),
+        SizedBox(width: 10),
+        Text(
+          label,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        SizedBox(width: 10),
+        Flexible(child: Text(value)),
+      ],
+    );
   }
+  
+  Widget _buildEvaluationSection() {
+  // Vérifie si la liste des avis est vide
+  if (_avis.isEmpty) {
+    return Center(child: Text('Aucun avis trouvé.'));
+  }
+
+  // Utilise ListView.builder pour générer dynamiquement les avis
+  return ListView.builder(
+    itemCount: _avis.length, // Nombre total d'éléments dans la liste
+    itemBuilder: (context, index) {
+      final avisItem = _avis[index]; // Récupère l'élément d'avis à l'index donné
+      final utilisateurNom = _utilisateursMap.containsKey(avisItem.utilisateurId)
+          ? _utilisateursMap[avisItem.utilisateurId]?.nom ?? 'Utilisateur inconnu' // Vérifie si l'utilisateur existe et récupère son nom
+          : 'Utilisateur inconnu'; // Valeur par défaut si l'utilisateur est introuvable
+
+      // Récupérer l'URL de la photo de profil de l'utilisateur si elle est disponible
+      final utilisateurPhotoUrl = _utilisateursMap.containsKey(avisItem.utilisateurId)
+          ? _utilisateursMap[avisItem.utilisateurId]?.photoProfil // Récupère l'URL de la photo de profil
+          : null; // Valeur par défaut si la photo de profil est introuvable
+
+      // Renvoie un widget ListTile pour afficher les informations de l'avis
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 1.0), // Ajoute un espacement vertical
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start, // Espace entre les éléments dans la Row
+          children: [
+            // Afficher la photo de profil si elle existe, sinon une image par défaut
+            CircleAvatar(
+              backgroundImage: utilisateurPhotoUrl != null
+                  ? NetworkImage(utilisateurPhotoUrl)
+                  : AssetImage('images/user.png') as ImageProvider, // Image par défaut si l'URL est null
+              radius: 20.0,
+            ),
+            SizedBox(width: 10), // Espacement entre la photo et le texte
+
+            Expanded( // Utilise Expanded pour permettre à ListTile de prendre l'espace disponible
+              child: ListTile(
+                title: Text(utilisateurNom), // Titre avec le nom de l'utilisateur
+                subtitle: Text(avisItem.contenu), // Sous-titre avec le contenu de l'avis
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+
+
+
 }

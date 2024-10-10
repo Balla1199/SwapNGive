@@ -160,17 +160,22 @@ class AppRoutes {
           builder: (_) => AnnonceDetailsScreen(annonce: annonce!),
         );
 
-      // Routes pour la connexion, l'inscription et le profil
-      case login:
-        return MaterialPageRoute(builder: (_) => LoginScreen());
-      case inscription:
-        return MaterialPageRoute(builder: (_) => InscriptionScreen());
-      case profile:
-        final args = settings.arguments as Map<String, dynamic>?; 
-        final utilisateur = args != null ? args['utilisateur'] as Utilisateur : null;
-        return MaterialPageRoute(
-          builder: (_) => ProfileScreen(utilisateur: utilisateur!),
-        );
+    case profile:
+  final args = settings.arguments as Map<String, dynamic>?; 
+  final utilisateur = args != null ? args['utilisateur'] as Utilisateur : null;
+  final utilisateurId = utilisateur?.id; // Assurez-vous d'avoir l'ID utilisateur ici
+  
+  // Déterminez si l'utilisateur actuel est différent de l'utilisateur affiché
+  bool isDifferentUser = true; // Changez cette logique en fonction de votre cas d'utilisation
+
+  return MaterialPageRoute(
+    builder: (_) => ProfileScreen(
+      utilisateurId: utilisateurId!, // Assurez-vous que cet ID n'est jamais null
+      isDifferentUser: isDifferentUser, // Ajoutez cet argument
+      utilisateur: utilisateur,
+    ),
+  );
+
 
       // Cas pour UtilisateurListScreen
       case utilisateurList:
@@ -302,6 +307,13 @@ case detailDonScreen:
   // Ajout du cas pour DashboardScreen
       case dashboardScreen:
         return MaterialPageRoute(builder: (_) => DashboardScreen());
+
+        
+      // Routes pour la connexion, l'inscription et le profil
+      case login:
+        return MaterialPageRoute(builder: (_) => LoginScreen());
+      case inscription:
+        return MaterialPageRoute(builder: (_) => InscriptionScreen());
 
       default:
         return MaterialPageRoute(

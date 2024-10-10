@@ -21,7 +21,6 @@ class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
-
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
@@ -32,23 +31,48 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    // Admin Screens for Sidebar
-    _adminScreens = [
-      DashboardScreen(), // Ajouter DashboardScreen pour l'administrateur
-      UtilisateurListScreen(),
-      CategorieListScreen(),
-      EtatListScreen(),
-      ProfileScreen(utilisateur: widget.utilisateur),
-    ];
+    // Vérifiez si 'utilisateur' n'est pas null
+    String? utilisateurId = widget.utilisateur?.id;
 
-    // Client Screens for BottomNavigationBar
-    _clientScreens = [
-      AnnonceListScreen(),
-      ObjetListScreen(),
-      ReceptionScreen(),
-      NotificationScreen(),
-      ProfileScreen(utilisateur: widget.utilisateur),
-    ];
+    if (utilisateurId == null) {
+      // Gérer le cas où l'utilisateur n'est pas connecté ou n'a pas d'ID
+      // Vous pourriez naviguer vers une page de connexion ici
+      return;
+    }
+
+  _adminScreens = [
+  DashboardScreen(),
+  UtilisateurListScreen(),
+  CategorieListScreen(),
+  EtatListScreen(),
+  ProfileScreen(
+    utilisateurId: utilisateurId, 
+    utilisateur: widget.utilisateur,
+    isDifferentUser: false, // Ajoutez isDifferentUser ici, à ajuster selon votre logique
+  ),
+];
+
+   _clientScreens = [
+  AnnonceListScreen(),
+  ObjetListScreen(),
+  ReceptionScreen(),
+  NotificationScreen(),
+  ProfileScreen(
+    utilisateurId: utilisateurId, 
+    utilisateur: widget.utilisateur,
+    isDifferentUser: false, // Ajoutez isDifferentUser ici, à ajuster selon votre logique
+  ),
+];
+
+
+    // Imprimer la longueur des listes pour le débogage
+    print('Longueur des écrans admin: ${_adminScreens.length}');
+    print('Longueur des écrans client: ${_clientScreens.length}');
+
+    // Vérifiez que les listes contiennent des éléments avant de les utiliser
+    if (_clientScreens.isEmpty) {
+      print('Aucun écran client disponible.'); // Message d'erreur
+    }
   }
 
   void _onItemTapped(int index) {
@@ -59,23 +83,31 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Check if the user's role is admin
+    // Vérifier si l'utilisateur est admin
     bool isAdmin = widget.utilisateur?.role == Role.admin;
 
     if (isAdmin) {
-      // Admin view with sidebar
+      // Vue admin avec sidebar
       return SidebarLayout(
         screens: _adminScreens,
         selectedIndex: _selectedIndex,
         onItemTapped: _onItemTapped,
       );
     } else {
-      // Client view with bottom navigation bar
-      return ClientBottomNavigationBar(
-        screens: _clientScreens,
-        selectedIndex: _selectedIndex,
-        onItemTapped: _onItemTapped,
-      );
+      // Client view avec bottom navigation bar
+      if (_clientScreens.isNotEmpty) {
+        return ClientBottomNavigationBar(
+          screens: _clientScreens,
+          selectedIndex: _selectedIndex,
+          onItemTapped: _onItemTapped,
+        );
+      } else {
+        // Gérer le cas où la liste est vide
+        return Scaffold(
+          appBar: AppBar(title: Text('Erreur')),
+          body: Center(child: Text('Aucun écran client disponible.')),
+        );
+      }
     }
   }
 }
