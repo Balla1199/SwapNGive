@@ -24,30 +24,22 @@ class ChoisirObjetEchangeScreen extends StatefulWidget {
 class _ChoisirObjetEchangeScreenState extends State<ChoisirObjetEchangeScreen> {
   final ObjetService _objetService = ObjetService();
   final AuthService _authService = AuthService(); // Instance d'AuthService
-  List<Objet> _objets = [];
-  bool _isLoading = true;
   String? _idUtilisateur2; // Variable pour stocker l'ID de l'utilisateur
 
   @override
   void initState() {
     super.initState();
-    _loadObjets();
     _getCurrentUserDetails(); // Récupérer les détails de l'utilisateur actuel
   }
 
   Future<void> _getCurrentUserDetails() async {
     Utilisateur? utilisateur = await _authService.getCurrentUserDetails(); // Appeler la méthode pour obtenir les détails de l'utilisateur
     if (utilisateur != null) {
-      _idUtilisateur2 = utilisateur.id; // Récupérer l'ID de l'utilisateur
-      print('ID Utilisateur 2: $_idUtilisateur2'); // Vérification
+      setState(() {
+        _idUtilisateur2 = utilisateur.id; // Récupérer l'ID de l'utilisateur
+        print('ID Utilisateur 2: $_idUtilisateur2'); // Vérification
+      });
     }
-  }
-
-  Future<void> _loadObjets() async {
-    _objets = await _objetService.getAllObjets();
-    setState(() {
-      _isLoading = false;
-    });
   }
 
   void _onObjetSelected(Objet objet) {
@@ -81,42 +73,58 @@ class _ChoisirObjetEchangeScreenState extends State<ChoisirObjetEchangeScreen> {
         title: Text('Choisir un objet à échanger'),
         backgroundColor: Colors.teal, // Couleur de fond de la barre d'applications
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0), // Ajouter des marges pour aérer la mise en page
-              child: ListView.builder(
-                itemCount: _objets.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 5, // Élévation pour donner un effet d'ombre
-                    margin: const EdgeInsets.symmetric(vertical: 10), // Espacement entre les cartes
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15), // Bordure arrondie pour un style plus doux
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10), // Padding à l'intérieur de la carte
-                      title: Text(
-                        _objets[index].nom,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold, // Texte en gras pour les titres
-                          color: Colors.teal, // Couleur du texte
+      body: _idUtilisateur2 == null
+          ? Center(child: CircularProgressIndicator()) // Afficher un indicateur de chargement jusqu'à ce que l'ID utilisateur soit récupéré
+          : StreamBuilder<List<Objet>>(
+              stream: _objetService.getObjetsByUserIdStream(_idUtilisateur2!), // Utiliser le flux pour récupérer les objets
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator()); // Afficher un indicateur de chargement pendant que les données arrivent
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Erreur lors du chargement des objets'));
+                }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('Aucun objet trouvé'));
+                }
+                List<Objet> objets = snapshot.data!; // Récupérer la liste des objets à partir du flux
+
+                return Padding(
+                  padding: const EdgeInsets.all(16.0), // Ajouter des marges pour aérer la mise en page
+                  child: ListView.builder(
+                    itemCount: objets.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        elevation: 5, // Élévation pour donner un effet d'ombre
+                        margin: const EdgeInsets.symmetric(vertical: 10), // Espacement entre les cartes
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15), // Bordure arrondie pour un style plus doux
                         ),
-                      ),
-                      subtitle: Text(
-                        'Description : ${_objets[index].description}',
-                        style: TextStyle(color: Colors.grey[600]), // Style de la description
-                      ),
-                      trailing: Icon(
-                        Icons.arrow_forward_ios, // Icône à droite de l'élément
-                        color: Colors.teal, // Couleur de l'icône
-                      ),
-                      onTap: () => _onObjetSelected(_objets[index]), // Action sur clic
-                    ),
-                  );
-                },
-              ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10), // Padding à l'intérieur de la carte
+                          title: Text(
+                            objets[index].nom,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold, // Texte en gras pour les titres
+                              color: Colors.teal, // Couleur du texte
+                            ),
+                          ),
+                          subtitle: Text(
+                            'Description : ${objets[index].description}',
+                            style: TextStyle(color: Colors.grey[600]), // Style de la description
+                          ),
+                          trailing: Icon(
+                            Icons.arrow_forward_ios, // Icône à droite de l'élément
+                            color: Colors.teal, // Couleur de l'icône
+                          ),
+                          onTap: () => _onObjetSelected(objets[index]), // Action sur clic
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
     );
   }
