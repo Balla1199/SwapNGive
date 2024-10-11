@@ -231,7 +231,7 @@ Widget build(BuildContext context) {
                             isDifferentUser: isDifferentUser,
                             utilisateur: widget.annonce.utilisateur,
                           ),
-                        ),
+                        ), 
                       );
                     } else {
                       print('Impossible de récupérer les détails de l\'utilisateur.');

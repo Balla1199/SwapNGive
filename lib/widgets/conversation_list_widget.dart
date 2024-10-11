@@ -6,7 +6,6 @@ import 'package:swapngive/services/conversation_service.dart';
 import 'package:swapngive/services/utilisateur_service.dart';
 import 'package:intl/intl.dart'; 
 
-
 class ConversationListWidget extends StatelessWidget {
   final String userId;
 
@@ -29,10 +28,8 @@ class ConversationListWidget extends StatelessWidget {
 
         final conversations = snapshot.data!;
 
-        // Utiliser un Set pour stocker les conversations uniques par annonce et participants
         final Set<String> uniqueConversationsKeys = {};
         final List<Conversation> uniqueConversations = conversations.where((conversation) {
-          // Générer une clé unique pour chaque combinaison d'annonce et de participants
           final participantsKey = conversation.annonceId +
               '-' +
               (conversation.senderId.compareTo(conversation.receiverId) < 0
@@ -65,61 +62,79 @@ class ConversationListWidget extends StatelessWidget {
                   );
                 }
 
+                if (!userSnapshot.hasData) {
+                  return ListTile(
+                    title: Text('Utilisateur inconnu'),
+                    subtitle: Text('Message indisponible'),
+                  );
+                }
+
                 String otherUserName = userSnapshot.data?.nom ?? 'Utilisateur inconnu';
                 String formattedTime = DateFormat('HH:mm').format(conversation.lastMessageTimestamp);
 
-                return ListTile(
-                  contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.grey[300],
-                    child: Icon(Icons.person, color: Colors.white),
-                  ),
-                  title: Text(
-                    otherUserName,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    conversation.lastMessage,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis, // Limite le texte à une seule ligne avec "..." si trop long
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        formattedTime, // Heure du dernier message
-                        style: TextStyle(color: Colors.grey, fontSize: 12.0),
+                // Récupération de la photo de profil de l'utilisateur
+                return FutureBuilder<String?>(
+                  future: UtilisateurService().getProfilePhotoUrl(otherUserId),
+                  builder: (context, photoSnapshot) {
+                    return ListTile(
+                      contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+                      leading: CircleAvatar(
+                        backgroundColor: Colors.grey[300],
+                        backgroundImage: photoSnapshot.hasData && photoSnapshot.data != null
+                            ? NetworkImage(photoSnapshot.data!) // Affiche la photo de profil si elle est disponible
+                            : null, // Si aucune image n'est disponible, icône par défaut
+                        child: photoSnapshot.hasData && photoSnapshot.data != null
+                            ? null // Pas d'icône si l'image est chargée
+                            : Icon(Icons.person, color: Colors.white),
                       ),
-                      SizedBox(height: 4),
-                      if (conversation.hasUnreadMessages)
-                        Container(
-                          padding: EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.green, // Cercle vert pour indiquer un nouveau message
+                      title: Text(
+                        otherUserName,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Text(
+                        conversation.lastMessage,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            formattedTime,
+                            style: TextStyle(color: Colors.grey, fontSize: 12.0),
                           ),
-                          child: Text(
-                            '1', // Peut être modifié pour afficher le nombre de messages non lus
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12.0,
+                          SizedBox(height: 4),
+                          if (conversation.hasUnreadMessages)
+                            Container(
+                              padding: EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.green,
+                              ),
+                              child: Text(
+                                '1',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12.0,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatScreen(
+                              annonceId: conversation.annonceId,
+                              typeAnnonce: conversation.typeAnnonce,
+                              conversationId: conversation.id,
+                              senderId: userId,
+                              receiverId: otherUserId,
                             ),
                           ),
-                        ),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatScreen(
-                          annonceId: conversation.annonceId,
-                          typeAnnonce: conversation.typeAnnonce,
-                          conversationId: conversation.id,
-                          senderId: userId,
-                          receiverId: otherUserId,
-                        ),
-                      ),
+                        );
+                      },
                     );
                   },
                 );
