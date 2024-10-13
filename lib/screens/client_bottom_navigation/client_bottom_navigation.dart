@@ -35,6 +35,10 @@ class ClientBottomNavigationBar extends StatelessWidget {
             label: 'Notifications',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.history), // Icone pour l'historique
+            label: 'Historique',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Profile',
           ),

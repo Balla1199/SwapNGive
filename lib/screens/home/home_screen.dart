@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/utilisateur.dart';
+import 'package:swapngive/screens/Historique/Historiquescreen.dart';
 import 'package:swapngive/screens/client_bottom_navigation/client_bottom_navigation.dart';
 import 'package:swapngive/screens/dashbord/Dashboard_Screen.dart';
 import 'package:swapngive/screens/sidebar_layout/sidebar_layout.dart';
@@ -21,6 +22,7 @@ class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
+
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
@@ -40,30 +42,31 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-  _adminScreens = [
-  DashboardScreen(),
-  UtilisateurListScreen(),
-  CategorieListScreen(),
-  EtatListScreen(),
-  ProfileScreen(
-    utilisateurId: utilisateurId, 
-    utilisateur: widget.utilisateur,
-    isDifferentUser: false, // Ajoutez isDifferentUser ici, à ajuster selon votre logique
-  ),
-];
+    _adminScreens = [
+      DashboardScreen(),
+      UtilisateurListScreen(),
+      CategorieListScreen(),
+      EtatListScreen(),
+      ProfileScreen(
+        utilisateurId: utilisateurId,
+        utilisateur: widget.utilisateur,
+        isDifferentUser: false, // Ajoutez isDifferentUser ici, à ajuster selon votre logique
+      ),
+    ];
 
-   _clientScreens = [
-  AnnonceListScreen(),
-  ObjetListScreen(),
-  ReceptionScreen(),
-  NotificationScreen(),
-  ProfileScreen(
-    utilisateurId: utilisateurId, 
-    utilisateur: widget.utilisateur,
-    isDifferentUser: false, // Ajoutez isDifferentUser ici, à ajuster selon votre logique
-  ),
-];
-
+    _clientScreens = [
+      AnnonceListScreen(),
+      ObjetListScreen(),
+      ReceptionScreen(),
+      NotificationScreen(),
+      HistoriqueScreen(),
+     
+      ProfileScreen(
+        utilisateurId: utilisateurId,
+        utilisateur: widget.utilisateur,
+        isDifferentUser: false, // Ajoutez isDifferentUser ici, à ajuster selon votre logique
+      ),
+    ];
 
     // Imprimer la longueur des listes pour le débogage
     print('Longueur des écrans admin: ${_adminScreens.length}');

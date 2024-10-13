@@ -4,6 +4,9 @@ import 'package:swapngive/models/etat.dart';
 import 'package:swapngive/models/objet.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:swapngive/models/Annonce.dart';
+import 'package:swapngive/screens/Historique/Historiquescreen.dart';
+import 'package:swapngive/screens/Historique/historique_detail_don_screen.dart';
+import 'package:swapngive/screens/Historique/historique_detail_echange_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_form_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
 import 'package:swapngive/screens/annonce/annonce_details_screen.dart';
@@ -82,6 +85,12 @@ class AppRoutes {
   static const String avisFormScreen = '/avis_form_screen';
 
   static const String dashboardScreen = '/dashboard_screen';
+
+   // Nouvelle route pour HistoriqueScreen
+  static const String historiqueScreen = '/historique_screen';
+   
+  static const String historiqueDetailDonScreen = '/historique_detail_don_screen';
+  static const String historiqueDetailEchangeScreen = '/historique_detail_change_screen';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -312,8 +321,31 @@ case detailDonScreen:
       // Routes pour la connexion, l'inscription et le profil
       case login:
         return MaterialPageRoute(builder: (_) => LoginScreen());
+
       case inscription:
         return MaterialPageRoute(builder: (_) => InscriptionScreen());
+
+      case historiqueScreen:
+        return MaterialPageRoute(builder: (_) => HistoriqueScreen());
+
+
+       // Route pour HistoriqueDetailDonScreen
+      case historiqueDetailDonScreen:
+        final args = settings.arguments as Map<String, dynamic>?; 
+        final don = args != null ? args['don'] : null; 
+        return MaterialPageRoute(
+          builder: (_) => HistoriqueDetailDonScreen(don: don!),
+        );
+
+      // Route pour HistoriqueDetailChangeScreen
+      case historiqueDetailEchangeScreen:
+        final args = settings.arguments as Map<String, dynamic>?; 
+        final echange = args != null ? args['echange'] : null; 
+        return MaterialPageRoute(
+          builder: (_) => HistoriqueDetailEchangeScreen(echange: echange!),
+        );
+
+           
 
       default:
         return MaterialPageRoute(

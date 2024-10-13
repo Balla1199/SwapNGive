@@ -116,6 +116,25 @@ Future<List<Annonce>> recupererAnnoncesParStatut(StatutAnnonce statut) async {
     return [];
   }
 }
+ 
+    // Récupérer les annonces par catégorie
+  Future<List<Annonce>> recupererAnnoncesParCategorie(String categorie) async {
+    try {
+      // Exécuter la requête Firestore en filtrant par la catégorie
+      QuerySnapshot snapshot = await _annoncesCollection
+          .where('categorie', isEqualTo: categorie)
+          .get();
 
+      // Mapper les résultats dans une liste d'objets Annonce
+      List<Annonce> annonces = snapshot.docs.map((doc) {
+        return Annonce.fromJson(doc.data() as Map<String, dynamic>);
+      }).toList();
+
+      return annonces;
+    } catch (e) {
+      print("Erreur lors de la récupération des annonces par catégorie : $e");
+      return [];
+    }
+  }
 
 }
