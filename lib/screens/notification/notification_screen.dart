@@ -20,17 +20,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Future<void> _loadNotifications() async {
-    // Récupérer l'utilisateur actuel
     final currentUser = await _authService.getCurrentUserDetails();
     
     if (currentUser != null) {
-      // Charger les notifications de l'utilisateur actuel avec le nom de l'expéditeur
       final notifications = await _notificationService.getNotificationsForUserWithSenderName(currentUser.id);
       setState(() {
         _notifications = notifications;
       });
     } else {
-      // Gérer le cas où aucun utilisateur n'est connecté
       print('Aucun utilisateur connecté, impossible de charger les notifications.');
     }
   }
@@ -51,12 +48,45 @@ class _NotificationScreenState extends State<NotificationScreen> {
         itemCount: _notifications.length,
         itemBuilder: (context, index) {
           final notification = _notifications[index];
-          return ListTile(
-            title: Text(notification.titre),
-            subtitle: Text(notification.message),
-            trailing: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () => _deleteNotification(notification.id),
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            child: Card(
+              color: Color(0xFFD9A9A9), // Couleur de fond de la carte
+              elevation: 5, // Ombre pour un effet 3D
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0), // Bords arrondis
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      notification.titre,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // Couleur du texte
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      notification.message,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white, // Couleur du texte
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.white), // Bouton supprimer en blanc
+                        onPressed: () => _deleteNotification(notification.id),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           );
         },

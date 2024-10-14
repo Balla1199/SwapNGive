@@ -3,8 +3,8 @@ import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/Avis.dart';
 import 'package:swapngive/services/annonceservice.dart';
 import 'package:swapngive/services/utilisateur_service.dart';
-import 'package:swapngive/services/avis_service.dart'; // Importer le service d'avis
-import 'annonce_details_screen.dart'; // Importer l'écran de détails de l'annonce
+import 'package:swapngive/services/avis_service.dart'; 
+import 'annonce_details_screen.dart'; 
 
 class AnnonceListScreen extends StatefulWidget {
   @override
@@ -14,12 +14,12 @@ class AnnonceListScreen extends StatefulWidget {
 class _AnnonceListScreenState extends State<AnnonceListScreen> {
   final AnnonceService _annonceService = AnnonceService();
   final UtilisateurService _utilisateurService = UtilisateurService();
-  final AvisService _avisService = AvisService(); // Créer une instance de AvisService
+  final AvisService _avisService = AvisService(); 
   late Future<List<Annonce>> _annoncesFuture;
 
-  List<bool> _likedStatus = [];
-  List<String?> _profilePhotos = [];
-  List<double> _moyennesNotes = []; // Liste pour stocker les moyennes des notes
+  List<bool> _likedStatus = []; 
+  List<String?> _profilePhotos = []; 
+  List<double> _moyennesNotes = []; 
 
   @override
   void initState() {
@@ -27,15 +27,14 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
     _annoncesFuture = _annonceService.recupererAnnoncesParStatut(StatutAnnonce.disponible);
   }
 
-  // Méthode pour récupérer les moyennes des notes
   Future<void> _loadMoyennesNotes(List<Annonce> annonces) async {
     List<double> moyennesNotes = [];
     for (var annonce in annonces) {
-      double moyenne = await _avisService.getMoyenneNotes(annonce.utilisateur.id); // Récupérer la moyenne des notes
+      double moyenne = await _avisService.getMoyenneNotes(annonce.utilisateur.id);
       moyennesNotes.add(moyenne);
     }
     setState(() {
-      _moyennesNotes = moyennesNotes; // Mettre à jour la liste des moyennes des notes
+      _moyennesNotes = moyennesNotes;
     });
   }
 
@@ -56,34 +55,54 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
       setState(() {
         _likedStatus[index] = !_likedStatus[index];
       });
-      print("Likes mis à jour avec succès !");
     } catch (e) {
       print("Erreur lors de la mise à jour des likes : $e");
     }
   }
 
-  // Méthode pour afficher les étoiles
   Widget _buildStarRating(double moyenne) {
-    int fullStars = moyenne.floor(); // Nombre d'étoiles pleines
-    int halfStars = (moyenne % 1 >= 0.5) ? 1 : 0; // Nombre d'étoiles à moitié pleines
-    int emptyStars = 5 - fullStars - halfStars; // Nombre d'étoiles vides
+    int fullStars = moyenne.floor(); 
+    int halfStars = (moyenne % 1 >= 0.5) ? 1 : 0; 
+    int emptyStars = 5 - fullStars - halfStars; 
 
     return Row(
       children: [
-        ...List.generate(fullStars, (index) => Icon(Icons.star, color: Colors.amber)),
-        ...List.generate(halfStars, (index) => Icon(Icons.star_half, color: Colors.amber)),
-        ...List.generate(emptyStars, (index) => Icon(Icons.star_border, color: Colors.amber)),
+        ...List.generate(fullStars, (index) => Icon(Icons.star, color: Colors.amber, size: 14)), 
+        ...List.generate(halfStars, (index) => Icon(Icons.star_half, color: Colors.amber, size: 14)), 
+        ...List.generate(emptyStars, (index) => Icon(Icons.star_border, color: Colors.amber, size: 14)), 
       ],
     );
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('Liste des Annonces'),
+  automaticallyImplyLeading: false,
+  title: Row(
+    children: [
+      // Logo aligné à gauche
+      Padding(
+        padding: const EdgeInsets.only(right: 8.0), // Espacement à droite du logo
+        child: Image.asset(
+          'assets/images/logosansnom.jpg', // Remplacez par le chemin de votre logo
+          height: 40, // Ajustez la hauteur selon vos besoins
+          width: 40, // Ajustez la largeur selon vos besoins
+        ),
       ),
+      // Titre centré
+      Expanded(
+        child: Center(
+          child: Text(
+            'Liste des Annonces',
+            style: TextStyle(fontSize: 20), // Style du texte du titre
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
       body: FutureBuilder<List<Annonce>>(
         future: _annoncesFuture,
         builder: (context, snapshot) {
@@ -98,96 +117,138 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
           final annonces = snapshot.data ?? [];
           _likedStatus = List.generate(annonces.length, (index) => false);
 
-          // Charger les photos de profil et les moyennes des notes des utilisateurs
           if (_profilePhotos.isEmpty) {
             _loadProfilePhotos(annonces);
-            _loadMoyennesNotes(annonces); // Charger les moyennes des notes
+            _loadMoyennesNotes(annonces);
           }
 
-          return ListView.builder(
-            itemCount: annonces.length,
-            itemBuilder: (context, index) {
-              final annonce = annonces[index];
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.8,
+            child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 5,
+                mainAxisSpacing: 10,
+              ),
+              padding: EdgeInsets.all(10),
+              itemCount: annonces.length,
+              itemBuilder: (context, index) {
+                final annonce = annonces[index];
+                final profilePhoto = _profilePhotos.length > index ? _profilePhotos[index] : null;
+                final moyenneNote = _moyennesNotes.length > index ? _moyennesNotes[index] : null;
 
-              // Récupérer la photo de profil et la moyenne des notes
-              final profilePhoto = _profilePhotos.length > index ? _profilePhotos[index] : null;
-              final moyenneNote = _moyennesNotes.length > index ? _moyennesNotes[index] : null;
-
-              return Card(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                return Column(
                   children: [
-                    // Afficher la photo de profil, le nom de l'utilisateur et la moyenne des notes
+                    // Section profil utilisateur au-dessus de la carte
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         CircleAvatar(
-                          radius: 25,
+                          radius: 15,
                           backgroundImage: (profilePhoto != null && profilePhoto.isNotEmpty)
                               ? NetworkImage(profilePhoto)
                               : AssetImage('assets/images/user.png') as ImageProvider,
                         ),
-                        SizedBox(width: 10),
+                        SizedBox(width: 4),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               annonce.utilisateur.nom,
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                             ),
-                            // Afficher la moyenne des notes sous forme d'étoiles
-                            moyenneNote != null
-                                ? _buildStarRating(moyenneNote) // Appel à la méthode pour afficher les étoiles
-                                : Container(), // Si pas encore chargée, afficher rien
+                            moyenneNote != null ? _buildStarRating(moyenneNote) : Container(),
                           ],
                         ),
                       ],
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: 5), // Espacement entre les infos utilisateur et la carte
 
-                    // Afficher l'image en haut et rediriger vers les détails
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AnnonceDetailsScreen(annonce: annonce),
-                          ),
-                        );
-                      },
-                      child: Stack(
+                    // Carte contenant l'annonce
+                    Card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            height: 150,
-                            child: (annonce.objet.imageUrl != null && annonce.objet.imageUrl.isNotEmpty)
-                                ? Image.network(
-                                    annonce.objet.imageUrl,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.asset(
-                                    'assets/images/placeholder.png',
-                                    fit: BoxFit.cover,
-                                  ),
-                          ),
-                          // Bouton cœur pour liker l'annonce
-                          Positioned(
-                            top: 10,
-                            right: 10,
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
-                                    color: _likedStatus[index] ? Colors.red : Colors.grey,
-                                  ),
-                                  onPressed: () {
-                                    int nouveauNombreLikes = annonce.likes + (_likedStatus[index] ? -1 : 1);
-                                    _updateLikes(annonce.id, nouveauNombreLikes, index);
-                                  },
+                          GestureDetector(
+                            onTap: () {
+                              // Navigation vers l'écran de détails de l'annonce lors du clic
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AnnonceDetailsScreen(annonce: annonce),
                                 ),
-                                // Afficher le nombre total de likes à côté du cœur
+                              );
+                            },
+                            child: Stack(
+                              children: [
+                                Container(
+                                  height: 125,
+                                  width: double.infinity,
+                                  child: (annonce.objet.imageUrl != null && annonce.objet.imageUrl.isNotEmpty)
+                                      ? Image.network(
+                                          annonce.objet.imageUrl,
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                        )
+                                      : Image.asset(
+                                          'assets/images/placeholder.png',
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                        ),
+                                ),
+                                Positioned(
+                                  bottom: 8,
+                                  right: 8,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      // Mise à jour du nombre de likes lors du clic
+                                      int nouveauNombreLikes = annonce.likes + (_likedStatus[index] ? -1 : 1);
+                                      _updateLikes(annonce.id, nouveauNombreLikes, index);
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[200], // Couleur de fond du bouton
+                                        borderRadius: BorderRadius.circular(20), // Bord arrondi
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
+                                            color: _likedStatus[index] ? Colors.red : Colors.black,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            '${_likedStatus[index] ? annonce.likes + 1 : annonce.likes}', // Affichage du nombre de likes
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: _likedStatus[index] ? Colors.red : Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  '${annonce.likes}', 
-                                  style: TextStyle(fontSize: 16),
+                                  annonce.objet.nom,
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  annonce.objet.description,
+                                  style: TextStyle(fontSize: 12),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
@@ -195,25 +256,10 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
                         ],
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        annonce.titre.isNotEmpty ? annonce.titre : 'Titre indisponible',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        annonce.description.isNotEmpty ? annonce.description : 'Description indisponible',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    SizedBox(height: 8.0),
                   ],
-                ),
-              );
-            },
+                );
+              },
+            ),
           );
         },
       ),
