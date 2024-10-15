@@ -77,15 +77,20 @@ class AnnonceService {
     });
   }
 
-  // Mettre à jour les likes d'une annonce
-Future<void> mettreAJourLikes(String annonceId, int nouveauNombreLikes) async {
+Future<void> mettreAJourLikes(String annonceId, bool aDejaLike, int nombreActuelLikes) async {
   try {
+    // Si l'utilisateur a déjà liké, on décrémente les likes, sinon on les incrémente
+    int nouveauNombreLikes = aDejaLike ? nombreActuelLikes - 1 : nombreActuelLikes + 1;
+
+    // Mise à jour dans Firestore avec le nouveau nombre de likes
     await _annoncesCollection.doc(annonceId).update({'likes': nouveauNombreLikes});
+    
     print("Likes mis à jour avec succès !");
   } catch (e) {
     print("Erreur lors de la mise à jour des likes : $e");
   }
 }
+
 
      // Mettre à jour le statut d'une annonce
 Future<void> mettreAJourStatut(String annonceId, StatutAnnonce nouveauStatut) async {
@@ -136,5 +141,44 @@ Future<List<Annonce>> recupererAnnoncesParStatut(StatutAnnonce statut) async {
       return [];
     }
   }
+
+   // Récupérer les annonces par type
+  Future<List<Annonce>> recupererAnnoncesParType(String type) async {
+    try {
+      QuerySnapshot snapshot = await _annoncesCollection
+          .where('type', isEqualTo: type)
+          .get();
+
+      List<Annonce> annonces = snapshot.docs.map((doc) {
+        return Annonce.fromJson(doc.data() as Map<String, dynamic>);
+      }).toList();
+
+      return annonces;
+    } catch (e) {
+      print("Erreur lors de la récupération des annonces par type : $e");
+      return [];
+    }
+  }
+
+  Future<List<Annonce>> recupererAnnoncesParTypeEtStatut(String type, StatutAnnonce statut) async {
+  try {
+    // Requête Firestore pour récupérer les annonces avec le type et le statut spécifiés
+    QuerySnapshot snapshot = await _annoncesCollection
+        .where('type', isEqualTo: type)
+        .where('statut', isEqualTo: statut.toString().split('.').last)
+        .get();
+
+    // Mapper les résultats dans une liste d'objets Annonce
+    List<Annonce> annonces = snapshot.docs.map((doc) {
+      return Annonce.fromJson(doc.data() as Map<String, dynamic>);
+    }).toList();
+
+    return annonces;
+  } catch (e) {
+    print("Erreur lors de la récupération des annonces par type et statut : $e");
+    return [];
+  }
+}
+
 
 }

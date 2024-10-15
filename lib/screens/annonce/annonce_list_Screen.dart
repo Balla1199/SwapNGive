@@ -3,8 +3,8 @@ import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/Avis.dart';
 import 'package:swapngive/services/annonceservice.dart';
 import 'package:swapngive/services/utilisateur_service.dart';
-import 'package:swapngive/services/avis_service.dart'; 
-import 'annonce_details_screen.dart'; 
+import 'package:swapngive/services/avis_service.dart';
+import 'annonce_details_screen.dart';
 
 class AnnonceListScreen extends StatefulWidget {
   @override
@@ -14,12 +14,13 @@ class AnnonceListScreen extends StatefulWidget {
 class _AnnonceListScreenState extends State<AnnonceListScreen> {
   final AnnonceService _annonceService = AnnonceService();
   final UtilisateurService _utilisateurService = UtilisateurService();
-  final AvisService _avisService = AvisService(); 
+  final AvisService _avisService = AvisService();
   late Future<List<Annonce>> _annoncesFuture;
-
-  List<bool> _likedStatus = []; 
-  List<String?> _profilePhotos = []; 
-  List<double> _moyennesNotes = []; 
+  List<bool> _likedStatus = [];
+  List<String?> _profilePhotos = [];
+  List<double> _moyennesNotes = [];
+  List<Annonce> _annonces = [];
+  String _searchQuery = ''; // Nouveau champ pour la recherche
 
   @override
   void initState() {
@@ -49,11 +50,30 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
     });
   }
 
-  Future<void> _updateLikes(String annonceId, int nouveauNombreLikes, int index) async {
-    try {
-      await _annonceService.mettreAJourLikes(annonceId, nouveauNombreLikes);
+  Future<void> _searchAnnonces() async {
+    if (_searchQuery.isNotEmpty) {
       setState(() {
-        _likedStatus[index] = !_likedStatus[index];
+        _annoncesFuture = _annonceService.recupererAnnoncesParTypeEtStatut(_searchQuery, StatutAnnonce.disponible);
+      });
+    }
+  }
+
+  Future<void> _updateLikes(String annonceId, int index) async {
+    try {
+      bool aDejaLike = _likedStatus[index];
+      int nombreActuelLikes = _annonces[index].likes;
+
+      if (aDejaLike) {
+        nombreActuelLikes -= 1;
+      } else {
+        nombreActuelLikes += 1;
+      }
+
+      await _annonceService.mettreAJourLikes(annonceId, !aDejaLike, nombreActuelLikes);
+      
+      setState(() {
+        _likedStatus[index] = !aDejaLike;
+        _annonces[index].likes = nombreActuelLikes;
       });
     } catch (e) {
       print("Erreur lors de la mise à jour des likes : $e");
@@ -61,48 +81,75 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
   }
 
   Widget _buildStarRating(double moyenne) {
-    int fullStars = moyenne.floor(); 
-    int halfStars = (moyenne % 1 >= 0.5) ? 1 : 0; 
-    int emptyStars = 5 - fullStars - halfStars; 
+    int fullStars = moyenne.floor();
+    int halfStars = (moyenne % 1 >= 0.5) ? 1 : 0;
+    int emptyStars = 5 - fullStars - halfStars;
 
     return Row(
       children: [
-        ...List.generate(fullStars, (index) => Icon(Icons.star, color: Colors.amber, size: 14)), 
-        ...List.generate(halfStars, (index) => Icon(Icons.star_half, color: Colors.amber, size: 14)), 
-        ...List.generate(emptyStars, (index) => Icon(Icons.star_border, color: Colors.amber, size: 14)), 
+        ...List.generate(fullStars, (index) => Icon(Icons.star, color: Colors.amber, size: 14)),
+        ...List.generate(halfStars, (index) => Icon(Icons.star_half, color: Colors.amber, size: 14)),
+        ...List.generate(emptyStars, (index) => Icon(Icons.star_border, color: Colors.amber, size: 14)),
       ],
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-  automaticallyImplyLeading: false,
-  title: Row(
-    children: [
-      // Logo aligné à gauche
-      Padding(
-        padding: const EdgeInsets.only(right: 8.0), // Espacement à droite du logo
-        child: Image.asset(
-          'assets/images/logosansnom.jpg', // Remplacez par le chemin de votre logo
-          height: 40, // Ajustez la hauteur selon vos besoins
-          width: 40, // Ajustez la largeur selon vos besoins
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Image.asset(
+                'assets/images/logosansnom.jpg',
+                height: 40,
+                width: 40,
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: Text(
+                  'Liste des Annonces',
+                  style: TextStyle(fontSize: 20),
+                ),
+              ),
+            ),
+          ],
         ),
-      ),
-      // Titre centré
-      Expanded(
-        child: Center(
-          child: Text(
-            'Liste des Annonces',
-            style: TextStyle(fontSize: 20), // Style du texte du titre
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () async {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text('Recherche par type d\'annonce'),
+                    content: TextField(
+                      onChanged: (value) {
+                        _searchQuery = value;
+                      },
+                      decoration: InputDecoration(hintText: "Entrez le type d'annonce"),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          _searchAnnonces();
+                          Navigator.pop(context);
+                        },
+                        child: Text('Rechercher'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
-        ),
+        ],
       ),
-    ],
-  ),
-),
-
       body: FutureBuilder<List<Annonce>>(
         future: _annoncesFuture,
         builder: (context, snapshot) {
@@ -115,7 +162,11 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
           }
 
           final annonces = snapshot.data ?? [];
-          _likedStatus = List.generate(annonces.length, (index) => false);
+          _annonces = annonces;
+
+          if (_likedStatus.isEmpty) {
+            _likedStatus = List.generate(annonces.length, (index) => false);
+          }
 
           if (_profilePhotos.isEmpty) {
             _loadProfilePhotos(annonces);
@@ -140,7 +191,6 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
 
                 return Column(
                   children: [
-                    // Section profil utilisateur au-dessus de la carte
                     Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
@@ -163,16 +213,13 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 5), // Espacement entre les infos utilisateur et la carte
-
-                    // Carte contenant l'annonce
+                    SizedBox(height: 5),
                     Card(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           GestureDetector(
                             onTap: () {
-                              // Navigation vers l'écran de détails de l'annonce lors du clic
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -202,15 +249,13 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
                                   right: 8,
                                   child: GestureDetector(
                                     onTap: () {
-                                      // Mise à jour du nombre de likes lors du clic
-                                      int nouveauNombreLikes = annonce.likes + (_likedStatus[index] ? -1 : 1);
-                                      _updateLikes(annonce.id, nouveauNombreLikes, index);
+                                      _updateLikes(annonce.id, index);
                                     },
                                     child: Container(
                                       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                       decoration: BoxDecoration(
-                                        color: Colors.grey[200], // Couleur de fond du bouton
-                                        borderRadius: BorderRadius.circular(20), // Bord arrondi
+                                        color: Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(20),
                                       ),
                                       child: Row(
                                         children: [
@@ -220,7 +265,7 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
                                           ),
                                           SizedBox(width: 4),
                                           Text(
-                                            '${_likedStatus[index] ? annonce.likes + 1 : annonce.likes}', // Affichage du nombre de likes
+                                            '${annonce.likes}',
                                             style: TextStyle(
                                               fontSize: 14,
                                               color: _likedStatus[index] ? Colors.red : Colors.black,
@@ -235,18 +280,18 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   annonce.objet.nom,
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                 ),
-                                SizedBox(height: 4),
+                                SizedBox(height: 5),
                                 Text(
-                                  annonce.objet.description,
-                                  style: TextStyle(fontSize: 12),
+                                  annonce.description,
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
