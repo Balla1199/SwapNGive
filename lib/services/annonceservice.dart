@@ -180,5 +180,37 @@ Future<List<Annonce>> recupererAnnoncesParStatut(StatutAnnonce statut) async {
   }
 }
 
+// Récupérer les annonces par catégorie et par statut
+Future<List<Annonce>> recupererAnnoncesParCategorieEtStatut(String categorieId, StatutAnnonce statut) async {
+  try {
+    print("Récupération des annonces pour la catégorie ID: $categorieId et le statut: ${statut.toString().split('.').last}");
+
+    QuerySnapshot snapshot = await _annoncesCollection.where('statut', isEqualTo: statut.toString().split('.').last).get();
+
+    List<Annonce> annonces = [];
+    
+    for (var doc in snapshot.docs) {
+      var annonceData = doc.data() as Map<String, dynamic>;
+      // Vérifiez si la catégorie correspond
+      if (annonceData['categorie'] != null && annonceData['categorie']['id'] == categorieId) {
+        annonces.add(Annonce.fromJson(annonceData));
+      }
+    }
+
+    print("Nombre d'annonces chargées: ${annonces.length}");
+
+    if (annonces.isEmpty) {
+      print("Aucune annonce trouvée pour la catégorie ID: $categorieId et le statut: ${statut.toString().split('.').last}");
+    }
+
+    return annonces;
+  } catch (e) {
+    print("Erreur lors de la récupération des annonces par catégorie et statut : $e");
+    return [];
+  }
+}
+
+
+
 
 }
