@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:swapngive/models/Annonce.dart';
+import 'package:swapngive/services/annonceservice.dart';
 import 'package:swapngive/services/utilisateur_service.dart';
 import 'package:swapngive/services/categorie_service.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -11,18 +13,23 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final UtilisateurService _utilisateurService = UtilisateurService();
   final CategorieService _categorieService = CategorieService();
-  
+  final AnnonceService _annonceService = AnnonceService();
+
   int _nouveauxUtilisateurs = 0;
   List<int> utilisateursActifs = [];
   List<Map<String, dynamic>> categoriesPopulaires = [];
   bool _isLoading = true;
+
+  int _donCounts = 0; // Compteur pour les dons
+  int _echangeCounts = 0; // Compteur pour les échanges
 
   @override
   void initState() {
     super.initState();
     _fetchNouveauxUtilisateurs();
     _loadActiveUsersData();
-    _loadPopularCategories(); 
+    _loadPopularCategories();
+    _loadAnnoncesCounts(); // Charge les comptes d'annonces
   }
 
   Future<void> _fetchNouveauxUtilisateurs() async {
@@ -64,10 +71,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> _loadAnnoncesCounts() async {
+    try {
+      // Récupérer les annonces par type
+      List<Annonce> dons = await _annonceService.recupererAnnoncesParType('don');
+      List<Annonce> echanges = await _annonceService.recupererAnnoncesParType('echange');
+
+      // Compter le nombre d'annonces
+      int donCount = dons.length; // Compte des annonces de type 'don'
+      int echangeCount = echanges.length; // Compte des annonces de type 'echange'
+
+      // Mettre à jour l'état avec les nouveaux comptes
+      setState(() {
+        _donCounts = donCount;
+        _echangeCounts = echangeCount;
+      });
+    } catch (e) {
+      print('Erreur lors de la récupération des annonces: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 223, 225, 232), // Application de la couleur de fond
+      backgroundColor: Color.fromARGB(255, 223, 225, 232),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -89,6 +116,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _buildSectionCard(
                       title: 'Catégories populaires',
                       child: _buildBarChart(),
+                    ),
+                    SizedBox(height: 40),
+                    _buildSectionCard(
+                      title: 'Répartition des Annonces',
+                      child: _buildPieChart(),
                     ),
                   ],
                 ),
@@ -253,50 +285,82 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: Text(categorie.nom, style: TextStyle(fontSize: 10, color: Colors.grey)),
                     );
                   }
-                  return const Text('');
+                  return Container();
                 },
               ),
             ),
             leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 40,
-                interval: 1,
-                getTitlesWidget: (value, meta) {
-                  return Text(value.toInt().toString(), style: TextStyle(fontSize: 10, color: Colors.grey));
-                },
-              ),
+              sideTitles: SideTitles(showTitles: true),
             ),
           ),
           borderData: FlBorderData(show: false),
-          gridData: FlGridData(show: true),
+          barTouchData: BarTouchData(enabled: false),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPieChart() {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      height: 300,
+      child: PieChart(
+        PieChartData(
+          sections: [
+            PieChartSectionData(
+              value: _donCounts.toDouble(),
+              title: 'Dons: $_donCounts',
+              color: Colors.green,
+              radius: 80,
+            ),
+            PieChartSectionData(
+              value: _echangeCounts.toDouble(),
+              title: 'Échanges: $_echangeCounts',
+              color: Colors.orange,
+              radius: 80,
+            ),
+          ],
+          centerSpaceRadius: 50,
         ),
       ),
     );
   }
 
   Widget _buildSectionCard({required String title, required Widget child}) {
-    return Card(
-      shape: RoundedRectangleBorder(
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, 5),
+          ),
+        ],
       ),
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 16),
-            child,
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 10),
+          child,
+        ],
       ),
     );
   }

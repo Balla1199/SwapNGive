@@ -107,7 +107,7 @@ class _AnnonceDetailsScreenState extends State<AnnonceDetailsScreen> {
           fromUserId: currentUser.id, // L'utilisateur qui fait la demande
           toUserId: widget.annonce.utilisateur.id, // L'utilisateur qui reçoit la demande
           titre: "Demande de don",
-          message: "Demande de don pour ${widget.annonce.titre}",
+          message: "Vous a fait une demande de don pour ${widget.annonce.titre}",
           date: DateTime.now(),
         );
         await _notificationService.enregistrerNotification(notification); // Enregistrer la notification
@@ -128,7 +128,7 @@ class _AnnonceDetailsScreenState extends State<AnnonceDetailsScreen> {
           fromUserId: currentUser.id, // L'utilisateur qui fait la proposition
           toUserId: widget.annonce.utilisateur.id, // L'utilisateur qui reçoit la proposition
           titre: "Proposition d'échange",
-          message: "Proposition d'échange pour ${widget.annonce.titre}",
+          message: "Vous a fait une propisition d'échange pour ${widget.annonce.titre}",
           date: DateTime.now(),
         );
         await _notificationService.enregistrerNotification(notification); // Enregistrer la notification
