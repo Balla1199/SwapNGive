@@ -152,238 +152,235 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
   );
 }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: Image.asset(
-                'assets/images/logosansnom.jpg',
-                height: 40,
-                width: 40,
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: Color.fromRGBO(244, 242, 242, 1), // Couleur de l'AppBar (blanc)
+      title: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Image.asset(
+              'assets/images/logosansnom.jpg',
+              height: 40,
+              width: 40,  
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: Text(
+                'Liste des Annonces',
+                style: TextStyle(fontSize: 20),
               ),
             ),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Liste des Annonces',
-                  style: TextStyle(fontSize: 20),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search),
-            onPressed: () async {
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text('Recherche par type d\'annonce'),
-                    content: TextField(
-                      onChanged: (value) {
-                        _searchQuery = value;
-                      },
-                      decoration: InputDecoration(hintText: "Entrez le type d'annonce"),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          _searchAnnonces();
-                          Navigator.pop(context);
-                        },
-                        child: Text('Rechercher'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
           ),
         ],
       ),
-      body: FutureBuilder<List<Categorie>>(
-        future: _categoriesFuture, 
-        builder: (context, categorySnapshot) {
-          if (categorySnapshot.hasError) {
-            return Center(child: Text('Erreur : ${categorySnapshot.error}'));
-          }
-
-          if (categorySnapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          final categories = categorySnapshot.data ?? [];
-
-          return Column(
-            children: [
-              _buildCategoryFilters(categories),
-              
-              Expanded(
-                child: FutureBuilder<List<Annonce>>(
-                  future: _annoncesFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Erreur : ${snapshot.error}'));
-                    }
-
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-
-                    final annonces = snapshot.data ?? [];
-                    _annonces = annonces;
-
-                    if (_likedStatus.isEmpty) {
-                      _likedStatus = List.generate(annonces.length, (index) => false);
-                    }
-
-                    if (_profilePhotos.isEmpty) {
-                      _loadProfilePhotos(annonces);
-                      _loadMoyennesNotes(annonces);
-                    }
-
-                    print("Nombre d'annonces chargées: ${annonces.length}");
-return GridView.builder(
-  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-    crossAxisCount: 2,
-    childAspectRatio: 0.75,
-    crossAxisSpacing: 5,
-    mainAxisSpacing: 10,
-  ),
-  padding: EdgeInsets.all(10),
-  itemCount: annonces.length,
-  itemBuilder: (context, index) {
-    final annonce = annonces[index];
-    final profilePhoto = _profilePhotos.length > index ? _profilePhotos[index] : null;
-    final moyenneNote = _moyennesNotes.length > index ? _moyennesNotes[index] : null;
-
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 15,
-              backgroundImage: (profilePhoto != null && profilePhoto.isNotEmpty)
-                  ? NetworkImage(profilePhoto)
-                  : AssetImage('assets/images/user.png') as ImageProvider,
-            ),
-            SizedBox(width: 4),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  annonce.utilisateur.nom,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-                moyenneNote != null ? _buildStarRating(moyenneNote) : Container(),
-              ],
-            ),
-          ],
-        ),
-        SizedBox(height: 5),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => AnnonceDetailsScreen(annonce: annonce),
-              ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.search),
+          onPressed: () async {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text('Recherche par type d\'annonce'),
+                  content: TextField(
+                    onChanged: (value) {
+                      _searchQuery = value;
+                    },
+                    decoration: InputDecoration(hintText: "Entrez le type d'annonce"),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        _searchAnnonces();
+                        Navigator.pop(context);
+                      },
+                      child: Text('Rechercher'),
+                    ),
+                  ],
+                );
+              },
             );
           },
-          child: Stack(
-            children: [
-              Container(
-                width: double.infinity,
-                height: 140,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  image: DecorationImage(
-                    image: NetworkImage(annonce.objet.imageUrl),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              Positioned(
-  bottom: 8,
-  right: 8,
-  child: Row(
-    children: [
-      Container(
-        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4), // Ajustez le padding pour réduire la taille du fond
-        decoration: 
-        BoxDecoration(
-                        color: Colors.grey[200], // Couleur de fond du bouton
-                        borderRadius: BorderRadius.circular(20), // Bord arrondi
-                      ),
-        child: Row(
-          children: [
-            // Icône avec fond rectangulaire
-            IconButton(
-              icon: Icon(
-                _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
-                color: _likedStatus[index] ? Colors.red : Colors.grey,
-              ),
-              onPressed: () {
-                _updateLikes(annonce.id, index);
-              },
-              padding: EdgeInsets.zero, // Supprimer le padding par défaut
-            ),
-            SizedBox(width: 0), // Espace entre l'icône et le texte
-            Text(
-              '${annonce.likes}',
-              style: TextStyle(fontSize: 14), // Ajustez la taille de la police si nécessaire
-            ),
-          ],
-        ),
-      ),
-    ],
-  ),
-),
-
-            ],
-          ),
-        ),
-        SizedBox(height: 5),
-        Align(
-  alignment: Alignment.centerLeft, // Aligne à gauche
-  child: Text(
-    annonce.titre,
-    style: TextStyle(fontWeight: FontWeight.bold),
-  ),
-),
-        SizedBox(height: 5),
-        // Ajout de la description de l'annonce sur deux lignes
-        Align(
-          alignment: Alignment.centerLeft,
-        child: Text(
-          annonce.description, // Assurez-vous que ce champ existe dans votre modèle Annonce
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis, // Pour couper le texte si trop long
-          textAlign: TextAlign.left,
-          style: TextStyle(color: Colors.grey[600]), // Style de la description
-        ),
         ),
       ],
-    );
-  },
-);
+    ),
+    backgroundColor: Colors.white, // Définit le fond de l'écran en blanc
+    body: FutureBuilder<List<Categorie>>(
+      future: _categoriesFuture, 
+      builder: (context, categorySnapshot) {
+        if (categorySnapshot.hasError) {
+          return Center(child: Text('Erreur : ${categorySnapshot.error}'));
+        }
 
+        if (categorySnapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-                  },
-                ),
+        final categories = categorySnapshot.data ?? [];
+
+        return Column(
+          children: [
+            _buildCategoryFilters(categories),
+            Expanded(
+              child: FutureBuilder<List<Annonce>>(
+                future: _annoncesFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Erreur : ${snapshot.error}'));
+                  }
+
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  }
+
+                  final annonces = snapshot.data ?? [];
+                  _annonces = annonces;
+
+                  if (_likedStatus.isEmpty) {
+                    _likedStatus = List.generate(annonces.length, (index) => false);
+                  }
+
+                  if (_profilePhotos.isEmpty) {
+                    _loadProfilePhotos(annonces);
+                    _loadMoyennesNotes(annonces);
+                  }
+
+                  print("Nombre d'annonces chargées: ${annonces.length}");
+
+                  return GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 0.75,
+                      crossAxisSpacing: 5,
+                      mainAxisSpacing: 10,
+                    ),
+                    padding: EdgeInsets.all(10),
+                    itemCount: annonces.length,
+                    itemBuilder: (context, index) {
+                      final annonce = annonces[index];
+                      final profilePhoto = _profilePhotos.length > index ? _profilePhotos[index] : null;
+                      final moyenneNote = _moyennesNotes.length > index ? _moyennesNotes[index] : null;
+
+                      return Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                radius: 15,
+                                backgroundImage: (profilePhoto != null && profilePhoto.isNotEmpty)
+                                    ? NetworkImage(profilePhoto)
+                                    : AssetImage('assets/images/user.png') as ImageProvider,
+                              ),
+                              SizedBox(width: 4),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    annonce.utilisateur.nom,
+                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                  ),
+                                  moyenneNote != null ? _buildStarRating(moyenneNote) : Container(),
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 5),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AnnonceDetailsScreen(annonce: annonce),
+                                ),
+                              );
+                            },
+                            child: Stack(
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  height: 140,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    image: DecorationImage(
+                                      image: NetworkImage(annonce.objet.imageUrl),
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 8,
+                                  right: 8,
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[200],
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            IconButton(
+                                              icon: Icon(
+                                                _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
+                                                color: _likedStatus[index] ? Colors.red : Colors.grey,
+                                              ),
+                                              onPressed: () {
+                                                _updateLikes(annonce.id, index);
+                                              },
+                                              padding: EdgeInsets.zero,
+                                            ),
+                                            SizedBox(width: 0),
+                                            Text(
+                                              '${annonce.likes}',
+                                              style: TextStyle(fontSize: 14),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              annonce.titre,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          SizedBox(height: 5),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              annonce.description,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(color: Colors.grey[600]),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
-            ],
-          );
-        },
-      ),
-    );
-  }
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
 }

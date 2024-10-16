@@ -6,6 +6,7 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+
   // Register user
   Future<User?> registerUser(String name, String email, String password, String adresse, String telephone, String role) async {
     try {
@@ -136,5 +137,6 @@ Future<Utilisateur?> getCurrentUserDetails() async {
         return Role.client; // Rôle par défaut si le rôle est inconnu
     }
   }
+    
 
 }

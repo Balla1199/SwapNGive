@@ -14,19 +14,18 @@ class ObjetListScreen extends StatefulWidget {
 class _ObjetListScreenState extends State<ObjetListScreen> {
   final ObjetService _objetService = ObjetService();
   final AuthService _authService = AuthService();
-  String? _userId; // Stocker l'ID de l'utilisateur connecté
+  String? _userId;
 
   @override
   void initState() {
     super.initState();
-    _getCurrentUser(); // Obtenir l'utilisateur connecté lors de l'initialisation
+    _getCurrentUser();
   }
 
-  // Méthode pour récupérer l'utilisateur connecté
   void _getCurrentUser() async {
-    final user = await _authService.getCurrentUser(); // Récupérer l'utilisateur connecté
+    final user = await _authService.getCurrentUser();
     setState(() {
-      _userId = user?.uid; // Stocker l'ID de l'utilisateur
+      _userId = user?.uid;
     });
   }
 
@@ -34,24 +33,50 @@ class _ObjetListScreenState extends State<ObjetListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('Liste des Objets'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => ObjetFormScreen()),
-              );
-            },
+  automaticallyImplyLeading: false, // Désactive le bouton de retour automatique
+  backgroundColor: Color.fromRGBO(244, 242, 242, 1), // Couleur de l'AppBar (blanc)
+  title: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween, // Espace entre le logo et le titre
+    children: [
+      Row(
+        children: [
+          Image.asset(
+            'assets/images/logosansnom.jpg',
+            height: 40, // Hauteur du logo
           ),
         ],
       ),
+      Expanded(
+        child: Align(
+          alignment: Alignment.center, // Centre le titre dans l'espace disponible
+          child: Text(
+            'Liste des Objets',
+            style: TextStyle(
+              color: Colors.black, // Couleur du texte (noir)
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+      IconButton(
+        icon: Icon(Icons.add),
+        color: Colors.black, // Couleur de l'icône (noir)
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ObjetFormScreen()),
+          );
+        },
+      ),
+    ],
+  ),
+),
+
+
       body: _userId == null
-          ? Center(child: CircularProgressIndicator()) // Afficher un indicateur de chargement si l'utilisateur n'est pas encore chargé
+          ? Center(child: CircularProgressIndicator())
           : StreamBuilder<List<Objet>>(
-              stream: _objetService.getObjetsByUserIdStream(_userId!), // Filtrer les objets par l'utilisateur connecté
+              stream: _objetService.getObjetsByUserIdStream(_userId!),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Center(child: Text('Erreur : ${snapshot.error}'));
@@ -62,72 +87,105 @@ class _ObjetListScreenState extends State<ObjetListScreen> {
                 }
 
                 final objets = snapshot.data ?? [];
-                print("Nombre d'objets récupérés : ${objets.length}");
 
                 if (objets.isEmpty) {
                   return Center(child: Text('Aucun objet trouvé.'));
                 }
 
-                return ListView.builder(
+                return GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // Deux colonnes
+                    crossAxisSpacing: 10, // Espace horizontal entre les colonnes
+                    mainAxisSpacing: 10, // Espace vertical entre les lignes
+                    childAspectRatio: 0.7, // Ratio pour l'aspect des cartes (hauteur/largeur)
+                  ),
                   itemCount: objets.length,
+                  padding: const EdgeInsets.all(8.0),
                   itemBuilder: (context, index) {
                     final objet = objets[index];
+
                     return Card(
-                      child: ListTile(
-                        leading: (objet.imageUrl != null && objet.imageUrl.isNotEmpty)
-                            ? Image.network(
-                                objet.imageUrl,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
-                              )
-                            : Icon(Icons.image_not_supported),
-                        title: Text(objet.nom ?? 'Nom indisponible'),
-                        subtitle: Text(objet.description ?? 'Description indisponible'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.edit),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ObjetFormScreen(objet: objet),
-                                  ),
-                                );
-                              },
+                      color: Colors.white, // Fond de chaque carte en blanc (#FFFFFF)
+                      elevation: 3, // Légère ombre pour l'élévation des cartes
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // Section pour l'image
+                          (objet.imageUrl != null && objet.imageUrl.isNotEmpty)
+                              ? Image.network(
+                                  objet.imageUrl,
+                                  height: 100,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                )
+                              : Icon(
+                                  Icons.image_not_supported,
+                                  size: 100,
+                                  color: Colors.grey, // Couleur par défaut de l'icône d'image
+                                ),
+                          SizedBox(height: 8),
+                          // Nom de l'objet
+                          Text(
+                            objet.nom ?? 'Nom indisponible',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Color(0xFFD9A9A9), // Couleur du texte (#D9A9A9)
                             ),
-                            IconButton(
-                              icon: Icon(Icons.delete),
-                              onPressed: () async {
-                                await _objetService.deleteObjet(objet.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Objet supprimé.')),
-                                );
-                              },
+                          ),
+                          SizedBox(height: 8),
+                          // Description
+                          Text(
+                            objet.description ?? 'Description indisponible',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black, // Texte de description en noir
                             ),
-                            IconButton(
-                              icon: Icon(Icons.post_add),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AnnonceFormScreen(objet: objet),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ObjetDetailsScreen(objet: objet),
-                            ),
-                          );
-                        },
+                          ),
+                          Spacer(),
+                          // Icons (modifier, supprimer, ajouter)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit),
+                                color: Color(0xFFD9A9A9), // Couleur de l'icône modifier (#D9A9A9)
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ObjetFormScreen(objet: objet),
+                                    ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete),
+                                color: Color(0xFFD9A9A9), // Couleur de l'icône supprimer (#D9A9A9)
+                                onPressed: () async {
+                                  await _objetService.deleteObjet(objet.id);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Objet supprimé.')),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.post_add),
+                                color: Color(0xFFD9A9A9), // Couleur de l'icône ajouter (#D9A9A9)
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AnnonceFormScreen(objet: objet),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     );
                   },
