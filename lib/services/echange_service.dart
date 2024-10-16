@@ -96,5 +96,40 @@ Future<void> mettreAJourStatut(String idEchange, String nouveauStatut) async {
       return [];
     }
   }
+
+  Future<List<Echange>> recupererEchangesParUtilisateur(String userId) async {
+  try {
+    // Récupérer les échanges où l'utilisateur est impliqué (soit comme utilisateur 1, soit comme utilisateur 2)
+    QuerySnapshot querySnapshot = await _firestore
+        .collection('echanges')
+        .where('idUtilisateur1', isEqualTo: userId)
+        .get();
+
+    QuerySnapshot querySnapshot2 = await _firestore
+        .collection('echanges')
+        .where('idUtilisateur2', isEqualTo: userId)
+        .get();
+
+    // Fusionner les deux listes de résultats
+    List<QueryDocumentSnapshot> allDocuments = []
+      ..addAll(querySnapshot.docs)
+      ..addAll(querySnapshot2.docs);
+
+    // Supprimer les doublons si nécessaire (par exemple, si un utilisateur est à la fois idUtilisateur1 et idUtilisateur2)
+    Map<String, QueryDocumentSnapshot> uniqueDocuments = {};
+    for (var doc in allDocuments) {
+      uniqueDocuments[doc.id] = doc;
+    }
+
+    // Convertir chaque document unique en instance de Echange
+    return uniqueDocuments.values
+        .map((doc) => Echange.fromMap(doc.data() as Map<String, dynamic>))
+        .toList();
+  } catch (e) {
+    print("Erreur lors de la récupération des échanges par utilisateur: $e");
+    return [];
+  }
+}
+
    
 }

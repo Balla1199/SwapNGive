@@ -49,4 +49,42 @@ Future<String?> enregistrerDon(Don don) async {
     QuerySnapshot querySnapshot = await _firestore.collection('dons').get();
     return querySnapshot.docs.map((doc) => Don.fromJson(doc.data() as Map<String, dynamic>)).toList();
   }
+  
+  // Méthode pour récupérer les dons par utilisateur
+Future<List<Don>> recupererDonsParUtilisateur(String userId) async {
+  try {
+    // Récupérer les dons où l'utilisateur est impliqué en tant que donneur
+    QuerySnapshot querySnapshotDonneur = await _firestore
+        .collection('dons')
+        .where('idDonneur', isEqualTo: userId)
+        .get();
+
+    // Récupérer les dons où l'utilisateur est impliqué en tant que receveur
+    QuerySnapshot querySnapshotReceveur = await _firestore
+        .collection('dons')
+        .where('idReceveur', isEqualTo: userId)
+        .get();
+
+    // Fusionner les deux listes de résultats
+    List<QueryDocumentSnapshot> allDocuments = []
+      ..addAll(querySnapshotDonneur.docs)
+      ..addAll(querySnapshotReceveur.docs);
+
+    // Supprimer les doublons si nécessaire
+    Map<String, QueryDocumentSnapshot> uniqueDocuments = {};
+    for (var doc in allDocuments) {
+      uniqueDocuments[doc.id] = doc;
+    }
+
+    // Convertir chaque document unique en instance de Don
+    return uniqueDocuments.values
+        .map((doc) => Don.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
+  } catch (e) {
+    print("Erreur lors de la récupération des dons par utilisateur: $e");
+    return [];
+  }
+}
+
+
 }

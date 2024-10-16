@@ -66,6 +66,7 @@ class AuthService {
     print('Utilisateur actuel : ${user?.email}');
     return user;
   }
+  
 Future<Utilisateur?> getUserDetails(String uid) async {
   try {
     print('Récupération des détails de l\'utilisateur pour l\'ID : $uid');
