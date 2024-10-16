@@ -44,6 +44,15 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    
+    <!-- Permission pour l'accès à la caméra -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    
+    <!-- Permission pour lire depuis le stockage externe -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    
+    <!-- Permission pour écrire dans le stockage externe -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <!-- Nécessaire pour interroger les activités qui peuvent traiter le texte -->
     <queries>
