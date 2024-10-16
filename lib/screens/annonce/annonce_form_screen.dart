@@ -45,44 +45,44 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
   }
 
   // Méthode pour soumettre le formulaire et ajouter ou modifier une annonce
- Future<void> _submitForm() async {
-  if (_formKey.currentState!.validate()) {
-    _formKey.currentState!.save();
+  Future<void> _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
 
-    Annonce newAnnonce = Annonce(
-      id: widget.annonce != null ? widget.annonce!.id : FirebaseFirestore.instance.collection('annonces').doc().id,
-      titre: _titreController.text,
-      description: _descriptionController.text,
-      date: DateTime.now(),
-      type: _type == 'Don' ? TypeAnnonce.don : TypeAnnonce.echange,
-      utilisateur: widget.objet.utilisateur,
-      categorie: widget.objet.categorie,
-      objet: widget.objet,
-      etat: widget.objet.etat, // Récupérez l'état ici
-    );
+      Annonce newAnnonce = Annonce(
+        id: widget.annonce != null ? widget.annonce!.id : FirebaseFirestore.instance.collection('annonces').doc().id,
+        titre: _titreController.text,
+        description: _descriptionController.text,
+        date: DateTime.now(),
+        type: _type == 'Don' ? TypeAnnonce.don : TypeAnnonce.echange,
+        utilisateur: widget.objet.utilisateur,
+        categorie: widget.objet.categorie,
+        objet: widget.objet,
+        etat: widget.objet.etat, // Récupérez l'état ici
+      );
 
-    try {
-      if (widget.annonce == null) {
-        await _annonceService.ajouterAnnonce(newAnnonce);
-      } else {
-        await _annonceService.modifierAnnonce(newAnnonce);
+      try {
+        if (widget.annonce == null) {
+          await _annonceService.ajouterAnnonce(newAnnonce);
+        } else {
+          await _annonceService.modifierAnnonce(newAnnonce);
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Annonce ${widget.annonce == null ? "ajoutée" : "modifiée"} avec succès !')),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => AnnonceListScreen()),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur : $e')),
+        );
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Annonce ${widget.annonce == null ? "ajoutée" : "modifiée"} avec succès !')),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => AnnonceListScreen()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur : $e')),
-      );
     }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +99,12 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
               // Champ Titre
               TextFormField(
                 controller: _titreController,
-                decoration: InputDecoration(labelText: 'Titre'),
+                decoration: InputDecoration(
+                  labelText: 'Titre',
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFD9A9A9), width: 2.0), // Bordure gris clair
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Veuillez entrer un titre';
@@ -112,7 +117,12 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
               // Champ Description (modifiable)
               TextFormField(
                 controller: _descriptionController,
-                decoration: InputDecoration(labelText: 'Description'),
+                decoration: InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFD9A9A9), width: 2.0), // Bordure gris clair
+                  ),
+                ),
                 maxLines: 3,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -126,7 +136,12 @@ class _AnnonceFormScreenState extends State<AnnonceFormScreen> {
               // Sélecteur Type (Don ou Échange)
               DropdownButtonFormField<String>(
                 value: _type,
-                decoration: InputDecoration(labelText: 'Type'),
+                decoration: InputDecoration(
+                  labelText: 'Type',
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFD9A9A9), width: 2.0), // Bordure gris clair
+                  ),
+                ),
                 items: ['Don', 'Échange'].map((type) {
                   return DropdownMenuItem(
                     value: type,

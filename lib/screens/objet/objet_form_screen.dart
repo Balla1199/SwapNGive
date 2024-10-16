@@ -3,7 +3,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:uuid/uuid.dart'; // Importation de la bibliothèque UUID
 import 'dart:io' if (dart.library.html) 'dart:html'; // Importation conditionnelle pour mobile et web
-
 import 'package:flutter/foundation.dart'; // Pour kIsWeb (vérification de la plateforme)
 import 'package:swapngive/models/Categorie.dart'; // Modèle Categorie
 import 'package:swapngive/models/etat.dart'; // Modèle Etat
@@ -113,29 +112,13 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
         imageUrl: widget.objet?.imageUrl ?? '',
       );
 
-      // Ajout de logs pour afficher les détails de l'objet
-      print('Détails de l\'objet:');
-      print('ID: ${objet.id}');
-      print('Nom: ${objet.nom}');
-      print('Description: ${objet.description}');
-      print('État: ${objet.etat}');
-      print('Catégorie: ${objet.categorie}');
-      print('Date d\'ajout: ${objet.dateAjout}');
-      print('Utilisateur: ${objet.utilisateur}');
-      print('Image URL: ${objet.imageUrl}');
-
       try {
-        // Convertir _imageFiles en une liste de type File
         List<File> filesToUpload = kIsWeb ? [] : _imageFiles.whereType<File>().toList();
 
         if (widget.objet == null) {
-          // Ajouter un nouvel objet
           await _objetService.addObjetWithImageFiles(objet, filesToUpload);
-          print('Nouvel objet ajouté avec succès.');
         } else {
-          // Mettre à jour un objet existant
           await _objetService.updateObjetWithImageFiles(objet, filesToUpload);
-          print('Objet avec ID ${objet.id} mis à jour avec succès.');
         }
 
         Navigator.pop(context); // Fermer l'écran après l'ajout ou la mise à jour
@@ -146,60 +129,138 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
       print('Veuillez compléter tous les champs requis.');
     }
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.objet == null ? 'Ajouter un Objet' : 'Modifier l\'Objet')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(widget.objet == null ? 'Ajouter un Objet' : 'Modifier l\'Objet'),
+      backgroundColor: Color(0xFFD9A9A9), // Couleur du fond de l'AppBar
+      foregroundColor: Colors.white, // Couleur du texte de l'AppBar
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: SingleChildScrollView( // Ajout pour permettre le scroll si le contenu dépasse
         child: Column(
           children: [
+            // Champ de saisie pour le nom avec bordure arrondie
             TextField(
               controller: _nomController,
-              decoration: InputDecoration(labelText: 'Nom'),
-            ),
-            TextField(
-              controller: _descriptionController,
-              decoration: InputDecoration(labelText: 'Description'),
+              decoration: InputDecoration(
+                labelText: 'Nom',
+                labelStyle: TextStyle(
+                  color: Color(0xFFD9A9A9), // Couleur de l'étiquette
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFFD9A9A9), width: 2.0), // Couleur de la bordure focale
+                  borderRadius: BorderRadius.circular(8.0), // Bordure arrondie
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey), // Bordure par défaut
+                  borderRadius: BorderRadius.circular(8.0), // Bordure arrondie
+                ),
+              ),
             ),
             SizedBox(height: 20),
-            DropdownButton<Etat>(
+            
+            // Champ de saisie pour la description avec bordure arrondie
+            TextField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Description',
+                labelStyle: TextStyle(color: Color(0xFFD9A9A9)),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFFD9A9A9), width: 2.0),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
+            
+            // Dropdown pour l'état avec bordure arrondie
+            DropdownButtonFormField<Etat>(
               value: _selectedEtat,
               hint: Text('Sélectionnez un état'),
               items: _etats.map<DropdownMenuItem<Etat>>((etat) {
                 return DropdownMenuItem<Etat>(
-                  value: etat, // L'instance d'Etat à utiliser comme valeur
-                  child: Text(etat.nom), // Texte affiché dans le menu déroulant
+                  value: etat,
+                  child: Text(etat.nom),
                 );
               }).toList(),
-              onChanged: (Etat? newValue) { // Assurez-vous que le type est correct
+              onChanged: (Etat? newValue) {
                 setState(() {
-                  _selectedEtat = newValue; // Met à jour _selectedEtat
+                  _selectedEtat = newValue;
                 });
               },
+              decoration: InputDecoration(
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFFD9A9A9), width: 2.0),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
             ),
             SizedBox(height: 20),
-            DropdownButton<Categorie>(
+            
+            // Dropdown pour la catégorie avec bordure arrondie
+            DropdownButtonFormField<Categorie>(
               value: _selectedCategorie,
               hint: Text('Sélectionnez une catégorie'),
               items: _categories.map<DropdownMenuItem<Categorie>>((categorie) {
                 return DropdownMenuItem<Categorie>(
-                  value: categorie, // Utilisez l'instance de Categorie comme valeur
-                  child: Text(categorie.nom), // Texte affiché dans le menu déroulant
+                  value: categorie,
+                  child: Text(categorie.nom),
                 );
               }).toList(),
-              onChanged: (Categorie? newValue) { // Assurez-vous que le type est correct
+              onChanged: (Categorie? newValue) {
                 setState(() {
-                  _selectedCategorie = newValue; // Met à jour _selectedCategorie
+                  _selectedCategorie = newValue;
                 });
               },
+              decoration: InputDecoration(
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFFD9A9A9), width: 2.0),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _pickImages,
-              child: Text('Choisir plusieurs images'),
-            ),
+            
+            // Bouton pour choisir des images avec bordure en pointillés
+           GestureDetector(
+  onTap: _pickImages,
+  child: Container(
+    width: double.infinity,
+    height: 150,
+    decoration: BoxDecoration(
+      border: Border.all(
+        color: Colors.grey,
+        width: 2.0,
+        // style: BorderStyle.solid, // Tu peux retirer cette ligne car c'est le style par défaut
+      ),
+      borderRadius: BorderRadius.circular(8.0),
+    ),
+    child: Center(
+      child: Text(
+        'Choisir plusieurs images',
+        style: TextStyle(color: Color(0xFFD9A9A9)),
+      ),
+    ),
+  ),
+),
+
+            
+            // Affichage des images sélectionnées
             SizedBox(height: 20),
             if (kIsWeb)
               _imageUrls.isNotEmpty
@@ -227,14 +288,22 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
                       }).toList(),
                     )
                   : Text('Aucune image sélectionnée'),
+            
             SizedBox(height: 20),
+            
+            // Bouton pour ajouter ou mettre à jour l'objet
             ElevatedButton(
               onPressed: _addOrUpdateObjet,
               child: Text(widget.objet == null ? 'Ajouter Objet' : 'Mettre à jour Objet'),
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white, backgroundColor: Color(0xFFD9A9A9),
+              ),
             ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 }
