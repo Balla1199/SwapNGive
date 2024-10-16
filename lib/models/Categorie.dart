@@ -19,4 +19,18 @@ class Categorie {
       nom: map['nom'] as String,
     );
   }
+
+  // Surcharger == pour comparer deux instances de Categorie
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+  
+    return other is Categorie &&
+      other.id == id &&
+      other.nom == nom;
+  }
+
+  // Surcharger hashCode pour garantir l'unicité
+  @override
+  int get hashCode => id.hashCode ^ nom.hashCode;
 }

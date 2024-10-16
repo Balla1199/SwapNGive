@@ -100,42 +100,52 @@ class _ObjetFormScreenState extends State<ObjetFormScreen> {
     }
   }
 
-Future<void> _addOrUpdateObjet() async {
-  if (_selectedEtat != null && _selectedCategorie != null && _currentUser != null) {
-    final objet = Objet(
-      id: widget.objet?.id ?? uuid.v4(),
-      nom: _nomController.text,
-      description: _descriptionController.text,
-      etat: _selectedEtat!,
-      categorie: _selectedCategorie!,
-      dateAjout: DateTime.now(),
-      utilisateur: _currentUser!,
-      imageUrl: widget.objet?.imageUrl ?? '',
-    );
+  Future<void> _addOrUpdateObjet() async {
+    if (_selectedEtat != null && _selectedCategorie != null && _currentUser != null) {
+      final objet = Objet(
+        id: widget.objet?.id ?? uuid.v4(),
+        nom: _nomController.text,
+        description: _descriptionController.text,
+        etat: _selectedEtat!,
+        categorie: _selectedCategorie!,
+        dateAjout: DateTime.now(),
+        utilisateur: _currentUser!,
+        imageUrl: widget.objet?.imageUrl ?? '',
+      );
 
-    try {
-      // Convertir _imageFiles en une liste de type File
-      List<File> filesToUpload = kIsWeb ? [] : _imageFiles.whereType<File>().toList();
+      // Ajout de logs pour afficher les détails de l'objet
+      print('Détails de l\'objet:');
+      print('ID: ${objet.id}');
+      print('Nom: ${objet.nom}');
+      print('Description: ${objet.description}');
+      print('État: ${objet.etat}');
+      print('Catégorie: ${objet.categorie}');
+      print('Date d\'ajout: ${objet.dateAjout}');
+      print('Utilisateur: ${objet.utilisateur}');
+      print('Image URL: ${objet.imageUrl}');
 
-      if (widget.objet == null) {
-        // Ajouter un nouvel objet
-        await _objetService.addObjetWithImageFiles(objet, filesToUpload);
-        print('Nouvel objet ajouté.');
-      } else {
-        // Mettre à jour un objet existant
-        await _objetService.updateObjetWithImageFiles(objet, filesToUpload);
-        print('Objet mis à jour.');
+      try {
+        // Convertir _imageFiles en une liste de type File
+        List<File> filesToUpload = kIsWeb ? [] : _imageFiles.whereType<File>().toList();
+
+        if (widget.objet == null) {
+          // Ajouter un nouvel objet
+          await _objetService.addObjetWithImageFiles(objet, filesToUpload);
+          print('Nouvel objet ajouté avec succès.');
+        } else {
+          // Mettre à jour un objet existant
+          await _objetService.updateObjetWithImageFiles(objet, filesToUpload);
+          print('Objet avec ID ${objet.id} mis à jour avec succès.');
+        }
+
+        Navigator.pop(context); // Fermer l'écran après l'ajout ou la mise à jour
+      } catch (e) {
+        print('Erreur lors de l\'ajout ou de la mise à jour de l\'objet : $e');
       }
-
-      Navigator.pop(context); // Fermer l'écran après l'ajout ou la mise à jour
-    } catch (e) {
-      print('Erreur lors de l\'ajout ou de la mise à jour de l\'objet : $e');
+    } else {
+      print('Veuillez compléter tous les champs requis.');
     }
-  } else {
-    print('Veuillez compléter tous les champs requis.');
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -157,15 +167,15 @@ Future<void> _addOrUpdateObjet() async {
             DropdownButton<Etat>(
               value: _selectedEtat,
               hint: Text('Sélectionnez un état'),
-              items: _etats.map((etat) {
+              items: _etats.map<DropdownMenuItem<Etat>>((etat) {
                 return DropdownMenuItem<Etat>(
-                  value: etat,
-                  child: Text(etat.nom),
+                  value: etat, // L'instance d'Etat à utiliser comme valeur
+                  child: Text(etat.nom), // Texte affiché dans le menu déroulant
                 );
               }).toList(),
-              onChanged: (value) {
+              onChanged: (Etat? newValue) { // Assurez-vous que le type est correct
                 setState(() {
-                  _selectedEtat = value;
+                  _selectedEtat = newValue; // Met à jour _selectedEtat
                 });
               },
             ),
@@ -173,15 +183,15 @@ Future<void> _addOrUpdateObjet() async {
             DropdownButton<Categorie>(
               value: _selectedCategorie,
               hint: Text('Sélectionnez une catégorie'),
-              items: _categories.map((categorie) {
+              items: _categories.map<DropdownMenuItem<Categorie>>((categorie) {
                 return DropdownMenuItem<Categorie>(
-                  value: categorie,
-                  child: Text(categorie.nom),
+                  value: categorie, // Utilisez l'instance de Categorie comme valeur
+                  child: Text(categorie.nom), // Texte affiché dans le menu déroulant
                 );
               }).toList(),
-              onChanged: (value) {
+              onChanged: (Categorie? newValue) { // Assurez-vous que le type est correct
                 setState(() {
-                  _selectedCategorie = value;
+                  _selectedCategorie = newValue; // Met à jour _selectedCategorie
                 });
               },
             ),

@@ -22,4 +22,16 @@ class Etat {
       nom: map['nom'],
     );
   }
+
+  // Implémentation de l'égalité
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! Etat) return false;
+    return id == other.id; // Vérifiez l'égalité sur l'id
+  }
+
+  // Méthode pour obtenir le hashCode
+  @override
+  int get hashCode => id.hashCode; // Utilisez l'id pour le hashCode
 }
