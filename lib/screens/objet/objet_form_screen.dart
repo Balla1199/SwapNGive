@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:uuid/uuid.dart'; // Importation de la bibliothèque UUID
-import 'dart:io' if (dart.library.html) 'dart:html'; // Importation conditionnelle pour mobile et web
+//import 'dart:io' if (dart.library.html) 'dart:html'; // Importation conditionnelle pour mobile et web
 import 'package:flutter/foundation.dart'; // Pour kIsWeb (vérification de la plateforme)
 import 'package:swapngive/models/Categorie.dart'; // Modèle Categorie
 import 'package:swapngive/models/etat.dart'; // Modèle Etat
@@ -11,6 +11,8 @@ import 'package:swapngive/services/auth_service.dart'; // Service d'authentifica
 import 'package:swapngive/services/categorie_service.dart'; // Service de gestion des catégories
 import 'package:swapngive/services/etat_service.dart'; // Service de gestion des états
 import 'package:swapngive/services/objet_service.dart'; // Service de gestion des objets
+import 'dart:io'; // Utilisation pour mobile et desktop
+
 
 class ObjetFormScreen extends StatefulWidget {
   final Objet? objet;

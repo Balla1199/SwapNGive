@@ -76,20 +76,25 @@ class AnnonceService {
       }).toList();
     });
   }
-
-Future<void> mettreAJourLikes(String annonceId, bool aDejaLike, int nombreActuelLikes) async {
+Future<void> mettreAJourLikes(String annonceId, bool like, int nouveauNombreLikes) async {
   try {
-    // Si l'utilisateur a déjà liké, on décrémente les likes, sinon on les incrémente
-    int nouveauNombreLikes = aDejaLike ? nombreActuelLikes - 1 : nombreActuelLikes + 1;
+    // Ajout d'un journal pour déboguer
+    print("Tentative de mise à jour des likes pour l'annonce $annonceId avec $nouveauNombreLikes likes.");
 
-    // Mise à jour dans Firestore avec le nouveau nombre de likes
-    await _annoncesCollection.doc(annonceId).update({'likes': nouveauNombreLikes});
-    
-    print("Likes mis à jour avec succès !");
+    // Met à jour le champ 'likes' dans Firestore pour l'annonce spécifiée
+    await FirebaseFirestore.instance.collection('annonces').doc(annonceId).update({
+      'likes': nouveauNombreLikes,
+    });
+
+    // Journal en cas de succès
+    print("Mise à jour réussie dans Firestore pour l'annonce $annonceId.");
   } catch (e) {
-    print("Erreur lors de la mise à jour des likes : $e");
+    // Gère et relance l'erreur si la mise à jour échoue
+    print("Erreur lors de la mise à jour des likes dans Firestore : $e");
+    throw e;
   }
 }
+
 
 
      // Mettre à jour le statut d'une annonce

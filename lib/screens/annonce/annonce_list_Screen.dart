@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:swapngive/models/Annonce.dart';
 import 'package:swapngive/models/Avis.dart';
@@ -69,29 +70,44 @@ class _AnnonceListScreenState extends State<AnnonceListScreen> {
     }
   }
 
-  Future<void> _updateLikes(String annonceId, int index) async {
-    try {
-      bool aDejaLike = _likedStatus[index];
-      int nombreActuelLikes = _annonces[index].likes;
+ Future<void> _updateLikes(String annonceId, int index) async {
+  try {
+    // Vérifie si l'utilisateur a déjà liké cette annonce
+    bool aDejaLike = _likedStatus[index]; 
+    int nombreActuelLikes = _annonces[index].likes; // Récupère le nombre actuel de likes
 
-      if (aDejaLike) {
-        nombreActuelLikes -= 1;
-      } else {
-        nombreActuelLikes += 1;
-      }
-
-      await _annonceService.mettreAJourLikes(annonceId, !aDejaLike, nombreActuelLikes);
-      
-      setState(() {
-        _likedStatus[index] = !aDejaLike;
-        _annonces[index].likes = nombreActuelLikes;
-      });
-
-      print("Mise à jour des likes pour l'annonce $annonceId: $nombreActuelLikes");
-    } catch (e) {
-      print("Erreur lors de la mise à jour des likes : $e");
+    // Si l'utilisateur a déjà liké, on décrémente les likes sinon on les incrémente
+    if (aDejaLike) {
+      nombreActuelLikes -= 1;
+    } else {
+      nombreActuelLikes += 1;
     }
+
+    // Met à jour les likes dans Firestore via le service
+    await _annonceService.mettreAJourLikes(annonceId, !aDejaLike, nombreActuelLikes);
+
+    // Récupère le document mis à jour pour vérifier la mise à jour dans Firestore
+    DocumentSnapshot snapshot = await FirebaseFirestore.instance.collection('annonces').doc(annonceId).get();
+    int likesFirestore = snapshot['likes'];
+
+    // Met à jour l'état local après la mise à jour réussie dans Firestore
+    setState(() {
+      _likedStatus[index] = !aDejaLike; // Inverse l'état du like
+      _annonces[index].likes = likesFirestore; // Met à jour avec le nombre de likes de Firestore
+
+      // Affiche les états dans la console pour vérification
+      print('État mis à jour pour ${annonceId}: liked = ${_likedStatus[index]}, likes = ${_annonces[index].likes}');
+    });
+
+    // Affiche un message de confirmation dans la console
+    print("Mise à jour des likes réussie pour l'annonce $annonceId: $likesFirestore likes (Firestore)");
+  } catch (e) {
+    // Gère une éventuelle erreur et l'affiche dans la console
+    print("Erreur lors de la mise à jour des likes : $e");
   }
+}
+
+
 
   Widget _buildStarRating(double moyenne) {
     int fullStars = moyenne.floor();
@@ -252,127 +268,128 @@ Widget build(BuildContext context) {
 
                   print("Nombre d'annonces chargées: ${annonces.length}");
 
-                  return GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.75,
-                      crossAxisSpacing: 5,
-                      mainAxisSpacing: 10,
-                    ),
-                    padding: EdgeInsets.all(10),
-                    itemCount: annonces.length,
-                    itemBuilder: (context, index) {
-                      final annonce = annonces[index];
-                      final profilePhoto = _profilePhotos.length > index ? _profilePhotos[index] : null;
-                      final moyenneNote = _moyennesNotes.length > index ? _moyennesNotes[index] : null;
+                return GridView.builder(
+  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 2,
+    childAspectRatio: 0.75,
+    crossAxisSpacing: 5,
+    mainAxisSpacing: 10,
+  ),
+  padding: EdgeInsets.all(10),
+  itemCount: annonces.length,
+  itemBuilder: (context, index) {
+    final annonce = annonces[index];
+    final profilePhoto = _profilePhotos.length > index ? _profilePhotos[index] : null;
+    final moyenneNote = _moyennesNotes.length > index ? _moyennesNotes[index] : null;
 
-                      return Column(
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 15,
+              backgroundImage: (profilePhoto != null && profilePhoto.isNotEmpty)
+                  ? NetworkImage(profilePhoto)
+                  : AssetImage('assets/images/user.png') as ImageProvider,
+            ),
+            SizedBox(width: 4),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  annonce.utilisateur.nom,
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+                moyenneNote != null ? _buildStarRating(moyenneNote) : Container(),
+              ],
+            ),
+          ],
+        ),
+        SizedBox(height: 5),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AnnonceDetailsScreen(annonce: annonce),
+              ),
+            );
+          },
+          child: Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                height: 140,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  image: DecorationImage(
+                    image: NetworkImage(annonce.objet.imageUrl),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 8,
+                right: 8,
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              CircleAvatar(
-                                radius: 15,
-                                backgroundImage: (profilePhoto != null && profilePhoto.isNotEmpty)
-                                    ? NetworkImage(profilePhoto)
-                                    : AssetImage('assets/images/user.png') as ImageProvider,
-                              ),
-                              SizedBox(width: 4),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    annonce.utilisateur.nom,
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                  ),
-                                  moyenneNote != null ? _buildStarRating(moyenneNote) : Container(),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 5),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AnnonceDetailsScreen(annonce: annonce),
-                                ),
-                              );
-                            },
-                            child: Stack(
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  height: 140,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                    image: DecorationImage(
-                                      image: NetworkImage(annonce.objet.imageUrl),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 8,
-                                  right: 8,
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 5, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey[200],
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            IconButton(
-                                              icon: Icon(
-                                                _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
-                                                color: _likedStatus[index] ? Colors.red : Colors.grey,
-                                              ),
-                                              onPressed: () {
-                                                _updateLikes(annonce.id, index);
-                                              },
-                                              padding: EdgeInsets.zero,
-                                            ),
-                                            SizedBox(width: 0),
-                                            Text(
-                                              '${annonce.likes}',
-                                              style: TextStyle(fontSize: 14),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              annonce.titre,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              annonce.description,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.left,
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
+                          IconButton(
+  icon: Icon(
+    _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
+    color: _likedStatus[index] ? Colors.red : Colors.grey,
+  ),
+  onPressed: () {
+    _updateLikes(annonce.id, index);
+  },
+),
+
+                          SizedBox(width: 0),
+                          Text(
+                            '${annonce.likes}',
+                            style: TextStyle(fontSize: 14),
                           ),
                         ],
-                      );
-                    },
-                  );
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 5),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            annonce.titre,
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        SizedBox(height: 5),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            annonce.description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.left,
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      ],
+    );
+  },
+);
+
                 },
               ),
             ),

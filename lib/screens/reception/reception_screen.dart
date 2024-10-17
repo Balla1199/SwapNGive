@@ -106,7 +106,6 @@ class _ReceptionScreenState extends State<ReceptionScreen> with SingleTickerProv
       ),
     );
   }
-
 Widget buildEchangesTab() {
   return Column(
     children: [
@@ -129,26 +128,50 @@ Widget buildEchangesTab() {
             final imageUrl = Objet1.imageUrl;
 
             return Card(
+              // Style de la carte avec une couleur de fond personnalisée
+              color: Color(0xFFD9A9A9), // Couleur de fond personnalisée (rose pâle)
+              elevation: 4, // Élévation pour l'effet d'ombre
               child: ListTile(
+                // Image ou icône si l'image n'est pas disponible
                 leading: imageUrl.isNotEmpty
-                    ? Image.network(imageUrl) // Afficher l'image de objet2
-                    : Icon(Icons.image_not_supported), // Icône si aucune image disponible
-                title: Text(nomUtilisateur), // Nom du propriétaire de l'objet2
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0), // Coins arrondis pour l'image
+                        child: Image.network(imageUrl, width: 50, height: 50, fit: BoxFit.cover), // Ajustement de l'image
+                      )
+                    : Icon(Icons.image_not_supported, size: 50, color: Colors.grey), // Icône avec couleur grise si pas d'image
+                title: Text(
+                  nomUtilisateur,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold, // Texte en gras pour le nom d'utilisateur
+                    color: Colors.white, // Couleur du texte blanc
+                  ),
+                ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Message: $message'), // Message associé à l'échange
-                    Text('Statut: ${echange.statut ?? 'Statut non spécifié'}'),
+                    Text(
+                      'Message: $message',
+                      style: TextStyle(
+                        color: Colors.white, // Couleur du texte blanc
+                      ),
+                    ),
+                    Text(
+                      'Statut: ${echange.statut ?? 'Statut non spécifié'}',
+                      style: TextStyle(
+                        color: Colors.white, // Couleur du texte blanc
+                      ),
+                    ),
                   ],
                 ),
-                trailing: ElevatedButton(
+                // Bouton "Voir Détails" remplacé par une icône "eye"
+                trailing: IconButton(
+                  icon: Icon(Icons.remove_red_eye, color: Colors.white), // Icône d'œil avec couleur blanche
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => DetailEchangeScreen(echange: echange)),
                     );
                   },
-                  child: Text("Voir Détails"),
                 ),
               ),
             );
@@ -167,7 +190,10 @@ Widget buildEchangesTab() {
                 });
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: selectedFilter == 'envoyé' ? Colors.blue : Colors.grey, // Change la couleur selon le filtre sélectionné
+                backgroundColor: selectedFilter == 'envoyé' ? Color(0xFFD9A9A9) : Colors.grey, // Couleur active pour le filtre sélectionné
+                textStyle: TextStyle(
+                  color: Colors.white, // Texte blanc
+                ),
               ),
               child: Text("Envoyé"),
             ),
@@ -179,7 +205,10 @@ Widget buildEchangesTab() {
                 });
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: selectedFilter == 'reçu' ? Colors.blue : Colors.grey, // Change la couleur selon le filtre sélectionné
+                backgroundColor: selectedFilter == 'reçu' ? Color(0xFFD9A9A9) : Colors.grey, // Couleur active pour le filtre sélectionné
+                textStyle: TextStyle(
+                  color: Colors.white, // Texte blanc
+                ),
               ),
               child: Text("Reçu"),
             ),
@@ -190,92 +219,121 @@ Widget buildEchangesTab() {
   );
 }
 
-
-  Widget buildDonsTab() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    selectedFilter = 'reçu'; // Filtre pour les dons reçus
-                    _loadDons(); // Recharge les dons après changement de filtre
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedFilter == 'reçu' ? Colors.blue : Colors.grey,
+Widget buildDonsTab() {
+  return Column(
+    children: [
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  selectedFilter = 'reçu'; // Filtre pour les dons reçus
+                  _loadDons(); // Recharge les dons après changement de filtre
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: selectedFilter == 'reçu' ? Color(0xFFD9A9A9) : Colors.grey, // Couleur personnalisée pour "Reçu"
+                textStyle: TextStyle(
+                  color: Colors.white, // Texte en blanc
                 ),
-                child: Text("Reçu"),
               ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    selectedFilter = 'envoyé'; // Filtre pour les dons envoyés
-                    _loadDons(); // Recharge les dons après changement de filtre
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedFilter == 'envoyé' ? Colors.blue : Colors.grey,
+              child: Text("Reçu"),
+            ),
+            SizedBox(width: 10),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  selectedFilter = 'envoyé'; // Filtre pour les dons envoyés
+                  _loadDons(); // Recharge les dons après changement de filtre
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: selectedFilter == 'envoyé' ? Color(0xFFD9A9A9) : Colors.grey, // Couleur personnalisée pour "Envoyé"
+                textStyle: TextStyle(
+                  color: Colors.white, // Texte en blanc
                 ),
-                child: Text("Envoyé"),
               ),
-            ],
-          ),
+              child: Text("Envoyé"),
+            ),
+          ],
         ),
-        Expanded(
-          child: ListView.builder(
-            itemCount: _dons.length,
-            itemBuilder: (context, index) {
-              final don = _dons[index];
-              final objet = don.annonce.objet;
+      ),
+      Expanded(
+        child: ListView.builder(
+          itemCount: _dons.length,
+          itemBuilder: (context, index) {
+            final don = _dons[index];
+            final objet = don.annonce.objet;
+            final receveur = don.receveur;
 
-              final receveur = don.receveur;
-
-              return Card(
-                child: ListTile(
-                  leading: (objet.imageUrl.isNotEmpty)
-                      ? Image.network(objet.imageUrl)
-                      : Icon(Icons.image_not_supported),
-                  title: Text(objet.nom),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Receveur : ${receveur.nom}'),
-                      Text('Message : ${don.message ?? 'Pas de message'}'),
-                    ],
-                  ),
-                  trailing: ElevatedButton(
-                    onPressed: () async {
-                      AuthService authService = AuthService();
-                      Utilisateur? currentUser = await authService.getCurrentUserDetails();
-
-                      if (currentUser != null) {
-                        String currentUserId = currentUser.id;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailDonScreen(don: don.toMap(), currentUserId: currentUserId),
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Utilisateur non connecté.")));
-                      }
-                    },
-                    child: Text("Voir Détails"),
+            return Card(
+              // Style de la carte avec couleur de fond personnalisée
+              color: Color(0xFFD9A9A9), // Couleur de fond pour la carte (rose pâle)
+              elevation: 4, // Élévation pour un effet d'ombre
+              child: ListTile(
+                // Image ou icône par défaut si aucune image disponible
+                leading: (objet.imageUrl.isNotEmpty)
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8.0), // Coins arrondis pour l'image
+                        child: Image.network(objet.imageUrl, width: 50, height: 50, fit: BoxFit.cover), // Ajustement de l'image
+                      )
+                    : Icon(Icons.image_not_supported, size: 50, color: Colors.grey), // Icône avec couleur grise si pas d'image
+                title: Text(
+                  objet.nom,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold, // Texte en gras pour le nom de l'objet
+                    color: Colors.white, // Couleur du texte blanc
                   ),
                 ),
-              );
-            },
-          ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Receveur : ${receveur.nom}',
+                      style: TextStyle(
+                        color: Colors.white, // Texte en blanc
+                      ),
+                    ),
+                    Text(
+                      'Message : ${don.message ?? 'Pas de message'}',
+                      style: TextStyle(
+                        color: Colors.white, // Texte en blanc
+                      ),
+                    ),
+                  ],
+                ),
+                // Remplacement du bouton texte "Voir Détails" par une icône d'œil
+                trailing: IconButton(
+                  icon: Icon(Icons.remove_red_eye, color: Colors.white), // Icône "œil" avec couleur blanche
+                  onPressed: () async {
+                    AuthService authService = AuthService();
+                    Utilisateur? currentUser = await authService.getCurrentUserDetails();
+
+                    if (currentUser != null) {
+                      String currentUserId = currentUser.id;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailDonScreen(don: don.toMap(), currentUserId: currentUserId),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Utilisateur non connecté.")));
+                    }
+                  },
+                ),
+              ),
+            );
+          },
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
 
   Widget buildConversationsTab() {
     if (currentUserId == null) {
