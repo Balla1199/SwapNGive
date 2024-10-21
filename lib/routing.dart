@@ -4,6 +4,7 @@ import 'package:swapngive/models/etat.dart';
 import 'package:swapngive/models/objet.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:swapngive/models/Annonce.dart';
+import 'package:swapngive/screens/Acceuil/acceuil_screen.dart';
 import 'package:swapngive/screens/Historique/Historiquescreen.dart';
 import 'package:swapngive/screens/Historique/historique_detail_don_screen.dart';
 import 'package:swapngive/screens/Historique/historique_detail_echange_screen.dart';
@@ -91,11 +92,15 @@ class AppRoutes {
    
   static const String historiqueDetailDonScreen = '/historique_detail_don_screen';
   static const String historiqueDetailEchangeScreen = '/historique_detail_change_screen';
+  static const String accueil = '/accueil';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case home:
         return MaterialPageRoute(builder: (_) => HomeScreen());
+
+      case accueil: // Ajoutez ce cas pour AccueilScreen
+        return MaterialPageRoute(builder: (_) => AccueilScreen());
       
       case categorieList:
         return MaterialPageRoute(builder: (_) => CategorieListScreen());
@@ -345,7 +350,7 @@ case detailDonScreen:
           builder: (_) => HistoriqueDetailEchangeScreen(echange: echange!),
         );
 
-           
+      
 
       default:
         return MaterialPageRoute(

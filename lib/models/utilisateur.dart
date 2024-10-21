@@ -1,11 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// Enum pour le rôle
+
 enum Role {
   admin,
   client,
   user,
-  // Ajoutez d'autres rôles ici si nécessaire
+  
 }
 
 class Utilisateur {
@@ -17,7 +17,7 @@ class Utilisateur {
   String telephone;
   DateTime dateInscription;
   Role role;
-  String? photoProfil; // URL de la photo de profil, nullable
+  String? photoProfil; 
 
   // Constructeur de la classe Utilisateur
   Utilisateur({

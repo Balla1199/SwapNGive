@@ -137,83 +137,156 @@ class _AnnonceDetailsScreenState extends State<AnnonceDetailsScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    print("Affichage des détails de l'annonce : ${widget.annonce.titre}");
+Widget build(BuildContext context) {
+  print("Affichage des détails de l'annonce : ${widget.annonce.titre}");
 
-    List<String> imageUrls = widget.annonce.objet.imageUrl.split(',');
+  List<String> imageUrls = widget.annonce.objet.imageUrl.split(',');
 
-    String boutonTexte = widget.annonce.type == TypeAnnonce.don ? 'Demander' : 'Proposer';
+  String boutonTexte = widget.annonce.type == TypeAnnonce.don ? 'Demander' : 'Proposer';
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.annonce.titre.isNotEmpty ? widget.annonce.titre : 'Détails de l\'Annonce'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (imageUrls.isNotEmpty)
-              CarouselSlider(
-                options: CarouselOptions(
-                  height: 250.0,
-                  autoPlay: true,
-                  enlargeCenterPage: true,
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(widget.annonce.titre.isNotEmpty ? widget.annonce.titre : 'Détails de l\'Annonce'),
+      backgroundColor: const Color(0xFFD9A9A9), // Added background color
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (imageUrls.isNotEmpty)
+            CarouselSlider(
+              options: CarouselOptions(
+                height: 250.0,
+                autoPlay: true,
+                enlargeCenterPage: true,
+              ),
+              items: imageUrls.map((url) {
+                return Builder(
+                  builder: (BuildContext context) {
+                    return Container(
+                      width: MediaQuery.of(context).size.width,
+                      margin: EdgeInsets.symmetric(horizontal: 5.0),
+                      child: Image.network(
+                        url,
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  },
+                );
+              }).toList(),
+            )
+          else
+            Image.asset(
+              'assets/images/placeholder.png',
+              height: 250,
+              fit: BoxFit.cover,
+            ),
+
+          SizedBox(height: 16.0),
+
+          // Button aligned to the right with white text color
+          if (isDifferentUser)
+            Align(
+              alignment: Alignment.centerRight,
+              child: ElevatedButton(
+                onPressed: _handleAction, // Appel à la méthode de gestion des actions
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD9A9A9),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
                 ),
-                items: imageUrls.map((url) {
-                  return Builder(
-                    builder: (BuildContext context) {
-                      return Container(
-                        width: MediaQuery.of(context).size.width,
-                        margin: EdgeInsets.symmetric(horizontal: 5.0),
-                        child: Image.network(
-                          url,
-                          fit: BoxFit.cover,
+                child: Text(
+                  boutonTexte,
+                  style: TextStyle(fontSize: 18, color: Colors.white), // White text color
+                ),
+              ),
+            ),
+
+          SizedBox(height: 16.0),
+
+          Text(
+            widget.annonce.titre,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: const Color(0xFFD9A9A9)), // Added color
+          ),
+          SizedBox(height: 8.0),
+
+          Text(
+            widget.annonce.description,
+            style: TextStyle(fontSize: 16, color: Colors.grey[800]),
+          ),
+          SizedBox(height: 16.0),
+
+          Text(
+            "État : ${widget.annonce.objet.etat.nom}",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700]),
+          ),
+
+          Spacer(),
+
+          Row(
+            children: [
+              if (profilePhotoUrl != null)
+                GestureDetector(
+                  onTap: () async {
+                    Utilisateur? currentUserDetails = await _authService.getCurrentUserDetails();
+
+                    if (currentUserDetails != null) {
+                      bool isDifferentUser = widget.annonce.utilisateur.id != currentUserDetails.id;
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileScreen(
+                            utilisateurId: widget.annonce.utilisateur.id,
+                            isDifferentUser: isDifferentUser,
+                            utilisateur: widget.annonce.utilisateur,
+                          ),
                         ),
                       );
-                    },
-                  );
-                }).toList(),
-              )
-            else
-              Image.asset(
-                'assets/images/placeholder.png',
-                height: 250,
-                fit: BoxFit.cover,
-              ),
+                    } else {
+                      print('Impossible de récupérer les détails de l\'utilisateur.');
+                    }
+                  },
+                  child: CircleAvatar(
+                    backgroundImage: NetworkImage(profilePhotoUrl!),
+                    radius: 25,
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: () async {
+                    Utilisateur? currentUserDetails = await _authService.getCurrentUserDetails();
 
-            SizedBox(height: 16.0),
+                    if (currentUserDetails != null) {
+                      bool isDifferentUser = widget.annonce.utilisateur.id != currentUserDetails.id;
 
-            if (isDifferentUser)
-              ElevatedButton(
-                onPressed: _handleAction, // Appel à la méthode de gestion des actions
-                child: Text(boutonTexte),
-              ),
-
-            SizedBox(height: 16.0),
-
-            Text(
-              widget.annonce.titre,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8.0),
-
-            Text(
-              widget.annonce.description,
-              style: TextStyle(fontSize: 16),
-            ),
-            SizedBox(height: 16.0),
-
-            Text(
-              "État : ${widget.annonce.objet.etat.nom}",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700]),
-            ),
-
-            Spacer(),
-
-            Row(
-              children: [
-                if (profilePhotoUrl != null)
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ProfileScreen(
+                            utilisateurId: widget.annonce.utilisateur.id,
+                            isDifferentUser: isDifferentUser,
+                            utilisateur: widget.annonce.utilisateur,
+                          ),
+                        ),
+                      );
+                    } else {
+                      print('Impossible de récupérer les détails de l\'utilisateur.');
+                    }
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey,
+                    radius: 25,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
+                ),
+              SizedBox(width: 8),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   GestureDetector(
                     onTap: () async {
                       Utilisateur? currentUserDetails = await _authService.getCurrentUserDetails();
@@ -235,78 +308,21 @@ class _AnnonceDetailsScreenState extends State<AnnonceDetailsScreen> {
                         print('Impossible de récupérer les détails de l\'utilisateur.');
                       }
                     },
-                    child: CircleAvatar(
-                      backgroundImage: NetworkImage(profilePhotoUrl!),
-                      radius: 25,
-                    ),
-                  )
-                else
-                  GestureDetector(
-                    onTap: () async {
-                      Utilisateur? currentUserDetails = await _authService.getCurrentUserDetails();
-
-                      if (currentUserDetails != null) {
-                        bool isDifferentUser = widget.annonce.utilisateur.id != currentUserDetails.id;
-
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProfileScreen(
-                              utilisateurId: widget.annonce.utilisateur.id,
-                              isDifferentUser: isDifferentUser,
-                              utilisateur: widget.annonce.utilisateur,
-                            ),
-                          ),
-                        );
-                      } else {
-                        print('Impossible de récupérer les détails de l\'utilisateur.');
-                      }
-                    },
-                    child: CircleAvatar(
-                      backgroundColor: Colors.grey,
-                      radius: 25,
-                      child: Icon(Icons.person, color: Colors.white),
+                    child: Text(
+                      utilisateurNom ?? '',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFFD9A9A9)), // Added color
                     ),
                   ),
-                SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    GestureDetector(
-                      onTap: () async {
-                        Utilisateur? currentUserDetails = await _authService.getCurrentUserDetails();
-
-                        if (currentUserDetails != null) {
-                          bool isDifferentUser = widget.annonce.utilisateur.id != currentUserDetails.id;
-
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProfileScreen(
-                                utilisateurId: widget.annonce.utilisateur.id,
-                                isDifferentUser: isDifferentUser,
-                                utilisateur: widget.annonce.utilisateur,
-                              ),
-                            ),
-                          );
-                        } else {
-                          print('Impossible de récupérer les détails de l\'utilisateur.');
-                        }
-                      },
-                      child: Text(
-                        utilisateurNom ?? '',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(width: 5),
-                    _buildStarRating(moyenneNotes),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
+                  SizedBox(width: 5),
+                  _buildStarRating(moyenneNotes),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

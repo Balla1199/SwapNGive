@@ -93,5 +93,11 @@ class NotificationService {
       return [];
     }
   }
+ // Marquer une notification comme lue
+Future<void> marquerCommeLue(String notificationId) async {
+  await _firestore.collection('notifications').doc(notificationId).update({
+    'isRead': true,
+  });
+}
 
 }

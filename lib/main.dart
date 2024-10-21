@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      initialRoute: AppRoutes.login, // Définit LoginScreen comme route initiale
+      initialRoute: AppRoutes.accueil, // Définit LoginScreen comme route initiale
       onGenerateRoute: AppRoutes.generateRoute, // Utilise le générateur de routes
       debugShowCheckedModeBanner: false, // Masque le bandeau de debug
     );

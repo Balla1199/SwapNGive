@@ -69,6 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
         automaticallyImplyLeading: false,
         //title: Text('Connexion'),
       ),
+   
       body: Stack(
         children: [
           // Premier div : Fond coloré en D9A9A9
@@ -82,83 +83,87 @@ class _LoginScreenState extends State<LoginScreen> {
             left: 0,
             right: 0,
             bottom: 80, // Laisse un espace en bas
-            child: Container(
-              height: MediaQuery.of(context).size.height * 1.0, // 80% de la hauteur de l'écran
-              padding: EdgeInsets.all(16), // Espacement intérieur
-              decoration: BoxDecoration(
-                color: Colors.white, // Couleur de fond blanc
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(60) // Bords arrondis en haut 
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                // Ajoutez ici le logo
+            child:Container(
+  height: MediaQuery.of(context).size.height * 1.0, // 100% de la hauteur de l'écran
+  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16), // Espacement intérieur à gauche et à droite
+  decoration: BoxDecoration(
+    color: Colors.white, // Couleur de fond blanc
+    borderRadius: BorderRadius.vertical(
+      bottom: Radius.circular(60), // Bords arrondis en haut 
+    ),
+  ),
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.end,
+    children: [
+      // Ajoutez ici le logo
       Image.asset(
-  'assets/images/logo.jpg', // Chemin de votre logo
-  height: 300, // Hauteur du logo
-  width: 300,  // Largeur du logo
-  fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
+        'assets/images/logo.jpg', // Chemin de votre logo
+        height: 250, // Hauteur du logo
+        width: 250,  // Largeur du logo
+        fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
+      ),
+      SizedBox(height: 20), // Espacement entre le logo et les champs
+      // Champ pour l'email
+      TextFormField(
+        controller: _emailController,
+        decoration: InputDecoration(
+          labelText: 'Email',
+          prefixIcon: Icon(Icons.email),
+        ),
+        keyboardType: TextInputType.emailAddress,
+      ),
+      SizedBox(height: 10), // Espacement entre les champs
+      // Champ pour le mot de passe
+      TextFormField(
+        controller: _passwordController,
+        decoration: InputDecoration(
+          labelText: 'Mot de passe',
+          prefixIcon: Icon(Icons.lock),              
+        ),
+        obscureText: true,
+      ),
+      SizedBox(height: 40), // Espacement avant le bouton
+      // Bouton de connexion
+       Container(
+        width: 300,
+        height: 50,
+     child:  ElevatedButton(
+        onPressed: _login,
+        child: Text('Se connecter'),
+        style: ElevatedButton.styleFrom(
+          foregroundColor: Colors.white, 
+          backgroundColor: Color(0xFFD9A9A9),
+        ),
+      ),
+       ),
+      SizedBox(height: 10), // Espacement entre le bouton et le texte
+      // Lien pour créer un compte
+      TextButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/inscription');
+        },
+        child: Text('Créer un compte'),
+      ),
+      SizedBox(height: 10), // Espacement entre "Créer un compte" et "ou Google"
+      // Lien pour Google
+      Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('ou'), // Texte "ou" au-dessus
+          SizedBox(height: 8), // Espacement entre le texte et l'image
+          // Remplace l'icône par une image
+          Image.asset(
+            'assets/images/google.png', // Chemin de l'image dans ton projet
+            height: 30, // Définit la hauteur de l'image
+            width: 30,  // Définit la largeur de l'image
+            fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
+          ),
+        ],
+      ),
+    ],
+  ),
 ),
 
-                  SizedBox(height: 20), // Espacement entre le logo et les champs
-                  // Champ pour l'email
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  SizedBox(height: 10), // Espacement entre les champs
-                  // Champ pour le mot de passe
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Mot de passe',
-                      prefixIcon: Icon(Icons.lock),              
-                    ),
-                    obscureText: true,
-                  ),
-                  SizedBox(height: 20), // Espacement avant le bouton
-                  // Bouton de connexion
-                  ElevatedButton(
-                    onPressed: _login,
-                    child: Text('Se connecter'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, 
-                      backgroundColor: Color(0xFFD9A9A9),
-                    ),
-                  ),
-                  SizedBox(height: 10), // Espacement entre le bouton et le texte
-                  // Lien pour créer un compte
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/inscription');
-                    },
-                    child: Text('Créer un compte'),
-                  ),
-                  SizedBox(height: 10), // Espacement entre "Créer un compte" et "ou Google"
-                  // Lien pour Google
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('ou'), // Texte "ou" au-dessus
-                      SizedBox(height: 8), // Espacement entre le texte et l'image
-                      // Remplace l'icône par une image
-                      Image.asset(
-                        'assets/images/google.png', // Chemin de l'image dans ton projet
-                        height: 30, // Définit la hauteur de l'image
-                        width: 30,  // Définit la largeur de l'image
-                        fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
       ),

@@ -54,96 +54,145 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('Inscription'),
-      ),
-      body: Stack(
-        children: [
-          // Premier div avec couleur de fond
-          Container(
-            color: Color(0xFFD9A9A9), // Couleur de fond du premier div
-            height: MediaQuery.of(context).size.height, // Prend toute la hauteur de l'écran
-          ),
-
-          // Deuxième div placé au-dessus du premier
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 100, // Laisse un espace en bas
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.85, // Couvre 85% de la hauteur
-              padding: EdgeInsets.all(16), // Espacement intérieur
-              decoration: BoxDecoration(
-                color: Colors.white, // Couleur de fond blanc
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(60) // Bords arrondis en haut 
-                ),
-              ),
+      resizeToAvoidBottomInset: true, // Permet à la vue de se réajuster avec le clavier
+      body: SingleChildScrollView( // Permet le défilement lorsque le clavier apparaît
+        child: Column(
+          children: [
+            // Premier div avec couleur de fond
+            Container(
+              color: Color(0xFFD9A9A9), // Couleur de fond du premier div
+              height: MediaQuery.of(context).size.height, // Prend toute la hauteur de l'écran
               child: Column(
-                 mainAxisAlignment:MainAxisAlignment.end,
                 children: [
-                  // Champ pour le nom
-                  TextFormField(
-                    controller: _nomController,
-                    decoration: InputDecoration(
-                      labelText: 'Nom',
-                      prefixIcon: Icon(Icons.person),
+                  // Conteneur principal pour le contenu
+                  Expanded(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 30.0), // Padding à gauche et à droite + espacement intérieur vertical
+                      decoration: BoxDecoration(
+                        color: Colors.white, // Couleur de fond blanc
+                        borderRadius: BorderRadius.vertical(
+                          bottom: Radius.circular(60), // Bords arrondis en bas
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          // Logo en haut
+                          Image.asset(
+                            'assets/images/logo.jpg', // Chemin vers le logo
+                            height: 100, // Hauteur du logo
+                            width: 100,  // Largeur du logo
+                          ),
+                          SizedBox(height: 10), // Espacement entre le logo et les champs de saisie
+                          
+                          // Champ pour le nom
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0), // Padding à gauche et à droite
+                            child: TextFormField(
+                              controller: _nomController,
+                              decoration: InputDecoration(
+                                labelText: 'Nom',
+                                prefixIcon: Icon(Icons.person),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+
+                          // Champ pour l'email
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0), // Padding à gauche et à droite
+                            child: TextFormField(
+                              controller: _emailController,
+                              decoration: InputDecoration(
+                                labelText: 'Email',
+                                prefixIcon: Icon(Icons.email),
+                              ),
+                              keyboardType: TextInputType.emailAddress,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+
+                          // Champ pour le mot de passe
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0), // Padding à gauche et à droite
+                            child: TextFormField(
+                              controller: _passwordController,
+                              decoration: InputDecoration(
+                                labelText: 'Mot de passe',
+                                prefixIcon: Icon(Icons.lock),
+                              ),
+                              obscureText: true,
+                            ),
+                          ),
+                          SizedBox(height: 10),
+
+                          // Champ pour l'adresse
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0), // Padding à gauche et à droite
+                            child: TextFormField(
+                              controller: _adresseController,
+                              decoration: InputDecoration(
+                                labelText: 'Adresse',
+                                prefixIcon: Icon(Icons.location_on),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10),
+
+                          // Champ pour le téléphone
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0), // Padding à gauche et à droite
+                            child: TextFormField(
+                              controller: _telephoneController,
+                              decoration: InputDecoration(
+                                labelText: 'Téléphone',
+                                prefixIcon: Icon(Icons.phone),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(height: 30),
+
+                          // Bouton d'inscription
+                          Container(
+                            width: 300, // Largeur du bouton
+                            height: 50, // Hauteur du bouton
+                            child: ElevatedButton(
+                              onPressed: _register,
+                              child: Text('S\'inscrire'),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: Color(0xFFD9A9A9),
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 15), // Espacement avant le bouton de retour
+
+                          // Bouton de retour
+                          Container(
+                            width: 300, // Largeur du bouton
+                            height: 50, // Hauteur du bouton
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context); // Retour à l'écran précédent
+                              },
+                              child: Text('Retour'),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white, // Texte en blanc
+                                backgroundColor: Colors.black, // Fond noir
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  SizedBox(height: 10),
-                  // Champ pour l'email
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  SizedBox(height: 10),
-                  // Champ pour le mot de passe
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Mot de passe',
-                      prefixIcon: Icon(Icons.lock),
-                    ),
-                    obscureText: true,
-                  ),
-                  SizedBox(height: 10),
-                  // Champ pour l'adresse
-                  TextFormField(
-                    controller: _adresseController,
-                    decoration: InputDecoration(
-                      labelText: 'Adresse',
-                      prefixIcon: Icon(Icons.location_on),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  // Champ pour le téléphone
-                  TextFormField(
-                    controller: _telephoneController,
-                    decoration: InputDecoration(
-                      labelText: 'Téléphone',
-                      prefixIcon: Icon(Icons.phone),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  // Bouton d'inscription
-                  ElevatedButton(
-                    onPressed: _register,
-                    child: Text('S\'inscrire'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, 
-                      backgroundColor: Color(0xFFD9A9A9),
-                    ),
-                  ),
+                  SizedBox(height: 140), // Espace en bas du deuxième container
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
