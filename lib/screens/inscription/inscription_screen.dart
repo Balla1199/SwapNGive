@@ -42,7 +42,7 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
 
     try {
       await _utilisateurService.createUtilisateur(utilisateur, email, password);
-      Navigator.pushReplacementNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/login');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Échec de l\'inscription. Veuillez réessayer.')),

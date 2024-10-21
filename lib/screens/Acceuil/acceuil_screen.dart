@@ -4,15 +4,16 @@ class AccueilScreen extends StatelessWidget {
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-   // appBar: AppBar(  // Ajout de l'AppBar en haut de la page.
+   appBar: AppBar(  // Ajout de l'AppBar en haut de la page.
      // title: Text('Accueil'),  // Titre de l'AppBar.
-    //),
+     automaticallyImplyLeading: false,
+    ),
     body: Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(top: 40.0),  // Ajoute un espace de 20px en haut des images.
+            padding: const EdgeInsets.only(top: 10.0),  // Ajoute un espace de 20px en haut des images.
             child: GridView.count(
               crossAxisCount: 3,  // Définit 3 colonnes pour l'affichage des images.
               padding: const EdgeInsets.all(8.0),  // Ajoute de l'espace autour des images.

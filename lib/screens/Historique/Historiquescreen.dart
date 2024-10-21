@@ -39,30 +39,54 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
   String _formatDate(DateTime date) {
     return DateFormat('dd/MM/yyyy').format(date);
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('Historique'),
-          bottom: TabBar(
-            tabs: [
-              Tab(text: 'Échange'),
-              Tab(text: 'Don'),
-            ],
-          ),
-        ),
-        body: TabBarView(
+@override
+Widget build(BuildContext context) {
+  return DefaultTabController(
+    length: 2,
+    child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Row(
           children: [
-            _buildEchangeTab(),
-            _buildDonTab(),
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0), // Espacement entre le logo et le titre
+              child: Image.asset(
+                'assets/images/logosansnom.jpg', // Remplacez par le chemin de votre logo
+                width: 40, // Ajustez la largeur selon vos besoins
+                height: 40, // Ajustez la hauteur selon vos besoins
+              ),
+            ),
+            // Titre centré dans l'espace restant
+            Expanded(
+              child: Center(
+                child: Text(
+                  'Historique',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold, // Titre en gras
+                    fontSize: 20, // Ajustez la taille de la police selon vos besoins
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        bottom: TabBar(
+          tabs: [
+            Tab(text: 'Échange'),
+            Tab(text: 'Don'),
           ],
         ),
       ),
-    );
-  }
+      body: TabBarView(
+        children: [
+          _buildEchangeTab(),
+          _buildDonTab(),
+        ],
+      ),
+    ),
+  );
+}
+
 
   Widget _buildEchangeTab() {
     if (_currentUser == null) {
@@ -117,35 +141,72 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
       },
     );
   }
-
-  // Ajout du bouton d'évaluation dans la carte d'échange
-  Widget _buildEchangeCard(Echange echange) {
-    return Card(
-      margin: EdgeInsets.all(10),
-      child: ListTile(
-        leading: Image.network(echange.annonce.objet.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
-        title: Text(echange.annonce.objet.nom),
-        subtitle: Text('Statut: ${echange.statut}'),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Date: ${_formatDate(echange.dateEchange)}'),
-            Row(
-              mainAxisSize: MainAxisSize.min,
+Widget _buildEchangeCard(Echange echange) {
+  return Card(
+    margin: EdgeInsets.all(10),
+    color: Color(0xFFD9A9A9).withOpacity(0.6), // Couleur de la carte avec opacité.
+    child: Container(
+      width: 300, // Largeur de la carte.
+      height: 130, // Hauteur ajustée.
+      padding: EdgeInsets.all(10), // Espacement intérieur.
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center, // Alignement vertical centré.
+        children: [
+          // Image avec bordures arrondies
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0), // Espace à gauche de l'image.
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0), // Bordures arrondies de 10 pixels.
+              child: Image.network(
+                echange.annonce.objet.imageUrl,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(width: 10), // Espace entre l'image et le texte
+          
+          // Contenu textuel aligné avec l'image
+          Expanded( // Utiliser Expanded pour ajuster le texte.
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // Aligner verticalement le texte au centre.
+              crossAxisAlignment: CrossAxisAlignment.start, // Aligner le texte à gauche.
               children: [
-                TextButton(
-                  onPressed: () {
-                    // Navigation vers HistoriqueDetailEchangeScreen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HistoriqueDetailEchangeScreen(echange: echange),
-                      ),
-                    );
-                  },
-                  child: Text('Voir détails'),
+                Text(
+                  echange.annonce.objet.nom,
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold), // Texte en blanc et en gras.
                 ),
-                IconButton(
+                SizedBox(height: 5), // Espace entre le nom et la date.
+                Text(
+                  'Date: ${_formatDate(echange.dateEchange)}',
+                  style: TextStyle(color: Colors.white), // Texte en blanc.
+                ),
+              ],
+            ),
+          ),
+          
+          // Colonne pour les icônes à droite
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Espacer les icônes verticalement.
+            children: [
+              // Icône d'yeux.
+              IconButton(
+                icon: Icon(Icons.visibility, color: Colors.white), // Icône d'yeux.
+                onPressed: () {
+                  // Navigation vers HistoriqueDetailEchangeScreen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HistoriqueDetailEchangeScreen(echange: echange),
+                    ),
+                  );
+                },
+              ),
+              // Icône d'évaluation avec du padding en bas
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0), // Padding en bas.
+                child: IconButton(
                   icon: Icon(Icons.star, color: Colors.yellow),
                   onPressed: () {
                     // Navigation vers l'écran d'évaluation (AvisFormScreen)
@@ -153,50 +214,90 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => AvisFormScreen(
-                          utilisateurEvalueId: echange.annonce.utilisateur.id, // L'ID de l'utilisateur à évaluer
-                          typeAnnonce: 'echange', // Type d'annonce
-                          annonceId: echange.annonce.id, // L'ID de l'annonce associée à l'échange
+                          utilisateurEvalueId: echange.annonce.utilisateur.id, // L'ID de l'utilisateur à évaluer.
+                          typeAnnonce: 'echange', // Type d'annonce.
+                          annonceId: echange.annonce.id, // L'ID de l'annonce associée à l'échange.
                         ),
                       ),
                     );
                   },
-                )
-              ],
-            ),
-          ],
-        ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   // Ajout du bouton d'évaluation dans la carte de don
-  Widget _buildDonCard(Don don) {
-    return Card(
-      margin: EdgeInsets.all(10),
-      child: ListTile(
-        leading: Image.network(don.annonce.objet.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
-        title: Text(don.annonce.objet.nom),
-        subtitle: Text('Statut: ${don.statut}'),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Date: ${_formatDate(don.dateDon)}'),
-            Row(
-              mainAxisSize: MainAxisSize.min,
+Widget _buildDonCard(Don don) {
+  return Card(
+    margin: EdgeInsets.all(10),
+    color: Color(0xFFD9A9A9).withOpacity(0.6), // Couleur de la carte avec opacité.
+    child: Container(
+      width: 300, // Largeur de la carte.
+      height: 130, // Hauteur ajustée.
+      padding: EdgeInsets.all(10), // Espacement intérieur.
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center, // Alignement vertical centré.
+        children: [
+          // Image avec bordures arrondies
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0), // Espace à gauche de l'image.
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0), // Bordures arrondies de 10 pixels.
+              child: Image.network(
+                don.annonce.objet.imageUrl,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(width: 10), // Espace entre l'image et le texte
+          
+          // Contenu textuel aligné avec l'image
+          Expanded( // Utiliser Expanded pour ajuster le texte.
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // Aligner verticalement le texte au centre.
+              crossAxisAlignment: CrossAxisAlignment.start, // Aligner le texte à gauche.
               children: [
-                TextButton(
-                  onPressed: () {
-                    // Navigation vers HistoriqueDetailDonScreen
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HistoriqueDetailDonScreen(don: don),
-                      ),
-                    );
-                  },
-                  child: Text('Voir détails'),
+                Text(
+                  don.annonce.objet.nom,
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold), // Texte en blanc et en gras.
                 ),
-                IconButton(
+                SizedBox(height: 5), // Espace entre le nom et la date.
+                Text(
+                  '${_formatDate(don.dateDon)}',
+                  style: TextStyle(color: Colors.white), // Texte en blanc.
+                ),
+              ],
+            ),
+          ),
+          
+          // Colonne pour les icônes à droite
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Espacer les icônes verticalement.
+            children: [
+              // Icône d'yeux.
+              IconButton(
+                icon: Icon(Icons.visibility, color: Colors.white), // Icône d'yeux.
+                onPressed: () {
+                  // Navigation vers HistoriqueDetailDonScreen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HistoriqueDetailDonScreen(don: don),
+                    ),
+                  );
+                },
+              ),
+              // Icône d'évaluation avec du padding en bas
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0), // Padding en bas.
+                child: IconButton(
                   icon: Icon(Icons.star, color: Colors.yellow),
                   onPressed: () {
                     // Navigation vers l'écran d'évaluation (AvisFormScreen)
@@ -204,19 +305,21 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => AvisFormScreen(
-                          utilisateurEvalueId: don.annonce.utilisateur.id, // L'ID de l'utilisateur à évaluer
-                          typeAnnonce: 'don', // Type d'annonce
-                          annonceId: don.annonce.id, // L'ID de l'annonce associée au don
+                          utilisateurEvalueId: don.annonce.utilisateur.id, // L'ID de l'utilisateur à évaluer.
+                          typeAnnonce: 'don', // Type d'annonce.
+                          annonceId: don.annonce.id, // L'ID de l'annonce associée au don.
                         ),
                       ),
                     );
                   },
-                )
-              ],
-            ),
-          ],
-        ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }
