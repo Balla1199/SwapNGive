@@ -190,63 +190,92 @@ Widget buildEchangesTab() {
             final Objet1 = echange.annonce.objet;
             final imageUrl = Objet1.imageUrl;
 
-    return Padding(
-  padding: const EdgeInsets.symmetric(vertical: 8.0), // Espacement vertical de 8.0
+   return Padding(
+  padding: const EdgeInsets.symmetric(vertical: 8.0), // Espacement vertical.
   child: Card(
-    // Style de la carte avec une couleur de fond personnalisée
-    color: Color(0xFFD9A9A9), // Couleur de fond personnalisée (rose pâle)
-    elevation: 4, // Élévation pour l'effet d'ombre
-    child: ListTile(
-      // Image ou icône si l'image n'est pas disponible
-      leading: imageUrl.isNotEmpty
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(8.0), // Coins arrondis pour l'image
-              child: Image.network(imageUrl, width: 60, height: 80, fit: BoxFit.cover), // Ajustement de l'image
-            )
-          : Icon(Icons.image_not_supported, size: 50, color: Colors.grey), // Icône avec couleur grise si pas d'image
-      title: Text(
-        nomUtilisateur,
-        style: TextStyle(
-          fontWeight: FontWeight.bold, // Texte en gras pour le nom d'utilisateur
-          color: Colors.white, // Couleur du texte blanc
-        ),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    margin: EdgeInsets.all(10), // Marges autour de la carte.
+    color: Color(0xFFD9A9A9).withOpacity(0.6), // Couleur rose pâle avec 60% d'opacité.
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10.0), // Coins arrondis de 10 pixels.
+    ),
+    elevation: 0, // Suppression de l'ombre.
+    child: Container(
+      height: 130, // Hauteur ajustée de la carte.
+      padding: EdgeInsets.all(10), // Espacement intérieur.
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center, // Alignement vertical centré.
         children: [
-          Text(
-            'Message: $message',
-            style: TextStyle(
-              color: Colors.white, // Couleur du texte blanc
+          // Image avec bordures arrondies.
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0), // Espace à gauche de l'image.
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0), // Coins arrondis de l'image.
+              child: Image.network(
+                imageUrl.isNotEmpty ? imageUrl : 'assets/images/placeholder.png', // URL de l'image ou image par défaut.
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover, // Ajustement de l'image.
+              ),
             ),
           ),
-          Text(
-            'Statut: ${echange.statut ?? 'Statut non spécifié'}',
-            style: TextStyle(
-              color: Colors.white, // Couleur du texte blanc
+          SizedBox(width: 10), // Espace entre l'image et le texte.
+          
+          // Contenu textuel aligné avec l'image.
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // Aligner verticalement le texte au centre.
+              crossAxisAlignment: CrossAxisAlignment.start, // Aligner le texte à gauche.
+              children: [
+                Flexible( // Eviter les débordements
+                  child: Text(
+                    nomUtilisateur,
+                    style: TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.bold, // Texte en blanc et en gras.
+                    ),
+                    overflow: TextOverflow.ellipsis, // Truncate text if too long.
+                  ),
+                ),
+                SizedBox(height: 5), // Espace entre le nom et le message.
+                Flexible( // Eviter les débordements
+                  child: Text(
+                    'Message: $message',
+                    style: TextStyle(color: Colors.white), // Texte en blanc.
+                    overflow: TextOverflow.ellipsis, // Truncate text if too long.
+                  ),
+                ),
+                SizedBox(height: 5), // Espace entre le message et le statut.
+                Text(
+                  'Statut: ${echange.statut ?? 'Statut non spécifié'}',
+                  style: TextStyle(color: Colors.white), // Texte en blanc.
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-      // Bouton "Voir Détails" aligné en bas à droite
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.end, // Aligne l'icône en bas
-        children: [
-          IconButton(
-            icon: Icon(Icons.remove_red_eye, color: Colors.white), // Icône d'œil avec couleur blanche
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => DetailEchangeScreen(echange: echange)),
-              );
-            },
+          
+          // Colonne pour les icônes à droite.
+          Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Espacement vertical des icônes.
+            children: [
+              // Icône d'yeux.
+              IconButton(
+                icon: Icon(Icons.remove_red_eye, color: Colors.white), // Icône avec couleur blanche.
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailEchangeScreen(echange: echange), // Redirection vers l'écran de détails.
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ],
       ),
     ),
   ),
 );
-
 
           },
         ),
@@ -306,63 +335,76 @@ Widget buildDonsTab() {
             final objet = don.annonce.objet;
             final receveur = don.receveur;
 
-           return Padding(
-  padding: const EdgeInsets.symmetric(vertical: 8.0), // Espacement vertical de 8.0 entre chaque carte
+          return Padding(
+  padding: const EdgeInsets.symmetric(vertical: 8.0), // Espacement vertical de 8.0 entre chaque carte.
   child: Card(
-    // Style de la carte avec couleur de fond personnalisée
-    color: Color(0xFFD9A9A9), // Couleur de fond pour la carte (rose pâle)
-    elevation: 4, // Élévation pour un effet d'ombre
-    child: ListTile(
-      // Image ou icône par défaut si aucune image disponible
-      leading: (objet.imageUrl.isNotEmpty)
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(8.0), // Coins arrondis pour l'image
-              child: Image.network(objet.imageUrl, width: 60, height: 80, fit: BoxFit.cover), // Ajustement de l'image
-            )
-          : Icon(Icons.image_not_supported, size: 50, color: Colors.grey), // Icône avec couleur grise si pas d'image
-      title: Text(
-        objet.nom,
-        style: TextStyle(
-          fontWeight: FontWeight.bold, // Texte en gras pour le nom de l'objet
-          color: Colors.white, // Couleur du texte blanc
+    margin: EdgeInsets.all(10), // Marges autour de la carte.
+    color: Color(0xFFD9A9A9).withOpacity(0.6), // Couleur rose pâle avec 60% d'opacité.
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10.0), // Coins arrondis de 10 pixels.
+    ),
+    elevation: 0, // Suppression de l'ombre.
+    child: Container(
+      padding: EdgeInsets.all(10), // Espacement intérieur de 10.
+      child: ListTile(
+        // Image ou icône par défaut si aucune image disponible.
+        leading: (objet.imageUrl.isNotEmpty)
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(8.0), // Coins arrondis pour l'image.
+                child: Image.network(
+                  objet.imageUrl,
+                  width: 60,
+                  height: 80,
+                  fit: BoxFit.cover, // Ajustement de l'image.
+                ),
+              )
+            : Icon(Icons.image_not_supported, size: 50, color: Colors.grey), // Icône par défaut en gris.
+        title: Text(
+          objet.nom,
+          style: TextStyle(
+            fontWeight: FontWeight.bold, // Texte en gras.
+            color: Colors.white, // Texte en blanc.
+          ),
         ),
-      ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Receveur : ${receveur.nom}',
-            style: TextStyle(
-              color: Colors.white, // Texte en blanc
-            ),
-          ),
-          Text(
-            'Message : ${don.message ?? 'Pas de message'}',
-            style: TextStyle(
-              color: Colors.white, // Texte en blanc
-            ),
-          ),
-        ],
-      ),
-      // Remplacement du bouton texte "Voir Détails" par une icône d'œil
-      trailing: IconButton(
-        icon: Icon(Icons.remove_red_eye, color: Colors.white), // Icône "œil" avec couleur blanche
-        onPressed: () async {
-          AuthService authService = AuthService();
-          Utilisateur? currentUser = await authService.getCurrentUserDetails();
-
-          if (currentUser != null) {
-            String currentUserId = currentUser.id;
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DetailDonScreen(don: don.toMap(), currentUserId: currentUserId),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Receveur : ${receveur.nom}',
+              style: TextStyle(
+                color: Colors.white, // Texte en blanc.
               ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Utilisateur non connecté.")));
-          }
-        },
+            ),
+            Text(
+              'Message : ${don.message ?? 'Pas de message'}',
+              style: TextStyle(
+                color: Colors.white, // Texte en blanc.
+              ),
+            ),
+          ],
+        ),
+        // Icône "œil" pour voir les détails.
+        trailing: IconButton(
+          icon: Icon(Icons.remove_red_eye, color: Colors.white), // Icône "œil" en blanc.
+          onPressed: () async {
+            AuthService authService = AuthService();
+            Utilisateur? currentUser = await authService.getCurrentUserDetails();
+
+            if (currentUser != null) {
+              String currentUserId = currentUser.id;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DetailDonScreen(don: don.toMap(), currentUserId: currentUserId),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Utilisateur non connecté.")),
+              );
+            }
+          },
+        ),
       ),
     ),
   ),
