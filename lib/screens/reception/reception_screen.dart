@@ -239,16 +239,16 @@ Widget buildEchangesTab() {
                 SizedBox(height: 5), // Espace entre le nom et le message.
                 Flexible( // Eviter les débordements
                   child: Text(
-                    'Message: $message',
+                    '$message',
                     style: TextStyle(color: Colors.white), // Texte en blanc.
                     overflow: TextOverflow.ellipsis, // Truncate text if too long.
                   ),
                 ),
                 SizedBox(height: 5), // Espace entre le message et le statut.
-                Text(
-                  'Statut: ${echange.statut ?? 'Statut non spécifié'}',
-                  style: TextStyle(color: Colors.white), // Texte en blanc.
-                ),
+                //Text(
+                 // 'Statut: ${echange.statut ?? 'Statut non spécifié'}',
+                 // style: TextStyle(color: Colors.white), // Texte en blanc.
+                //),
               ],
             ),
           ),
@@ -334,8 +334,7 @@ Widget buildDonsTab() {
             final don = _dons[index];
             final objet = don.annonce.objet;
             final receveur = don.receveur;
-
-          return Padding(
+return Padding(
   padding: const EdgeInsets.symmetric(vertical: 8.0), // Espacement vertical de 8.0 entre chaque carte.
   child: Card(
     margin: EdgeInsets.all(10), // Marges autour de la carte.
@@ -345,70 +344,91 @@ Widget buildDonsTab() {
     ),
     elevation: 0, // Suppression de l'ombre.
     child: Container(
+      height: 130, // Hauteur fixe de la carte.
       padding: EdgeInsets.all(10), // Espacement intérieur de 10.
-      child: ListTile(
-        // Image ou icône par défaut si aucune image disponible.
-        leading: (objet.imageUrl.isNotEmpty)
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(8.0), // Coins arrondis pour l'image.
-                child: Image.network(
-                  objet.imageUrl,
-                  width: 60,
-                  height: 80,
-                  fit: BoxFit.cover, // Ajustement de l'image.
-                ),
-              )
-            : Icon(Icons.image_not_supported, size: 50, color: Colors.grey), // Icône par défaut en gris.
-        title: Text(
-          objet.nom,
-          style: TextStyle(
-            fontWeight: FontWeight.bold, // Texte en gras.
-            color: Colors.white, // Texte en blanc.
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start, // Alignement en haut.
+        children: [
+          // Image ajustée ou icône par défaut si aucune image disponible avec padding-top.
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0, top: 20.0), // Espace à gauche et en haut (padding-top) de l'image.
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0), // Coins arrondis pour l'image.
+              child: Container(
+                width: 60, // Largeur fixée de l'image.
+                height: 80, // Hauteur fixée de l'image.
+                child: (objet.imageUrl.isNotEmpty)
+                    ? Image.network(
+                        objet.imageUrl,
+                        fit: BoxFit.cover, // Ajustement de l'image pour couvrir tout l'espace.
+                      )
+                    : Icon(Icons.image_not_supported, size: 50, color: Colors.grey), // Icône par défaut en gris.
+              ),
+            ),
           ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Receveur : ${receveur.nom}',
-              style: TextStyle(
-                color: Colors.white, // Texte en blanc.
-              ),
-            ),
-            Text(
-              'Message : ${don.message ?? 'Pas de message'}',
-              style: TextStyle(
-                color: Colors.white, // Texte en blanc.
-              ),
-            ),
-          ],
-        ),
-        // Icône "œil" pour voir les détails.
-        trailing: IconButton(
-          icon: Icon(Icons.remove_red_eye, color: Colors.white), // Icône "œil" en blanc.
-          onPressed: () async {
-            AuthService authService = AuthService();
-            Utilisateur? currentUser = await authService.getCurrentUserDetails();
+          SizedBox(width: 10), // Espace entre l'image et le texte.
 
-            if (currentUser != null) {
-              String currentUserId = currentUser.id;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => DetailDonScreen(don: don.toMap(), currentUserId: currentUserId),
+          // Contenu textuel aligné avec l'image.
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // Aligner verticalement le texte au centre.
+              crossAxisAlignment: CrossAxisAlignment.start, // Aligner le texte à gauche.
+              children: [
+                Text(
+                  '${receveur.nom}',
+                  style: TextStyle(
+                    color: Colors.white, 
+                    fontWeight: FontWeight.bold, // Texte en blanc et en gras.
+                  ),
+                  overflow: TextOverflow.ellipsis, // Troncature du texte s'il est trop long.
                 ),
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Utilisateur non connecté.")),
-              );
-            }
-          },
-        ),
+                SizedBox(height: 5), // Espace entre le nom et le message.
+                Text(
+                  '${don.message ?? 'Pas de message'}',
+                  style: TextStyle(
+                    color: Colors.white, // Texte en blanc.
+                  ),
+                  overflow: TextOverflow.ellipsis, // Troncature du texte s'il est trop long.
+                ),
+              ],
+            ),
+          ),
+
+          // Icône "œil" pour voir les détails, alignée en haut à droite.
+          Column(
+            mainAxisAlignment: MainAxisAlignment.start, // Positionner en haut.
+            children: [
+              IconButton(
+                icon: Icon(Icons.remove_red_eye, color: Colors.white), // Icône "œil" en blanc.
+                onPressed: () async {
+                  AuthService authService = AuthService();
+                  Utilisateur? currentUser = await authService.getCurrentUserDetails();
+
+                  if (currentUser != null) {
+                    String currentUserId = currentUser.id;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DetailDonScreen(don: don.toMap(), currentUserId: currentUserId),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Utilisateur non connecté.")),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     ),
   ),
 );
+
+
+
 
           },
         ),
