@@ -105,89 +105,100 @@ class _ObjetListScreenState extends State<ObjetListScreen> {
                     final objet = objets[index];
 
                     return Card(
-                      color: Colors.white, // Fond de chaque carte en blanc (#FFFFFF)
-                      elevation: 3, // Légère ombre pour l'élévation des cartes
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Section pour l'image
-                          (objet.imageUrl != null && objet.imageUrl.isNotEmpty)
-                              ? Image.network(
-                                  objet.imageUrl,
-                                  height: 100,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                )
-                              : Icon(
-                                  Icons.image_not_supported,
-                                  size: 100,
-                                  color: Colors.grey, // Couleur par défaut de l'icône d'image
-                                ),
-                          SizedBox(height: 8),
-                          // Nom de l'objet
-                          Text(
-                            objet.nom ?? 'Nom indisponible',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Color(0xFFD9A9A9), // Couleur du texte (#D9A9A9)
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          // Description
-                          Text(
-                            objet.description ?? 'Description indisponible',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black, // Texte de description en noir
-                            ),
-                          ),
-                          Spacer(),
-                          // Icons (modifier, supprimer, ajouter)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.edit),
-                                color: Color(0xFFD9A9A9), // Couleur de l'icône modifier (#D9A9A9)
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ObjetFormScreen(objet: objet),
-                                    ),
-                                  );
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.delete),
-                                color: Color(0xFFD9A9A9), // Couleur de l'icône supprimer (#D9A9A9)
-                                onPressed: () async {
-                                  await _objetService.deleteObjet(objet.id);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Objet supprimé.')),
-                                  );
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.post_add),
-                                color: Color(0xFFD9A9A9), // Couleur de l'icône ajouter (#D9A9A9)
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => AnnonceFormScreen(objet: objet),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    );
+  color: Colors.white, // Fond de chaque carte en blanc (#FFFFFF)
+  elevation: 3, // Légère ombre pour l'élévation des cartes
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.start,
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: [
+      // Section pour l'image avec GestureDetector
+      GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ObjetDetailsScreen(objet: objet), // Redirige vers l'écran des détails de l'objet
+            ),
+          );
+        },
+        child: (objet.imageUrl != null && objet.imageUrl.isNotEmpty)
+            ? Image.network(
+                objet.imageUrl,
+                height: 100,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              )
+            : Icon(
+                Icons.image_not_supported,
+                size: 100,
+                color: Colors.grey, // Couleur par défaut de l'icône d'image
+              ),
+      ),
+      SizedBox(height: 8),
+      // Nom de l'objet
+      Text(
+        objet.nom ?? 'Nom indisponible',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          color: Color(0xFFD9A9A9), // Couleur du texte (#D9A9A9)
+        ),
+      ),
+      SizedBox(height: 8),
+      // Description
+      Text(
+        objet.description ?? 'Description indisponible',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 14,
+          color: Colors.black, // Texte de description en noir
+        ),
+      ),
+      Spacer(),
+      // Icons (modifier, supprimer, ajouter)
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            icon: Icon(Icons.edit),
+            color: Color(0xFFD9A9A9), // Couleur de l'icône modifier (#D9A9A9)
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ObjetFormScreen(objet: objet),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            color: Color(0xFFD9A9A9), // Couleur de l'icône supprimer (#D9A9A9)
+            onPressed: () async {
+              await _objetService.deleteObjet(objet.id);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Objet supprimé.')),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.post_add),
+            color: Color(0xFFD9A9A9), // Couleur de l'icône ajouter (#D9A9A9)
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AnnonceFormScreen(objet: objet),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    ],
+  ),
+);
+
                   },
                 );
               },

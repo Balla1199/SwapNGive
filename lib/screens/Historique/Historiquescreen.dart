@@ -87,59 +87,100 @@ Widget build(BuildContext context) {
   );
 }
 
-
-  Widget _buildEchangeTab() {
-    if (_currentUser == null) {
-      return Center(child: CircularProgressIndicator());
-    }
-
-    return FutureBuilder<List<Echange>>(
-      future: _echangeService.recupererEchangesParUtilisateur(_currentUser!.id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Erreur: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('Aucun échange trouvé.'));
-        } else {
-          return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              final echange = snapshot.data![index];
-              return _buildEchangeCard(echange);
-            },
-          );
-        }
-      },
-    );
+Widget _buildEchangeTab() {
+  if (_currentUser == null) {
+    return Center(child: CircularProgressIndicator());
   }
+
+  // Récupère les échanges ayant le statut "Accepté" ou "Refusé"
+  return FutureBuilder<List<Echange>>(
+    future: _echangeService.recupererEchangesParUtilisateurEtStatut(_currentUser!.id, 'accepté'),
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasError) {
+        return Center(child: Text('Erreur: ${snapshot.error}'));
+      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        return Center(child: Text('Aucun échange trouvé.'));
+      } else {
+        // Affiche les échanges acceptés
+        List<Echange> acceptedExchanges = snapshot.data!;
+
+        // Appel supplémentaire pour les échanges refusés
+        return FutureBuilder<List<Echange>>(
+          future: _echangeService.recupererEchangesParUtilisateurEtStatut(_currentUser!.id, 'refusé'),
+          builder: (context, rejectedSnapshot) {
+            if (rejectedSnapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (rejectedSnapshot.hasError) {
+              return Center(child: Text('Erreur: ${rejectedSnapshot.error}'));
+            } else if (!rejectedSnapshot.hasData || rejectedSnapshot.data!.isEmpty) {
+              return ListView.builder(
+                itemCount: acceptedExchanges.length,
+                itemBuilder: (context, index) {
+                  final echange = acceptedExchanges[index];
+                  return _buildEchangeCard(echange);
+                },
+              );
+            } else {
+              // Combine les échanges acceptés et refusés
+              List<Echange> allExchanges = []
+                ..addAll(acceptedExchanges)
+                ..addAll(rejectedSnapshot.data!);
+
+              return ListView.builder(
+                itemCount: allExchanges.length,
+                itemBuilder: (context, index) {
+                  final echange = allExchanges[index];
+                  return _buildEchangeCard(echange);
+                },
+              );
+            }
+          },
+        );
+      }
+    },
+  );
+}
+
 
   Widget _buildDonTab() {
     if (_currentUser == null) {
       return Center(child: CircularProgressIndicator());
     }
 
-    return FutureBuilder<List<Don>>(
-      future: _donService.recupererDonsParUtilisateur(_currentUser!.id),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Erreur: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('Aucun don trouvé.'));
-        } else {
-          return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              final don = snapshot.data![index];
-              return _buildDonCard(don);
-            },
-          );
-        }
-      },
-    );
+   return FutureBuilder<List<Don>>(
+  // Fusionner les dons avec le statut 'Accepté' et 'Refusé'
+  future: Future.wait([
+    _donService.recupererDonsParUtilisateurEtStatut(_currentUser!.id, 'accepté'),
+    _donService.recupererDonsParUtilisateurEtStatut(_currentUser!.id, 'refusé'),
+  ]).then((results) {
+    // Log les résultats pour vérifier les dons récupérés
+    print('Dons acceptés: ${results[0].length}, Dons refusés: ${results[1].length}');
+    
+    // Combine les deux résultats (Accepté et Refusé) en une seule liste
+    return [...results[0], ...results[1]];
+  }),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return Center(child: CircularProgressIndicator());
+    } else if (snapshot.hasError) {
+      return Center(child: Text('Erreur: ${snapshot.error}'));
+    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      return Center(child: Text('Aucun don trouvé.'));
+    } else {
+      return ListView.builder(
+        itemCount: snapshot.data!.length,
+        itemBuilder: (context, index) {
+          final don = snapshot.data![index];
+          return _buildDonCard(don);
+        },
+      );
+    }
+  },
+);
+
+
   }
 Widget _buildEchangeCard(Echange echange) {
   return Card(

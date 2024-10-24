@@ -10,9 +10,24 @@ class ObjetDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(objet.nom),
-      ),
+    appBar: AppBar(
+  backgroundColor: const Color(0xFFD9A9A9), // Couleur de l'AppBar
+  leading: IconButton(
+    icon: Icon(Icons.chevron_left), // Icône de retour (chevronleft)
+    color: Colors.white, // Couleur de l'icône
+    onPressed: () {
+      Navigator.pop(context); // Retour à l'écran précédent
+    },
+  ),
+  title: Text(
+    objet.nom, // Titre de l'objet
+    style: TextStyle(
+      fontWeight: FontWeight.bold, // Met le titre en gras
+      color: Colors.white, // Couleur du texte (blanc)
+    ),
+  ),
+),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

@@ -85,6 +85,56 @@ Future<List<Don>> recupererDonsParUtilisateur(String userId) async {
     return [];
   }
 }
+Future<List<Don>> recupererDonsParUtilisateurEtStatut(String userId, String statut) async {
+  try {
+    // Récupérer les dons où l'utilisateur est impliqué en tant que donneur avec le statut spécifié
+    QuerySnapshot querySnapshotDonneur = await _firestore
+        .collection('dons')
+        .where('idDonneur', isEqualTo: userId)
+        .where('statut', isEqualTo: statut)
+        .get();
+
+    // Récupérer les dons où l'utilisateur est impliqué en tant que receveur avec le statut spécifié
+    QuerySnapshot querySnapshotReceveur = await _firestore
+        .collection('dons')
+        .where('idReceveur', isEqualTo: userId)
+        .where('statut', isEqualTo: statut)
+        .get();
+
+    // Fusionner les deux listes de résultats
+    List<QueryDocumentSnapshot> allDocuments = []
+      ..addAll(querySnapshotDonneur.docs)
+      ..addAll(querySnapshotReceveur.docs);
+
+    // Log pour vérifier si des documents sont récupérés
+    print("Documents donneur récupérés: ${querySnapshotDonneur.docs.length}");
+    print("Documents receveur récupérés: ${querySnapshotReceveur.docs.length}");
+
+    // Supprimer les doublons si nécessaire
+    Map<String, QueryDocumentSnapshot> uniqueDocuments = {};
+    for (var doc in allDocuments) {
+      if (doc.data() == null) {
+        print("Document avec ID ${doc.id} a des données nulles");
+      } else {
+        // Vérifie si un champ critique est null (par exemple 'statut')
+        var data = doc.data() as Map<String, dynamic>;
+        if (data['statut'] == null) {
+          print("Le don avec ID ${doc.id} a un statut null");
+        }
+        uniqueDocuments[doc.id] = doc;
+      }
+    }
+
+    // Convertir chaque document unique en instance de Don
+    return uniqueDocuments.values
+        .map((doc) => Don.fromJson(doc.data() as Map<String, dynamic>))
+        .toList();
+  } catch (e) {
+    print("Erreur lors de la récupération des dons par utilisateur et statut: $e");
+    return [];
+  }
+}
+
 
 
 }

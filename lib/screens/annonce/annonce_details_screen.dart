@@ -145,10 +145,24 @@ Widget build(BuildContext context) {
   String boutonTexte = widget.annonce.type == TypeAnnonce.don ? 'Demander' : 'Proposer';
 
   return Scaffold(
-    appBar: AppBar(
-      title: Text(widget.annonce.titre.isNotEmpty ? widget.annonce.titre : 'Détails de l\'Annonce'),
-      backgroundColor: const Color(0xFFD9A9A9), // Added background color
+   appBar: AppBar(
+  leading: IconButton(
+    icon: Icon(Icons.chevron_left, color: Colors.white), // Icône chevron_left en blanc
+    onPressed: () {
+      Navigator.pop(context); // Action de retour à l'écran précédent
+    },
+  ),
+  title: Text(
+    widget.annonce.titre.isNotEmpty ? widget.annonce.titre : 'Détails de l\'Annonce',
+    style: TextStyle(
+      color: Colors.white, // Couleur blanche pour le texte
+      fontWeight: FontWeight.bold, // Met le texte en gras
     ),
+  ),
+  backgroundColor: const Color(0xFFD9A9A9), // Couleur d'arrière-plan
+),
+
+
     body: Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -220,8 +234,8 @@ Widget build(BuildContext context) {
           SizedBox(height: 16.0),
 
           Text(
-            "État : ${widget.annonce.objet.etat.nom}",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[700]),
+            "État : \n${widget.annonce.objet.etat.nom}",
+            style: TextStyle(fontSize: 16,color: Colors.grey[700]),
           ),
 
           Spacer(),
