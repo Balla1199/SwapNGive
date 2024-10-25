@@ -255,7 +255,9 @@ Widget build(BuildContext context) {
                   }
 
                   final annonces = snapshot.data ?? [];
-                  _annonces = annonces;
+                 // Ajout du tri par nombre de likes (ordre décroissant)
+                  _annonces = annonces..sort((a, b) => b.likes.compareTo(a.likes));
+
 
                   if (_likedStatus.isEmpty) {
                     _likedStatus = List.generate(annonces.length, (index) => false);
@@ -278,7 +280,7 @@ Widget build(BuildContext context) {
   padding: EdgeInsets.all(10),
   itemCount: annonces.length,
   itemBuilder: (context, index) {
-    final annonce = annonces[index];
+    final annonce = _annonces[index]; // Utiliser _annonces trié
     final profilePhoto = _profilePhotos.length > index ? _profilePhotos[index] : null;
     final moyenneNote = _moyennesNotes.length > index ? _moyennesNotes[index] : null;
 
