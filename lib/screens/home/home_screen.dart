@@ -12,6 +12,8 @@ import 'package:swapngive/screens/annonce/annonce_list_screen.dart';
 import 'package:swapngive/screens/objet/objet_list_screen.dart';
 import 'package:swapngive/screens/reception/reception_screen.dart';
 import 'package:swapngive/screens/notification/notification_screen.dart';
+import 'package:swapngive/services/auth_service.dart';
+import 'package:swapngive/services/notification_service.dart';
 
 
 class HomeScreen extends StatefulWidget {
@@ -25,13 +27,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  int _unreadCount = 0; // Compteur pour les notifications non lues
 
   List<Widget> _adminScreens = [];
   List<Widget> _clientScreens = [];
+  final NotificationService _notificationService = NotificationService(); // Instancier NotificationService
 
   @override
   void initState() {
     super.initState();
+    _loadUnreadNotificationCount(); // Charger les notifications non lues
 
     // Vérifiez si 'utilisateur' n'est pas null
     String? utilisateurId = widget.utilisateur?.id;
@@ -42,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
+    // Configuration des écrans pour l'admin
     _adminScreens = [
       DashboardScreen(),
       UtilisateurListScreen(),
@@ -50,31 +56,32 @@ class _HomeScreenState extends State<HomeScreen> {
       ProfileScreen(
         utilisateurId: utilisateurId,
         utilisateur: widget.utilisateur,
-        isDifferentUser: false, // Ajoutez isDifferentUser ici, à ajuster selon votre logique
+        isDifferentUser: false, // Ajuster selon la logique
       ),
     ];
 
+    // Configuration des écrans pour le client
     _clientScreens = [
       AnnonceListScreen(),
       ObjetListScreen(),
       ReceptionScreen(),
       NotificationScreen(),
       HistoriqueScreen(),
-     
       ProfileScreen(
         utilisateurId: utilisateurId,
         utilisateur: widget.utilisateur,
-        isDifferentUser: false, // Ajoutez isDifferentUser ici, à ajuster selon votre logique
+        isDifferentUser: false, // Ajuster selon la logique
       ),
     ];
+  }
 
-    // Imprimer la longueur des listes pour le débogage
-    print('Longueur des écrans admin: ${_adminScreens.length}');
-    print('Longueur des écrans client: ${_clientScreens.length}');
-
-    // Vérifiez que les listes contiennent des éléments avant de les utiliser
-    if (_clientScreens.isEmpty) {
-      print('Aucun écran client disponible.'); // Message d'erreur
+  Future<void> _loadUnreadNotificationCount() async {
+    final currentUser = await AuthService().getCurrentUserDetails();
+    if (currentUser != null) {
+      final notifications = await _notificationService.getNotificationsForUserWithSenderName(currentUser.id);
+      setState(() {
+        _unreadCount = notifications.where((n) => !n.isRead).length;
+      });
     }
   }
 
@@ -97,20 +104,18 @@ class _HomeScreenState extends State<HomeScreen> {
         onItemTapped: _onItemTapped,
       );
     } else {
-      // Client view avec bottom navigation bar
-      if (_clientScreens.isNotEmpty) {
-        return ClientBottomNavigationBar(
-          screens: _clientScreens,
-          selectedIndex: _selectedIndex,
-          onItemTapped: _onItemTapped,
-        );
-      } else {
-        // Gérer le cas où la liste est vide
-        return Scaffold(
-          appBar: AppBar(title: Text('Erreur')),
-          body: Center(child: Text('Aucun écran client disponible.')),
-        );
-      }
+      // Vue client avec bottom navigation bar
+      return _clientScreens.isNotEmpty
+          ? ClientBottomNavigationBar(
+              screens: _clientScreens,
+              selectedIndex: _selectedIndex,
+              onItemTapped: _onItemTapped,
+              unreadNotificationCount: _unreadCount, // Passez le compteur ici
+            )
+          : Scaffold(
+              appBar: AppBar(title: Text('Erreur')),
+              body: Center(child: Text('Aucun écran client disponible.')),
+            );
     }
   }
 }
