@@ -36,7 +36,8 @@ class _EtatFormulaireState extends State<EtatFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.etat != null ? 'Modifier État' : 'Ajouter État'),
+        
+        title: Text(widget.etat != null ? 'Modifier État' : 'Ajouter État', style: TextStyle(fontWeight: FontWeight.bold),),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),

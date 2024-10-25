@@ -100,38 +100,79 @@ class _AvisFormScreenState extends State<AvisFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text('Ajouter un avis'),
+        leading: IconButton(
+          icon: Icon(Icons.chevron_left),
+          color: Colors.black,
+          onPressed: (){
+            Navigator.pop(context);
+          },
+        ),
+        title: Text('Ajouter un avis', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildStarRating(), // Ajouter le composant d'étoiles ici
-            SizedBox(height: 16),
-            TextField(
-              controller: _commentaireController,
-              decoration: InputDecoration(labelText: 'Votre avis'),
-            ),
-            SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _addAvis,
-              child: Text('Soumettre'),
-            ),
-            SizedBox(height: 16),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _avisList.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(_avisList[index].contenu), // Affichez le contenu de l'avis ici
-                    // Affichez d'autres informations de l'avis ici si nécessaire
-                  );
-                },
+      body: Stack( // Utilisation de Stack pour superposer les conteneurs
+        children: [
+          // Premier conteneur (fond) avec la couleur D9A9A9
+          Container(
+            color: Color(0xFFD9A9A9),
+            height: MediaQuery.of(context).size.height * 0.5, // Hauteur du conteneur supérieur
+          ),
+
+          // Deuxième conteneur (posé au-dessus du premier)
+          Positioned(
+            top: MediaQuery.of(context).size.height * 0.25, // Baisse la position du conteneur pour couvrir le bas
+            left: 0,
+            right: 0,
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.75, // Le conteneur couvre toute la partie basse
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: Colors.white, // Couleur de fond blanc
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30), // Arrondir le haut
+                  topRight: Radius.circular(30),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildStarRating(), // Ajouter le composant d'étoiles ici
+                  SizedBox(height: 16),
+                  TextField(
+                    controller: _commentaireController,
+                    decoration: InputDecoration(
+                      labelText: 'Votre avis',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _addAvis,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFD9A9A9), // Couleur de fond du bouton
+                    ),
+                    child: Text('Soumettre', style: TextStyle(color: Colors.white),),
+                  ),
+                  SizedBox(height: 16),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _avisList.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(_avisList[index].contenu), // Affichez le contenu de l'avis ici
+                          // Affichez d'autres informations de l'avis ici si nécessaire
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

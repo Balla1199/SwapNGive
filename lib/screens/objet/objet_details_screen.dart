@@ -32,16 +32,7 @@ class ObjetDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Affichez le nom et la description de l'objet
-            Text(
-              objet.nom,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
-            Text(objet.description),
-            SizedBox(height: 16),
-            
+          children: [            
             // Affichage des images dans un carousel
             CarouselSlider(
               options: CarouselOptions(
@@ -67,11 +58,18 @@ class ObjetDetailsScreen extends StatelessWidget {
             ),
 
             SizedBox(height: 16),
-            
+
+             // Affichez le nom et la description de l'objet
+            Text(
+              objet.nom,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFFD9A9A9)),
+            ),
+            SizedBox(height: 8),
+            Text(objet.description),
+            SizedBox(height: 8),
             // Affichez l'état, la catégorie et le nom de l'utilisateur
-            Text('État: ${objet.etat.nom}', style: TextStyle(fontSize: 18)),
-            Text('Catégorie: ${objet.categorie.nom}', style: TextStyle(fontSize: 18)),
-            Text('Utilisateur: ${objet.utilisateur.nom}', style: TextStyle(fontSize: 18)),
+            Text('État: \n${objet.etat.nom}', style: TextStyle(fontSize: 18)),
+            Text('Catégorie: \n${objet.categorie.nom}', style: TextStyle(fontSize: 18)),
           ],
         ),
       ),

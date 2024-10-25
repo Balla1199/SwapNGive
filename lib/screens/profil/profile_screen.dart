@@ -148,62 +148,86 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text('Profil de ${widget.utilisateur?.nom ?? ''}'),
-        actions: [
-          if (!widget.isDifferentUser) // Afficher le bouton déconnexion uniquement pour l'utilisateur connecté
-            IconButton(
-              icon: Icon(Icons.logout),
-              onPressed: _deconnecter,
-            ),
-        ],
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(150),
-          child: Column(
-            children: [
-              Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  CircleAvatar(
-                    backgroundImage: _profilePhotoUrl != null
-                        ? NetworkImage(_profilePhotoUrl!)
-                        : AssetImage('images/user.png') as ImageProvider,
-                    radius: 50.0,
-                  ),
-                  if (!widget.isDifferentUser) // Afficher l'icône de modification uniquement pour l'utilisateur connecté
-                    IconButton(
-                      icon: Icon(Icons.camera_alt, color: Colors.blue),
-                      onPressed: _pickImage,
-                    ),
-                ],
-              ),
-              SizedBox(height: 10),
-              _buildStarRating(_moyenneNotes),
-              SizedBox(height: 10),
-              TabBar(
-                controller: _tabController,
-                tabs: [
-                  Tab(text: 'À propos'),
-                  Tab(text: 'Évaluation'),
-                ],
-              ),
-            ],
-          ),
+  
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    appBar:AppBar(
+      backgroundColor: Colors.white,
+  automaticallyImplyLeading: false,
+  title: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Image.asset(
+          'assets/images/logosansnom.jpg', // Remplace par le chemin de ton logo
+          height: 30, // Ajuste la hauteur selon tes besoins
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildAboutSection(),
-          _buildEvaluationSection(),
-        ],
+      SizedBox(width: 10), // Espacement entre le logo et le titre
+      Expanded(
+        child: Text(
+          'Profil de ${widget.utilisateur?.nom ?? ''}',
+          textAlign: TextAlign.center,
+        ),
       ),
-    );
-  }
+    ],
+  ),
+  actions: [
+    if (!widget.isDifferentUser)
+      IconButton(
+        icon: Icon(Icons.logout),
+        onPressed: _deconnecter,
+      ),
+  ],
+  bottom: PreferredSize(
+    preferredSize: Size.fromHeight(170), // Augmenter la taille préférée
+    child: Column(
+      children: [
+        Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            CircleAvatar(
+              backgroundImage: _profilePhotoUrl != null
+                  ? NetworkImage(_profilePhotoUrl!)
+                  : AssetImage('images/user.png') as ImageProvider,
+              radius: 50.0,
+            ),
+            if (!widget.isDifferentUser)
+              IconButton(
+                icon: Icon(Icons.camera_alt, color: Colors.blue),
+                onPressed: _pickImage,
+              ),
+          ],
+        ),
+        SizedBox(height: 10),
+        _buildStarRating(_moyenneNotes),
+        SizedBox(height: 10),
+        TabBar(
+          controller: _tabController,
+          tabs: [
+            Tab(text: 'À propos'),
+            Tab(text: 'Évaluation'),
+          ],
+        ),
+      ],
+    ),
+  ),
+),
+
+    body: TabBarView(
+      controller: _tabController,
+      children: [
+        _buildAboutSection(),
+        _buildEvaluationSection(),
+      ],
+    ),
+  );
+}
+
+
 
   Widget _buildStarRating(double moyenneNotes) {
     int noteCount = _avis.length;

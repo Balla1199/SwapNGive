@@ -173,7 +173,7 @@ Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
       automaticallyImplyLeading: false,
-      backgroundColor: Color.fromRGBO(244, 242, 242, 1), // Couleur de l'AppBar (blanc)
+      backgroundColor: Colors.white,
       title: Row(
         children: [
           Padding(
@@ -188,7 +188,7 @@ Widget build(BuildContext context) {
             child: Center(
               child: Text(
                 'Liste des Annonces',
-                style: TextStyle(fontSize: 20),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             ),
           ),

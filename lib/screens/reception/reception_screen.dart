@@ -84,7 +84,9 @@ class _ReceptionScreenState extends State<ReceptionScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
   automaticallyImplyLeading: false,
   title: Stack(
     children: [

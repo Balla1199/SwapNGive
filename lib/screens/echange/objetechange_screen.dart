@@ -70,8 +70,15 @@ class _ChoisirObjetEchangeScreenState extends State<ChoisirObjetEchangeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+      leading: IconButton(
+       icon: Icon(Icons.chevron_left),
+       color: Colors.white,
+       onPressed: (){
+        Navigator.pop(context);
+       },
+        ),
         title: Text('Choisir un objet à échanger'),
-        backgroundColor: Colors.teal, // Couleur de fond de la barre d'applications
+        backgroundColor: Color(0xFFD9A9A9), // Couleur de fond de la barre d'applications
       ),
       body: _idUtilisateur2 == null
           ? Center(child: CircularProgressIndicator()) // Afficher un indicateur de chargement jusqu'à ce que l'ID utilisateur soit récupéré
@@ -95,7 +102,8 @@ class _ChoisirObjetEchangeScreenState extends State<ChoisirObjetEchangeScreen> {
                     itemCount: objets.length,
                     itemBuilder: (context, index) {
                       return Card(
-                        elevation: 5, // Élévation pour donner un effet d'ombre
+                        //elevation: 5, // Élévation pour donner un effet d'ombre
+                        color: Color(0xFFD9A9A9).withOpacity(0.6),
                         margin: const EdgeInsets.symmetric(vertical: 10), // Espacement entre les cartes
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15), // Bordure arrondie pour un style plus doux
@@ -107,16 +115,16 @@ class _ChoisirObjetEchangeScreenState extends State<ChoisirObjetEchangeScreen> {
                             objets[index].nom,
                             style: TextStyle(
                               fontWeight: FontWeight.bold, // Texte en gras pour les titres
-                              color: Colors.teal, // Couleur du texte
+                              color: Colors.white, // Couleur du texte
                             ),
                           ),
                           subtitle: Text(
                             'Description : ${objets[index].description}',
-                            style: TextStyle(color: Colors.grey[600]), // Style de la description
+                            style: TextStyle(color: Colors.white), // Style de la description
                           ),
                           trailing: Icon(
                             Icons.arrow_forward_ios, // Icône à droite de l'élément
-                            color: Colors.teal, // Couleur de l'icône
+                            color: Colors.white, // Couleur de l'icône
                           ),
                           onTap: () => _onObjetSelected(objets[index]), // Action sur clic
                         ),

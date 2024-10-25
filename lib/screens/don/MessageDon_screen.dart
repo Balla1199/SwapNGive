@@ -81,34 +81,69 @@ class _MessageDonScreenState extends State<MessageDonScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Ajouter un message au don"),
+  return Scaffold(
+    appBar: AppBar(
+      backgroundColor: Color(0xFFD9A9A9),
+      leading: IconButton(
+        icon: Icon(Icons.chevron_left),
+        color: Colors.white,
+        onPressed: () {
+          Navigator.pop(context);
+        },
       ),
-      body: Padding(
+      title: Text(
+        "Ajouter un message au don",
+        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+    ),
+    body: Center(
+      child: Padding(
         padding: EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center, // Centre les widgets verticalement
             children: [
               TextFormField(
                 decoration: InputDecoration(
-                  labelText: "Message (optionnel)",
+                  labelText: "Message...",
+                  labelStyle: TextStyle(color: Color(0xFFD9A9A9)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(color: Color(0xFFD9A9A9)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(color: Color(0xFFD9A9A9)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide(color: Color(0xFFD9A9A9)),
+                  ),
                 ),
-                maxLines: 3, // Permet d'avoir plusieurs lignes
+                maxLines: 3,
                 onSaved: (value) {
-                  _message = value; // Sauvegarde le message
+                  _message = value;
                 },
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _enregistrerDon,
-                child: Text("Enregistrer le don"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFD9A9A9),
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: Text("Enregistrer le don", style: TextStyle(color: Colors.white)),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

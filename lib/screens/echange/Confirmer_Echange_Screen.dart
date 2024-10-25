@@ -31,75 +31,103 @@ class _ConfirmerEchangeScreenState extends State<ConfirmerEchangeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Confirmer l'échange"),
+  return Scaffold(
+    appBar: AppBar(
+      backgroundColor: const Color(0xFFD9A9A9),
+      leading: IconButton(
+        icon: Icon(Icons.chevron_left),
+        color: Colors.white,
+        onPressed: () {
+          Navigator.pop(context);
+        },
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Remplacement de l'ID de l'objet par son nom
-            Text("Vous proposez l'objet : ${widget.objet2.nom}"), 
-            Text("En échange de l'objet : ${widget.annonce.objet.nom}"), // Nom de l'objet 2
-            SizedBox(height: 20),
+      title: Text(
+        "Confirmer l'échange",
+        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Remplacement de l'ID de l'objet par son nom
+          Text("Vous proposez l'objet : ${widget.objet2.nom}"),
+          Text("En échange de l'objet : ${widget.annonce.objet.nom}"), // Nom de l'objet 2
+          SizedBox(height: 20),
 
-            TextField(
-              controller: _messageController,
-              decoration: InputDecoration(
-                labelText: "Message personnalisé",
-                border: OutlineInputBorder(),
+          // Champ de texte avec bordure personnalisée
+          TextField(
+            controller: _messageController,
+            decoration: InputDecoration(
+              labelText: "Message personnalisé",
+              border: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Color(0xFFD9A9A9), // Bordure avec la couleur #D9A9A9
+                ),
               ),
-              maxLines: 3,
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Color(0xFFD9A9A9), // Bordure active avec la couleur #D9A9A9
+                  width: 2.0, // Épaisseur de la bordure
+                ),
+              ),
             ),
-            SizedBox(height: 20),
+            maxLines: 3,
+          ),
+          SizedBox(height: 20),
 
-            ElevatedButton(
-              onPressed: () async {
-                // Création de l'échange
-                String nouvelId = DateTime.now().millisecondsSinceEpoch.toString();
-                Echange echange = Echange(
-                  id: nouvelId,
-                  idUtilisateur1: widget.idUtilisateur1,
-                  idObjet1: widget.idObjet1,
-                  idUtilisateur2: widget.idUtilisateur2,
-                  objet2: widget.objet2,
-                  dateEchange: DateTime.now(),
-                  annonce: widget.annonce,
-                  message: _messageController.text,
-                );
+          // Bouton avec fond de couleur personnalisé
+          ElevatedButton(
+            onPressed: () async {
+              // Création de l'échange
+              String nouvelId = DateTime.now().millisecondsSinceEpoch.toString();
+              Echange echange = Echange(
+                id: nouvelId,
+                idUtilisateur1: widget.idUtilisateur1,
+                idObjet1: widget.idObjet1,
+                idUtilisateur2: widget.idUtilisateur2,
+                objet2: widget.objet2,
+                dateEchange: DateTime.now(),
+                annonce: widget.annonce,
+                message: _messageController.text,
+              );
 
-                await EchangeService().enregistrerEchange(echange);
+              await EchangeService().enregistrerEchange(echange);
 
-                // Récupérer les informations de l'utilisateur2
-                var utilisateur2 = await UtilisateurService().getUtilisateurById(widget.idUtilisateur2);
-                
-                // Création de la notification pour l'utilisateur1 (le destinataire)
-                NotificationModel notification = NotificationModel(
-                  id: nouvelId, // Utiliser le même ID que l'échange
-                  fromUserId: widget.idUtilisateur2, // Utilisateur qui fait la proposition
-                  toUserId: widget.idUtilisateur1, // Utilisateur qui reçoit la proposition
-                  titre: "Nouvelle proposition d'échange",
-                  // Message personnalisé avec le nom de l'objet et l'utilisateur 2
-                  message: " vous a fait une proposition d'échange pour l'objet : ${widget.annonce.objet.nom}",
-                  date: DateTime.now(),
-                );
+              // Récupérer les informations de l'utilisateur2
+              var utilisateur2 = await UtilisateurService().getUtilisateurById(widget.idUtilisateur2);
 
-                // Enregistrer la notification dans Firebase
-                await NotificationService().enregistrerNotification(notification);
+              // Création de la notification pour l'utilisateur1 (le destinataire)
+              NotificationModel notification = NotificationModel(
+                id: nouvelId, // Utiliser le même ID que l'échange
+                fromUserId: widget.idUtilisateur2, // Utilisateur qui fait la proposition
+                toUserId: widget.idUtilisateur1, // Utilisateur qui reçoit la proposition
+                titre: "Nouvelle proposition d'échange",
+                // Message personnalisé avec le nom de l'objet et l'utilisateur 2
+                message: " vous a fait une proposition d'échange pour l'objet : ${widget.annonce.objet.nom}",
+                date: DateTime.now(),
+              );
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Échange proposé avec succès et notification envoyée !")),
-                );
+              // Enregistrer la notification dans Firebase
+              await NotificationService().enregistrerNotification(notification);
 
-                Navigator.pop(context);
-              },
-              child: Text("Confirmer l'échange"),
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Échange proposé avec succès et notification envoyée !")),
+              );
+
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white, backgroundColor: Color(0xFFD9A9A9), // Couleur du texte du bouton
+              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0), // Taille du bouton
             ),
-          ],
-        ),
+            child: Text("Confirmer", style: TextStyle(fontWeight: FontWeight.bold),),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 }

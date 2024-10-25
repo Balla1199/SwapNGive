@@ -14,6 +14,8 @@ import 'package:swapngive/services/echange_service.dart';
 import 'package:swapngive/services/notification_service.dart';
 import 'package:swapngive/models/utilisateur.dart';
 import 'package:swapngive/services/utilisateur_service.dart';
+
+
 class DetailEchangeScreen extends StatelessWidget {
   final Echange echange;
   final UtilisateurService utilisateurService = UtilisateurService();
@@ -312,17 +314,31 @@ class DetailEchangeScreen extends StatelessWidget {
 
   }
 
-  Future<void> _mettreAJourStatut(String idEchange, String nouveauStatut, BuildContext context) async {
-    try {
-      await echangeService.mettreAJourStatut(idEchange, nouveauStatut);
-      // Gestion du statut accepté ou refusé avec notification
-      // ...
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur lors de la mise à jour du statut: $e')),
-      );
+ Future<void> _mettreAJourStatut(String idEchange, String nouveauStatut, BuildContext context) async {
+  try {
+    // Mettre à jour le statut de l'échange
+    await echangeService.mettreAJourStatut(idEchange, nouveauStatut);
+
+    // Create an instance of AnnonceService
+    AnnonceService annonceService = AnnonceService();
+
+    // Mettre à jour le statut de l'annonce en fonction du statut de l'échange
+    if (nouveauStatut == "accepté") {
+      await annonceService.mettreAJourStatut(echange.annonce.id, StatutAnnonce.indisponible);
+    } else if (nouveauStatut == "refusé") {
+      await annonceService.mettreAJourStatut(echange.annonce.id, StatutAnnonce.disponible);
     }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Statut de l\'échange et de l\'annonce mis à jour avec succès')),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erreur lors de la mise à jour du statut : $e')),
+    );
   }
+}
+
 
   // Méthode pour discuter
   void _discuter(BuildContext context) async {

@@ -32,9 +32,10 @@ class _ObjetListScreenState extends State<ObjetListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      //backgroundColor: Colors.white,
       appBar: AppBar(
   automaticallyImplyLeading: false, // Désactive le bouton de retour automatique
-  backgroundColor: Color.fromRGBO(244, 242, 242, 1), // Couleur de l'AppBar (blanc)
+  backgroundColor: Colors.white,
   title: Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween, // Espace entre le logo et le titre
     children: [
