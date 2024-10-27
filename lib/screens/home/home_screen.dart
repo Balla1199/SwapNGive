@@ -15,7 +15,6 @@ import 'package:swapngive/screens/notification/notification_screen.dart';
 import 'package:swapngive/services/auth_service.dart';
 import 'package:swapngive/services/notification_service.dart';
 
-
 class HomeScreen extends StatefulWidget {
   final Utilisateur? utilisateur;
 
@@ -111,6 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
               selectedIndex: _selectedIndex,
               onItemTapped: _onItemTapped,
               unreadNotificationCount: _unreadCount, // Passez le compteur ici
+              currentUserId: widget.utilisateur?.id ?? '', // Assurez-vous de passer l'ID de l'utilisateur courant
             )
           : Scaffold(
               appBar: AppBar(title: Text('Erreur')),

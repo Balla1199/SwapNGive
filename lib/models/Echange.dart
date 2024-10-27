@@ -54,6 +54,8 @@ class Echange {
     );
   }
 
+  get date => null;
+
   // Mettre à jour le statut de l'échange
   void mettreAJourStatut(String nouveauStatut) {
     statut = nouveauStatut;

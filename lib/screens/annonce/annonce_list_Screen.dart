@@ -320,6 +320,7 @@ Widget build(BuildContext context) {
           },
           child: Stack(
             children: [
+              // Affichage de l'image principale de l'annonce
               Container(
                 width: double.infinity,
                 height: 140,
@@ -329,6 +330,16 @@ Widget build(BuildContext context) {
                     image: NetworkImage(annonce.objet.imageUrl),
                     fit: BoxFit.cover,
                   ),
+                ),
+              ),
+              // Affichage de l'icône conditionnelle selon le type d'annonce
+              Positioned(
+                top: 8,
+                left: 8,
+                child: Icon(
+                  annonce.type == TypeAnnonce.don ? Icons.volunteer_activism : Icons.swap_horiz,
+                  color: Color(0xFFD9A9A9),
+                  size: 24,
                 ),
               ),
               Positioned(
@@ -345,15 +356,14 @@ Widget build(BuildContext context) {
                       child: Row(
                         children: [
                           IconButton(
-  icon: Icon(
-    _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
-    color: _likedStatus[index] ? Colors.red : Colors.grey,
-  ),
-  onPressed: () {
-    _updateLikes(annonce.id, index);
-  },
-),
-
+                            icon: Icon(
+                              _likedStatus[index] ? Icons.favorite : Icons.favorite_border,
+                              color: _likedStatus[index] ? Colors.red : Colors.grey,
+                            ),
+                            onPressed: () {
+                              _updateLikes(annonce.id, index);
+                            },
+                          ),
                           SizedBox(width: 0),
                           Text(
                             '${annonce.likes}',
