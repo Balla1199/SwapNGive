@@ -139,5 +139,14 @@ Future<Utilisateur?> getCurrentUserDetails() async {
     }
   }
     
+     Future<void> resetPassword(String email) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      print("E-mail de réinitialisation envoyé.");
+    } catch (e) {
+      print("Erreur: $e");
+      throw e;
+    }
+  }
 
 }

@@ -46,34 +46,45 @@ class _ReceptionScreenState extends State<ReceptionScreen> with SingleTickerProv
   }
 
   Future<void> _loadEchanges() async {
-    print("Chargement des échanges...");
-    if (currentUserId != null) {
-      List<Echange> echanges = await _echangeService.recupererEchangesParStatut('attente');
-      setState(() {
-        _echanges = echanges.where((echange) => echange.idUtilisateur1 == currentUserId || echange.idUtilisateur2 == currentUserId).toList();
-      });
-      print("Nombre d'échanges affichés: ${_echanges.length}");
-    } else {
-      print("L'utilisateur actuel n'est pas défini.");
-    }
-  }
+  print("Chargement des échanges...");
+  if (currentUserId != null) {
+    // Récupérer les échanges avec le statut "attente"
+    List<Echange> echanges = await _echangeService.recupererEchangesParStatut('attente');
+    setState(() {
+      // Filtrer les échanges pour inclure seulement ceux de l'utilisateur actuel
+      _echanges = echanges.where((echange) => 
+          echange.idUtilisateur1 == currentUserId || echange.idUtilisateur2 == currentUserId).toList();
 
-  Future<void> _loadDons() async {
-    if (currentUserId != null) {
-      List<Don> dons = await _donService.recupererDonsParStatut('attente');
-      setState(() {
-        // Filtrer les dons en fonction du filtre sélectionné
-        if (selectedFilter == 'reçu') {
-          _dons = dons.where((don) => don.idDonneur == currentUserId).toList(); // Dons reçus
-        } else {
-          _dons = dons.where((don) => don.receveur.id == currentUserId).toList(); // Dons envoyés
-        }
-      });
-      print("Nombre de dons affichés : ${_dons.length}");
-    } else {
-      print("L'utilisateur actuel n'est pas défini pour charger les dons.");
-    }
+      // Trier les échanges par date (du plus récent au plus ancien)
+      _echanges.sort((a, b) => b.dateEchange.compareTo(a.dateEchange)); 
+    });
+    print("Nombre d'échanges affichés: ${_echanges.length}");
+  } else {
+    print("L'utilisateur actuel n'est pas défini.");
   }
+}
+
+
+ Future<void> _loadDons() async {
+  if (currentUserId != null) {
+    List<Don> dons = await _donService.recupererDonsParStatut('attente');
+    setState(() {
+      // Filtrer les dons en fonction du filtre sélectionné
+      if (selectedFilter == 'reçu') {
+        _dons = dons.where((don) => don.idDonneur == currentUserId).toList(); // Dons reçus
+      } else {
+        _dons = dons.where((don) => don.receveur.id == currentUserId).toList(); // Dons envoyés
+      }
+      
+      // Trier les dons par date (du plus récent au plus ancien)
+      _dons.sort((a, b) => b.dateDon.compareTo(a.dateDon)); // Utilisez `dateDon` ici
+    });
+    print("Nombre de dons affichés : ${_dons.length}");
+  } else {
+    print("L'utilisateur actuel n'est pas défini pour charger les dons.");
+  }
+}
+
 
   @override
   void dispose() {

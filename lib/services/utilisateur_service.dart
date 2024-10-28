@@ -62,11 +62,33 @@ class UtilisateurService {
         .toList());
   }
 
-  // Mettre à jour un utilisateur dans Firestore
+  
+  // Mettre à jour un utilisateur dans Firestore et Firebase Authentication
   Future<void> updateUtilisateur(String id, Utilisateur utilisateur) async {
-    await _collection.doc(id).update(utilisateur.toMap());
-  }
+    try {
+      // Récupérer l'utilisateur actuel dans FirebaseAuth
+      User? firebaseUser = _auth.currentUser;
 
+      // Vérifier si l'ID correspond à l'utilisateur actuel
+      if (firebaseUser != null && firebaseUser.uid == id) {
+        // Mettre à jour l'email dans FirebaseAuth si nécessaire
+        if (utilisateur.email != null && utilisateur.email != firebaseUser.email) {
+          await firebaseUser.updateEmail(utilisateur.email!);
+        }
+
+        // Mettre à jour le mot de passe dans FirebaseAuth si nécessaire
+        if (utilisateur.motDePasse != null && utilisateur.motDePasse!.isNotEmpty) {
+          await firebaseUser.updatePassword(utilisateur.motDePasse!);
+        }
+      }
+
+      // Mettre à jour les informations dans Firestore (y compris l'email)
+      await _collection.doc(id).update(utilisateur.toMap());
+    } catch (e) {
+      print("Erreur lors de la mise à jour de l'utilisateur : $e");
+      rethrow;
+    }
+  }
   // Supprimer un utilisateur dans Firestore
   Future<void> deleteUtilisateur(String id) async {
     try {

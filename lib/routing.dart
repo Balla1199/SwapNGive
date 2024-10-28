@@ -32,8 +32,10 @@ import 'package:swapngive/screens/objet/objet_list_screen.dart';
 import 'package:swapngive/screens/reception/detaildonscreen.dart';
 import 'package:swapngive/screens/reception/detailechangescreen.dart';
 import 'package:swapngive/screens/reception/reception_screen.dart';
+import 'package:swapngive/screens/utilisateur/ForgotPasswordScreen.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_form_screen.dart';
 import 'package:swapngive/screens/utilisateur/utilisateur_list_screen.dart';
+
 
 class AppRoutes {
   static const String home = '/';
@@ -93,6 +95,9 @@ class AppRoutes {
   static const String historiqueDetailDonScreen = '/historique_detail_don_screen';
   static const String historiqueDetailEchangeScreen = '/historique_detail_change_screen';
   static const String accueil = '/accueil';
+  // Nouvelle route pour ForgotPasswordScreen
+ static const String forgotPassword = '/forgotPassword';
+
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -166,6 +171,10 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => AnnonceFormScreen(annonce: annonce, objet: objet),
         );
+   
+       case forgotPassword:
+       return MaterialPageRoute(builder: (_) => ForgotPasswordScreen());
+
 
       case annonceDetails:
         final args = settings.arguments as Map<String, dynamic>?; 
@@ -181,6 +190,8 @@ class AppRoutes {
   
   // Déterminez si l'utilisateur actuel est différent de l'utilisateur affiché
   bool isDifferentUser = true; // Changez cette logique en fonction de votre cas d'utilisation
+
+  
 
   return MaterialPageRoute(
     builder: (_) => ProfileScreen(

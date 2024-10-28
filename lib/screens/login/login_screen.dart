@@ -62,111 +62,114 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        //title: Text('Connexion'),
-      ),
-   
-      body: Stack(
-        children: [
-          // Premier div : Fond coloré en D9A9A9
-          Container(
-            color: Color(0xFFD9A9A9), // Couleur de fond
-            height: double.infinity, // Prend toute la hauteur de l'écran
-            width: double.infinity,  // Prend toute la largeur de l'écran
-          ),
-          // Deuxième div : Div supérieur en blanc avec des champs et un bouton
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 80, // Laisse un espace en bas
-            child:Container(
-  height: MediaQuery.of(context).size.height * 1.0, // 100% de la hauteur de l'écran
-  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16), // Espacement intérieur à gauche et à droite
-  decoration: BoxDecoration(
-    color: Colors.white, // Couleur de fond blanc
-    borderRadius: BorderRadius.vertical(
-      bottom: Radius.circular(60), // Bords arrondis en haut 
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
     ),
-  ),
-  child: Column(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      // Ajoutez ici le logo
-      Image.asset(
-        'assets/images/logo.jpg', // Chemin de votre logo
-        height: 250, // Hauteur du logo
-        width: 250,  // Largeur du logo
-        fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
-      ),
-      SizedBox(height: 20), // Espacement entre le logo et les champs
-      // Champ pour l'email
-      TextFormField(
-        controller: _emailController,
-        decoration: InputDecoration(
-          labelText: 'Email',
-          prefixIcon: Icon(Icons.email),
+    body: Stack(
+      children: [
+        // Premier div : Fond coloré en D9A9A9
+        Container(
+          color: Color(0xFFD9A9A9),
+          height: double.infinity,
+          width: double.infinity,
         ),
-        keyboardType: TextInputType.emailAddress,
-      ),
-      SizedBox(height: 10), // Espacement entre les champs
-      // Champ pour le mot de passe
-      TextFormField(
-        controller: _passwordController,
-        decoration: InputDecoration(
-          labelText: 'Mot de passe',
-          prefixIcon: Icon(Icons.lock),              
-        ),
-        obscureText: true,
-      ),
-      SizedBox(height: 40), // Espacement avant le bouton
-      // Bouton de connexion
-       Container(
-        width: 300,
-        height: 50,
-     child:  ElevatedButton(
-        onPressed: _login,
-        child: Text('Se connecter'),
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white, 
-          backgroundColor: Color(0xFFD9A9A9),
-        ),
-      ),
-       ),
-      SizedBox(height: 10), // Espacement entre le bouton et le texte
-      // Lien pour créer un compte
-      TextButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/inscription');
-        },
-        child: Text('Créer un compte'),
-      ),
-      SizedBox(height: 10), // Espacement entre "Créer un compte" et "ou Google"
-      // Lien pour Google
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('ou'), // Texte "ou" au-dessus
-          SizedBox(height: 8), // Espacement entre le texte et l'image
-          // Remplace l'icône par une image
-          Image.asset(
-            'assets/images/google.png', // Chemin de l'image dans ton projet
-            height: 30, // Définit la hauteur de l'image
-            width: 30,  // Définit la largeur de l'image
-            fit: BoxFit.contain, // Ajuste l'image pour garder ses proportions
+        // Deuxième div : Div supérieur en blanc avec des champs et un bouton
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 80,
+          child: Container(
+            height: MediaQuery.of(context).size.height * 1.0,
+            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(60),
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Image.asset(
+                  'assets/images/logo.jpg',
+                  height: 250,
+                  width: 250,
+                  fit: BoxFit.contain,
+                ),
+                SizedBox(height: 20),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                SizedBox(height: 10),
+                TextFormField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    labelText: 'Mot de passe',
+                    prefixIcon: Icon(Icons.lock),
+                  ),
+                  obscureText: true,
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/forgotPassword');
+                    },
+                    child: Text(
+                      'Mot de passe oublié?',
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 40),
+                Container(
+                  width: 300,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _login,
+                    child: Text('Se connecter'),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Color(0xFFD9A9A9),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/inscription');
+                  },
+                  child: Text('Créer un compte'),
+                ),
+                SizedBox(height: 10),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('ou'),
+                    SizedBox(height: 8),
+                    Image.asset(
+                      'assets/images/google.png',
+                      height: 30,
+                      width: 30,
+                      fit: BoxFit.contain,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-    ],
-  ),
-),
+        ),
+      ],
+    ),
+  );
+}
 
-          ),
-        ],
-      ),
-    );
-  }
 }
