@@ -61,109 +61,116 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     }
   }
-
- @override
+@override
 Widget build(BuildContext context) {
   return Scaffold(
-    appBar: AppBar(
-      automaticallyImplyLeading: false,
-    ),
+    // Désactive le comportement par défaut de déplacement du contenu pour éviter le basculement
+    resizeToAvoidBottomInset: false,
     body: Stack(
       children: [
-        // Premier div : Fond coloré en D9A9A9
+        // Premier conteneur : Fond coloré en D9A9A9 couvrant tout l'écran
         Container(
           color: Color(0xFFD9A9A9),
           height: double.infinity,
           width: double.infinity,
         ),
-        // Deuxième div : Div supérieur en blanc avec des champs et un bouton
+        // Deuxième conteneur : Contient les champs et boutons, entouré d'un défilement pour éviter le basculement
         Positioned(
           left: 0,
           right: 0,
           bottom: 80,
-          child: Container(
-            height: MediaQuery.of(context).size.height * 1.0,
-            padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(60),
+          child: SingleChildScrollView( // Permet au contenu de défiler si nécessaire
+            child: Container(
+              height: MediaQuery.of(context).size.height * 1.0,
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(60),
+                ),
               ),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Image.asset(
-                  'assets/images/logo.jpg',
-                  height: 250,
-                  width: 250,
-                  fit: BoxFit.contain,
-                ),
-                SizedBox(height: 20),
-                TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Logo de l'application
+                  Image.asset(
+                    'assets/images/logo.jpg',
+                    height: 250,
+                    width: 250,
+                    fit: BoxFit.contain,
                   ),
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  controller: _passwordController,
-                  decoration: InputDecoration(
-                    labelText: 'Mot de passe',
-                    prefixIcon: Icon(Icons.lock),
+                  SizedBox(height: 20),
+                  // Champ de texte pour l'email
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
                   ),
-                  obscureText: true,
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
+                  SizedBox(height: 10),
+                  // Champ de texte pour le mot de passe
+                  TextFormField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Mot de passe',
+                      prefixIcon: Icon(Icons.lock),
+                    ),
+                    obscureText: true,
+                  ),
+                  // Lien pour mot de passe oublié
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/forgotPassword');
+                      },
+                      child: Text(
+                        'Mot de passe oublié?',
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 40),
+                  // Bouton de connexion
+                  Container(
+                    width: 300,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _login,
+                      child: Text('Se connecter'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Color(0xFFD9A9A9),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  // Lien pour inscription
+                  TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/forgotPassword');
+                      Navigator.pushNamed(context, '/inscription');
                     },
-                    child: Text(
-                      'Mot de passe oublié?',
-                      style: TextStyle(color: Colors.blue),
-                    ),
+                    child: Text('Créer un compte'),
                   ),
-                ),
-                SizedBox(height: 40),
-                Container(
-                  width: 300,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _login,
-                    child: Text('Se connecter'),
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      backgroundColor: Color(0xFFD9A9A9),
-                    ),
+                  SizedBox(height: 10),
+                  // Options de connexion alternatives
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('ou'),
+                      SizedBox(height: 8),
+                      Image.asset(
+                        'assets/images/google.png',
+                        height: 30,
+                        width: 30,
+                        fit: BoxFit.contain,
+                      ),
+                    ],
                   ),
-                ),
-                SizedBox(height: 10),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/inscription');
-                  },
-                  child: Text('Créer un compte'),
-                ),
-                SizedBox(height: 10),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('ou'),
-                    SizedBox(height: 8),
-                    Image.asset(
-                      'assets/images/google.png',
-                      height: 30,
-                      width: 30,
-                      fit: BoxFit.contain,
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -171,5 +178,6 @@ Widget build(BuildContext context) {
     ),
   );
 }
+
 
 }
