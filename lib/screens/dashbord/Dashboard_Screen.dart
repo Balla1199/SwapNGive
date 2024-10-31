@@ -94,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 223, 225, 232),
+      //backgroundColor: Color.fromARGB(255, 223, 225, 232),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -129,176 +129,197 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildUserCounter() {
-    return Container(
-      width: 150,
-      height: 150,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: [Colors.blueAccent, Colors.lightBlueAccent],
+Widget _buildUserCounter() {
+  return Container(
+    width: 150,
+    height: 150,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      color: Colors.white, // Couleur de fond blanc
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 10,
+          offset: Offset(0, 5),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 5),
+      ],
+    ),
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        // Cercle de contour
+        Container(
+          width: 150,
+          height: 150,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Color(0xFFBAEDBD), width: 20), // Couleur du stroke
           ),
-        ],
-      ),
-      child: Center(
-        child: Text(
+        ),
+        // Texte au centre
+        Text(
           '$_nouveauxUtilisateurs',
           style: TextStyle(
             fontSize: 40,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Color(0xFFFEBAC6), // Couleur du texte
           ),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
 
-  Widget _buildLineChart() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 5),
+
+
+Widget _buildLineChart() {
+  return Container(
+    padding: EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 10,
+          offset: Offset(0, 5),
+        ),
+      ],
+    ),
+    height: 300,
+    child: LineChart(
+      LineChartData(
+        lineBarsData: [
+          LineChartBarData(
+            spots: utilisateursActifs
+                .asMap()
+                .entries
+                .map((e) => FlSpot(e.key.toDouble(), e.value.toDouble()))
+                .toList(),
+            isCurved: true,
+            gradient: LinearGradient(
+              colors: [Colors.deepPurpleAccent, Colors.deepPurple],
+            ),
+            barWidth: 3,
+            dotData: FlDotData(show: false),
           ),
         ],
-      ),
-      height: 300,
-      child: LineChart(
-        LineChartData(
-          lineBarsData: [
-            LineChartBarData(
-              spots: utilisateursActifs
-                  .asMap()
-                  .entries
-                  .map((e) => FlSpot(e.key.toDouble(), e.value.toDouble()))
-                  .toList(),
-              isCurved: true,
-              gradient: LinearGradient(
-                colors: [Colors.deepPurpleAccent, Colors.deepPurple],
-              ),
-              barWidth: 3,
-              dotData: FlDotData(show: false),
+        titlesData: FlTitlesData(
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Text(mois[value.toInt() % 12], style: TextStyle(fontSize: 10, color: Colors.grey)),
+                );
+              },
+              interval: 1,
             ),
-          ],
-          titlesData: FlTitlesData(
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  const mois = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: 10000,
+              getTitlesWidget: (value, meta) {
+                return Text('${value ~/ 1000}K', style: TextStyle(fontSize: 10, color: Colors.grey));
+              },
+              reservedSize: 40,
+            ),
+          ),
+          // Désactiver les titres horizontaux en haut
+          topTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          // Désactiver les titres verticaux à droite
+          rightTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+        ),
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: true,
+          horizontalInterval: 10000,
+          verticalInterval: 1,
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(color: Colors.grey),
+        ),
+        minY: 0,
+        maxY: 30000,
+        minX: 0,
+        maxX: 11,
+      ),
+    ),
+  );
+}
+
+ Widget _buildBarChart() {
+  return Container(
+    padding: EdgeInsets.all(16),
+    color: Color(0xFFE5ECF6), // Couleur de fond blanc
+    height: 300,
+    child: BarChart(
+      BarChartData(
+        barGroups: categoriesPopulaires.asMap().entries.map((entry) {
+          final index = entry.key;
+          final categorie = entry.value;
+
+          // Définir les couleurs en fonction de l'index de chaque catégorie
+          final colors = [
+            Color(0xFFBAEDBD), // Couleur pour la première catégorie
+            Color(0x95A4FC), // Couleur pour la deuxième catégorie
+            Color(0xFFA8C5DA), // Couleur pour la troisième catégorie
+          ];
+
+          return BarChartGroupData(
+            x: index,
+            barRods: [
+              BarChartRodData(
+                toY: categorie['nombreAnnonces'].toDouble(),
+                gradient: LinearGradient(
+                  colors: [colors[index % colors.length], colors[(index + 1) % colors.length]], // Appliquer les couleurs avec un dégradé
+                ),
+                width: 20,
+              ),
+            ],
+          );
+        }).toList(),
+        titlesData: FlTitlesData(
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                var index = value.toInt();
+                if (index < categoriesPopulaires.length) {
+                  var categorie = categoriesPopulaires[index]['categorie'];
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(mois[value.toInt() % 12], style: TextStyle(fontSize: 10, color: Colors.grey)),
-                  );
-                },
-                interval: 1,
-              ),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                interval: 10000,
-                getTitlesWidget: (value, meta) {
-                  return Text('${value ~/ 1000}K', style: TextStyle(fontSize: 10, color: Colors.grey));
-                },
-                reservedSize: 40,
-              ),
-            ),
-          ),
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: true,
-            horizontalInterval: 10000,
-            verticalInterval: 1,
-          ),
-          borderData: FlBorderData(
-            show: true,
-            border: Border.all(color: Colors.grey),
-          ),
-          minY: 0,
-          maxY: 30000,
-          minX: 0,
-          maxX: 11,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBarChart() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      height: 300,
-      child: BarChart(
-        BarChartData(
-          barGroups: categoriesPopulaires
-              .asMap()
-              .entries
-              .map((entry) {
-                final index = entry.key;
-                final categorie = entry.value;
-                return BarChartGroupData(
-                  x: index,
-                  barRods: [
-                    BarChartRodData(
-                      toY: categorie['nombreAnnonces'].toDouble(),
-                      gradient: LinearGradient(
-                        colors: [Colors.blueAccent, Colors.lightBlue],
-                      ),
-                      width: 20,
+                    child: Text(
+                      categorie.nom,
+                      style: TextStyle(fontSize: 10, color: Colors.grey),
                     ),
-                  ],
-                );
-              })
-              .toList(),
-          titlesData: FlTitlesData(
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  var index = value.toInt();
-                  if (index < categoriesPopulaires.length) {
-                    var categorie = categoriesPopulaires[index]['categorie'];
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(categorie.nom, style: TextStyle(fontSize: 10, color: Colors.grey)),
-                    );
-                  }
-                  return Container();
-                },
-              ),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true),
+                  );
+                }
+                return Container();
+              },
             ),
           ),
-          borderData: FlBorderData(show: false),
-          barTouchData: BarTouchData(enabled: false),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(showTitles: true),
+          ),
         ),
+        gridData: FlGridData(show: false), // Désactiver les grilles
+        borderData: FlBorderData(show: false),
+        barTouchData: BarTouchData(enabled: false),
       ),
-    );
-  }
+    ),
+  );
+}
+
+
 
   Widget _buildPieChart() {
     return Container(
@@ -321,14 +342,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             PieChartSectionData(
               value: _donCounts.toDouble(),
               title: 'Dons: $_donCounts',
-              color: Colors.green,
-              radius: 80,
+              color: Color(0xFFB1E3FF),
+              radius: 40,
             ),
             PieChartSectionData(
               value: _echangeCounts.toDouble(),
               title: 'Échanges: $_echangeCounts',
-              color: Colors.orange,
-              radius: 80,
+              color: Color(0xFF5A6ACF),
+              radius: 40,
             ),
           ],
           centerSpaceRadius: 50,
@@ -337,31 +358,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSectionCard({required String title, required Widget child}) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 10),
-          child,
-        ],
-      ),
-    );
-  }
+ Widget _buildSectionCard({required String title, required Widget child}) {
+  return Container(
+    padding: EdgeInsets.all(16), // Conserve le padding
+    // Supprimer la décoration pour enlever le fond et le radius
+    // decoration: BoxDecoration(
+    //   color: Colors.white, // Enlever cette ligne
+    //   borderRadius: BorderRadius.circular(12), // Enlever cette ligne
+    //   boxShadow: [ // Enlever cette ligne pour supprimer l'ombre
+    //     BoxShadow(
+    //       color: Colors.black12,
+    //       blurRadius: 10,
+    //       offset: Offset(0, 5),
+    //     ),
+    //   ],
+    // ],
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        child,
+      ],
+    ),
+  );
+}
+
 }
