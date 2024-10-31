@@ -97,58 +97,77 @@ class DetailDonScreen extends StatelessWidget {
             ),
           
           SizedBox(height: 10.0), // Espace entre le carousel et les boutons
-          
+
+          if (currentUserId != receveurId)
           // Row pour les icônes sous le carrousel
           Row(
-            mainAxisAlignment: MainAxisAlignment.center, // Centrer les icônes
-            children: [
-              IconButton(
-                icon: Icon(Icons.close, color: Colors.red),
-                iconSize: 30,
-                onPressed: () async {
-                  // Si le don est refusé :
-                  await DonService().mettreAJourStatut(donId, 'refusé'); // Mettre à jour le statut du don
-                  await AnnonceService().mettreAJourStatut(don['annonce']['id'], StatutAnnonce.disponible); // Maintenir l'annonce à disponible
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Don refusé, annonce toujours disponible !")),
-                  );
-                },
+  mainAxisAlignment: MainAxisAlignment.center, // Centrer les icônes
+  children: [
+    // Bouton Refuser avec texte
+    Column(
+      children: [
+        IconButton(
+          icon: Icon(Icons.close, color: Colors.red),
+          iconSize: 30,
+          onPressed: () async {
+            await DonService().mettreAJourStatut(donId, 'refusé');
+            await AnnonceService().mettreAJourStatut(don['annonce']['id'], StatutAnnonce.disponible);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Don refusé, annonce toujours disponible !")),
+            );
+          },
+        ),
+        Text('Refuser', style: TextStyle(color: Colors.red)),
+      ],
+    ),
+    SizedBox(width: 70), // Espace entre les icônes
+
+    // Bouton Accepter avec texte
+    Column(
+      children: [
+        IconButton(
+          icon: Icon(Icons.handshake, color: Color(0xFFD9A9A9)),
+          iconSize: 30,
+          onPressed: () async {
+            await DonService().mettreAJourStatut(donId, 'accepté');
+            await AnnonceService().mettreAJourStatut(don['annonce']['id'], StatutAnnonce.indisponible);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Don accepté, annonce indisponible !")),
+            );
+          },
+        ),
+        Text('Accepter', style: TextStyle(color: Color(0xFFD9A9A9))),
+      ],
+    ),
+    SizedBox(width: 70), // Espace entre les icônes
+
+    // Bouton Discuter avec texte
+    Column(
+      children: [
+        IconButton(
+          icon: Icon(Icons.chat, color: Colors.blue),
+          iconSize: 30,
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChatScreen(
+                  annonceId: don['annonce']['id'],
+                  typeAnnonce: 'don',
+                  senderId: currentUserId,
+                  receiverId: receveurId,
+                  conversationId: '',
+                ),
               ),
-              SizedBox(width: 70), // Espace entre les icônes
-              IconButton(
-                icon: Icon(Icons.handshake, color: Color(0xFFD9A9A9)),
-                iconSize: 30,
-                onPressed: () async {
-                  // Si le don est accepté :
-                  await DonService().mettreAJourStatut(donId, 'accepté'); // Mettre à jour le statut du don
-                  await AnnonceService().mettreAJourStatut(don['annonce']['id'], StatutAnnonce.indisponible); // Mettre à jour l'annonce à indisponible
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Don accepté, annonce indisponible !")),
-                  );
-                },
-              ),
-              SizedBox(width: 70), // Espace entre les icônes
-              IconButton(
-                icon: Icon(Icons.chat, color: Colors.blue),
-                iconSize: 30,
-                onPressed: () {
-                  // Logique pour discuter du don
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ChatScreen(
-                        annonceId: don['annonce']['id'], // ID de l'annonce
-                        typeAnnonce: 'don', // Type de l'annonce, ici c'est un don
-                        senderId: currentUserId, // ID de l'utilisateur actuel (expéditeur)
-                        receiverId: receveurId, // ID du receveur (destinataire)
-                        conversationId: '', // ID de la conversation, peut être vide ici
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+            );
+          },
+        ),
+        Text('Discuter', style: TextStyle(color: Colors.blue)),
+      ],
+    ),
+  ],
+),
+
           
           SizedBox(height: 20.0), // Espace entre les boutons et les détails de l'objet
           

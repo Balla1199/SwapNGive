@@ -97,40 +97,67 @@ class DetailEchangeScreen extends StatelessWidget {
 
                 return isCurrentUser
                     ? Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          // Bouton pour refuser l'échange
-                          IconButton(
-                            onPressed: () {
-                              _mettreAJourStatut(echange.id, "refusé", context);
-                            },
-                            icon: Icon(Icons.clear),
-                            iconSize: 30,
-                            color: Colors.red,
-                            tooltip: 'Refuser',
-                          ),
-                          // Bouton pour accepter l'échange
-                          IconButton(
-                            onPressed: () {
-                              _mettreAJourStatut(echange.id, "accepté", context);
-                            },
-                            icon: Icon(Icons.handshake),
-                            iconSize: 30,
-                            color: Color(0xFFD9A9A9),
-                            tooltip: 'Accepter',
-                          ),
-                          // Bouton pour discuter
-                          IconButton(
-                            onPressed: () {
-                              _discuter(context);
-                            },
-                            icon: Icon(Icons.chat),
-                            iconSize: 30,
-                            color: Colors.black,
-                            tooltip: 'Discuter',
-                          ),
-                        ],
-                      )
+  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  children: [
+    // Bouton pour refuser l'échange avec texte
+    Column(
+      children: [
+        IconButton(
+          onPressed: () {
+            _mettreAJourStatut(echange.id, "refusé", context);
+          },
+          icon: Icon(Icons.clear),
+          iconSize: 30,
+          color: Colors.red,
+          tooltip: 'Refuser',
+        ),
+        Text(
+          'Refuser',
+          style: TextStyle(color: Colors.red),
+        ),
+      ],
+    ),
+    
+    // Bouton pour accepter l'échange avec texte
+    Column(
+      children: [
+        IconButton(
+          onPressed: () {
+            _mettreAJourStatut(echange.id, "accepté", context);
+          },
+          icon: Icon(Icons.handshake),
+          iconSize: 30,
+          color: Color(0xFFD9A9A9),
+          tooltip: 'Accepter',
+        ),
+        Text(
+          'Accepter',
+          style: TextStyle(color: Color(0xFFD9A9A9)),
+        ),
+      ],
+    ),
+    
+    // Bouton pour discuter avec texte
+    Column(
+      children: [
+        IconButton(
+          onPressed: () {
+            _discuter(context);
+          },
+          icon: Icon(Icons.chat),
+          iconSize: 30,
+          color: Colors.blue,
+          tooltip: 'Discuter',
+        ),
+        Text(
+          'Discuter',
+          style: TextStyle(color: Colors.blue),
+        ),
+      ],
+    ),
+  ],
+)
+
                     : SizedBox.shrink();
               }
             },
