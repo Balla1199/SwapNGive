@@ -74,6 +74,7 @@ class UtilisateurService {
         // Mettre à jour l'email dans FirebaseAuth si nécessaire
         if (utilisateur.email != null && utilisateur.email != firebaseUser.email) {
           await firebaseUser.updateEmail(utilisateur.email!);
+          await firebaseUser.reload(); // Recharger l'utilisateur pour appliquer les changements
         }
 
         // Mettre à jour le mot de passe dans FirebaseAuth si nécessaire
@@ -84,11 +85,14 @@ class UtilisateurService {
 
       // Mettre à jour les informations dans Firestore (y compris l'email)
       await _collection.doc(id).update(utilisateur.toMap());
+      
+      print('Mise à jour réussie de l\'utilisateur dans Auth et Firestore');
     } catch (e) {
       print("Erreur lors de la mise à jour de l'utilisateur : $e");
       rethrow;
     }
   }
+
   // Supprimer un utilisateur dans Firestore
   Future<void> deleteUtilisateur(String id) async {
     try {

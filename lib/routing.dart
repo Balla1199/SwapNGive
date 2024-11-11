@@ -23,6 +23,7 @@ import 'package:swapngive/screens/home/home_screen.dart';
 import 'package:swapngive/screens/inscription/inscription_screen.dart';
 import 'package:swapngive/screens/login/login_screen.dart';
 import 'package:swapngive/screens/notification/notification_screen.dart';
+import 'package:swapngive/screens/profil/EditProfileScreen.dart';
 import 'package:swapngive/screens/profil/profile_screen.dart';
 import 'package:swapngive/screens/categorie/categorie_list_screen.dart';
 import 'package:swapngive/screens/categorie/categorie_form_screen.dart';
@@ -98,6 +99,9 @@ class AppRoutes {
   // Nouvelle route pour ForgotPasswordScreen
  static const String forgotPassword = '/forgotPassword';
 
+  // Nouvelle route pour EditProfileScreen
+  static const String editProfile = '/edit_profile';
+
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -142,6 +146,7 @@ class AppRoutes {
       // Routes pour Annonce
       case annonceList:
         return MaterialPageRoute(builder: (_) => AnnonceListScreen());
+
       case annonceForm:
         final args = settings.arguments as Map<String, dynamic>?; 
         final annonce = args != null ? args['annonce'] as Annonce? : null;
@@ -172,6 +177,14 @@ class AppRoutes {
           builder: (_) => AnnonceFormScreen(annonce: annonce, objet: objet),
         );
    
+
+       case editProfile:
+        final args = settings.arguments as Map<String, dynamic>?; 
+        final utilisateur = args != null ? args['utilisateur'] as Utilisateur : null;
+        return MaterialPageRoute(
+          builder: (_) => EditProfileScreen(utilisateur: utilisateur),
+        );
+        
        case forgotPassword:
        return MaterialPageRoute(builder: (_) => ForgotPasswordScreen());
 

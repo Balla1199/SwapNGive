@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io'; // Pour mobile
 import 'package:swapngive/models/utilisateur.dart';
+import 'package:swapngive/screens/profil/EditProfileScreen.dart';
 import 'package:universal_html/html.dart' as html; // Pour web
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -153,70 +154,83 @@ class _ProfileScreenState extends State<ProfileScreen> with SingleTickerProvider
 Widget build(BuildContext context) {
   return Scaffold(
     backgroundColor: Colors.white,
-    appBar:AppBar(
+    appBar: AppBar(
       backgroundColor: Colors.white,
-  automaticallyImplyLeading: false,
-  title: Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Align(
-        alignment: Alignment.centerLeft,
-        child: Image.asset(
-          'assets/images/logosansnom.jpg', // Remplace par le chemin de ton logo
-          height: 30, // Ajuste la hauteur selon tes besoins
-        ),
-      ),
-      SizedBox(width: 10), // Espacement entre le logo et le titre
-      Expanded(
-        child: Text(
-          'Profil de ${widget.utilisateur?.nom ?? ''}',
-          textAlign: TextAlign.center,
-        ),
-      ),
-    ],
-  ),
-  actions: [
-    if (!widget.isDifferentUser)
-      IconButton(
-        icon: Icon(Icons.logout),
-        onPressed: _deconnecter,
-      ),
-  ],
-  bottom: PreferredSize(
-    preferredSize: Size.fromHeight(170), // Augmenter la taille préférée
-    child: Column(
-      children: [
-        Stack(
-          alignment: Alignment.bottomRight,
-          children: [
-            CircleAvatar(
-              backgroundImage: _profilePhotoUrl != null
-                  ? NetworkImage(_profilePhotoUrl!)
-                  : AssetImage('images/user.png') as ImageProvider,
-              radius: 50.0,
+      automaticallyImplyLeading: false,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Image.asset(
+              'assets/images/logosansnom.jpg', // Remplace par le chemin de ton logo
+              height: 30, // Ajuste la hauteur selon tes besoins
             ),
-            if (!widget.isDifferentUser)
-              IconButton(
-                icon: Icon(Icons.camera_alt, color: Colors.blue),
-                onPressed: _pickImage,
-              ),
-          ],
-        ),
-        SizedBox(height: 10),
-        _buildStarRating(_moyenneNotes),
-        SizedBox(height: 10),
-        TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: 'À propos'),
-            Tab(text: 'Évaluation'),
-          ],
-        ),
+          ),
+          SizedBox(width: 10), // Espacement entre le logo et le titre
+          Expanded(
+            child: Text(
+              'Profil de ${widget.utilisateur?.nom ?? ''}',
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        if (!widget.isDifferentUser) ...[
+          IconButton(
+            icon: Icon(Icons.edit, color: Colors.blue),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditProfileScreen(
+                    utilisateur: widget.utilisateur!,
+                  ),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.logout),
+            onPressed: _deconnecter,
+          ),
+        ],
       ],
+      bottom: PreferredSize(
+        preferredSize: Size.fromHeight(170), // Augmenter la taille préférée
+        child: Column(
+          children: [
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                CircleAvatar(
+                  backgroundImage: _profilePhotoUrl != null
+                      ? NetworkImage(_profilePhotoUrl!)
+                      : AssetImage('images/user.png') as ImageProvider,
+                  radius: 50.0,
+                ),
+                if (!widget.isDifferentUser)
+                  IconButton(
+                    icon: Icon(Icons.camera_alt, color: Colors.blue),
+                    onPressed: _pickImage,
+                  ),
+              ],
+            ),
+            SizedBox(height: 10),
+            _buildStarRating(_moyenneNotes),
+            SizedBox(height: 10),
+            TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(text: 'À propos'),
+                Tab(text: 'Évaluation'),
+              ],
+            ),
+          ],
+        ),
+      ),
     ),
-  ),
-),
-
     body: TabBarView(
       controller: _tabController,
       children: [
@@ -226,6 +240,7 @@ Widget build(BuildContext context) {
     ),
   );
 }
+
 
 
 
